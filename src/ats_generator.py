@@ -18,33 +18,41 @@ def generate_ats_pdf(json_cv: dict, output_path: str) -> None:
 
         # Basics section
         basics = json_cv.get("basics", {})
-        name = basics.get("name", "")
-        email = basics.get("email", "")
-        phone = basics.get("phone", "")
-        c.drawString(50, y, f"{name}")
+        c.setFont("Helvetica-Bold", 16)
+        c.drawString(50, y, basics.get("name", ""))
         y -= 20
-        c.drawString(50, y, f"Email: {email}")
+        c.setFont("Helvetica", 12)
+        c.drawString(50, y, f"Email: {basics.get('email', '')}")
+        y -= 15
+        c.drawString(50, y, f"Phone: {basics.get('phone', '')}")
+        y -= 15
+        if basics.get("profiles"):
+            for profile in basics["profiles"]:
+                c.drawString(50, y, f"{profile.get('network', '')}: {profile.get('url', '')}")
+                y -= 15
         y -= 20
-        c.drawString(50, y, f"Phone: {phone}")
-        y -= 30
 
         # Work experience
+        c.setFont("Helvetica-Bold", 14)
         c.drawString(50, y, "Work Experience:")
         y -= 20
+        c.setFont("Helvetica", 12)
         for job in json_cv.get("work", []):
             position = job.get("position", "")
             company = job.get("company", "")
             start_date = job.get("startDate", "")
             end_date = job.get("endDate", "")
             summary = job.get("summary", "")
-            c.drawString(60, y, f"{position} at {company} ({start_date} - {end_date})")
+            c.drawString(60, y, f"- {position} at {company} ({start_date} - {end_date})")
             y -= 15
             c.drawString(70, y, summary)
             y -= 25
 
         # Education
+        c.setFont("Helvetica-Bold", 14)
         c.drawString(50, y, "Education:")
         y -= 20
+        c.setFont("Helvetica", 12)
         for edu in json_cv.get("education", []):
             institution = edu.get("institution", "")
             study_type = edu.get("studyType", "")
@@ -54,8 +62,10 @@ def generate_ats_pdf(json_cv: dict, output_path: str) -> None:
             y -= 20
 
         # Skills
+        c.setFont("Helvetica-Bold", 14)
         c.drawString(50, y, "Skills:")
         y -= 20
+        c.setFont("Helvetica", 12)
         for skill in json_cv.get("skills", []):
             name = skill.get("name", "")
             c.drawString(60, y, f"- {name}")

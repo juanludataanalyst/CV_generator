@@ -29,23 +29,10 @@ This project converts a PDF CV into an ATS-friendly PDF by:
 
 ## LLM Prompt Engineering
 
-Example prompt to convert messy, unstructured CV text into JSON Resume:
+Example prompt to convert plain CV text to JSON Resume:
 
 ```
-You are an expert CV parser.
-
-Given the following raw CV text extracted from a PDF, which may contain:
-- Mixed sections (e.g., profile info mixed with experience)
-- Repeated content across pages
-- Sidebars or multi-column layouts
-- Unordered or noisy data
-
-Your task is to:
-- Ignore duplicate or repeated sections
-- Separate profile, experience, education, skills, and other sections clearly
-- Deduplicate content across pages
-- Preserve all original information without inventing or omitting details
-- Output a clean, valid JSON Resume object following the schema at https://jsonresume.org/schema
+Convert the following CV text into a JSON Resume format (https://jsonresume.org/schema). Preserve all original content without adding or removing information.
 
 CV Text:
 """

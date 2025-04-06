@@ -8,7 +8,7 @@ from pydantic_ai import Agent
 from pydantic_ai.providers.openai import OpenAIProvider
 from pydantic_ai.models.openai import OpenAIModel
 
-from cv_adapter.src.models import JsonResume
+from models import JsonResume
 
 load_dotenv()
 
@@ -112,7 +112,7 @@ def parse_to_json_resume(text: str) -> Dict:
 
 
 if __name__ == "__main__":
-    from cv_adapter.src.cv_extraction import extract_cv_text
+    from cv_extraction import extract_cv_text
 
     text = extract_cv_text("Resume.pdf")
     json_cv = parse_to_json_resume(text)
