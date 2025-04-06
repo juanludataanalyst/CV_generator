@@ -1,0 +1,124 @@
+cv:
+  name: Juan Luis Pérez
+  email: juanludataanalyst@gmail.com
+  phone: '+34608027426'
+  location: ''
+  website: null
+  social_networks:
+  - network: LinkedIn
+    username: juanludataanalyst
+  - network: GitHub
+    username: juanludataanalyst
+  sections:
+    Summary:
+    - Data-driven  problem  solver  who thrives  at the intersection  of  business  and
+      technology.  With a strong  technical  background,  I bridge  the gap between  data
+      and  decision-making,  leveraging my expertise  in SQL, Python, R ,Power  BI
+      and Statistical  Methods.  Proven   track record  of increasing  Revenue,  improving  efficiency  and  enhancing  decision-making  through
+      analytics
+    Experience:
+    - company: R10 hostal chain @ Freelance
+      position: Data Strategy Owner
+      start_date: 2025-01
+      end_date: null
+      location: ''
+      summary: Built data infraestructure from scratch, creating automated, scalable
+        pipelines (Python, pandas) and dashboards (PowerBI) for real-time analytics.
+      highlights:
+      - Optimized room distribution (R, Optimization Models) boosting occupancy by
+        20% and revenue by 15% compared to the previous year
+    - company: Family Care and Travel
+      position: Break Time
+      start_date: 2023-01
+      end_date: 2024-12
+      location: ''
+      summary: Supported a family member during illness, developing empathy, responsibility
+        and resilience.
+      highlights:
+      - Volunteered in international programs, sharpening leadership, adaptability
+        and communication skills as an event organizer and receptionist
+    - company: Scopely
+      position: Data Analyst
+      start_date: 2018-09
+      end_date: 2022-12
+      location: ''
+      summary: Conducted advanced segmentation analysis (Python, R, Classification
+        models, scikit-learn) to refine marketing strategies, achieving an 11% increase
+        in user retention and 7% boost in ARPU.
+      highlights:
+      - Developed and maintained Power BI dashboards (DAX), reducing reporting time
+        by 30% and enabling real-time decision-making
+      - Optimized game difficulty balancing in Frozen Free Fall (R and optimization
+        models), decreasing churn by 3% and increasing active users by 2% per month
+      - Improved user engagement in Scrabble Go by reducing multiplayer turn intervals
+        by 20%, resulting in a 12% increase in average gameplay time
+      - Collaborated with stakeholders, leading weekly performance meeting to drive
+        +€1.5M in annual revenue growth through data-driven game optimization and
+        effective communication
+    - company: Genera Games
+      position: Data Engineer – Data Scientist
+      start_date: 2017-05
+      end_date: 2018-09
+      location: ''
+      summary: Developed an LTV model (R, Machine Learning, TensorFlow, SQL) that
+        improved marketing ROI by 18% through optimized ad spend allocation.
+      highlights:
+      - Automated data pipelines (Python, numpy, pandas, SQL) reducing ETL execution
+        time by 70% and cutting operational cost by €150K annually
+      - Implemented data quality assurance protocols, reducing report errors and ensuring
+        data quality (Python, pandas, matplotlib, CI/CD), ensuring data quality with
+        over 25% improvement
+      - Contributed to optimizing in-game monetization strategies (R, Tydiverse, ggplot)
+        increasing IAP revenue by 10% through data-driven price adjustments
+    - company: RedBorder
+      position: Data Analyst Internship
+      start_date: 2016-02
+      end_date: 2016-07
+      location: ''
+      summary: Implemented large-scale data pipelines using Apache Spark and Scala,
+        reducing malware classification time by 30%.
+      highlights:
+      - Conducted EDA on 10M+ cybersecurity events, improving machine learning-based
+        threat detection accuracy
+    Education:
+    - institution: Universidad Pablo de Olavide
+      area: Big Data and Business Analytics
+      degree: Postgraduate
+      start_date: 2016-01
+      end_date: 2017-12
+      location: ''
+      summary: ''
+      highlights: []
+    - institution: Universidad de Sevilla
+      area: Telecommunication Engineering
+      degree: Bachelor's degree
+      start_date: 2010-01
+      end_date: 2016-12
+      location: ''
+      summary: ''
+      highlights: []
+    Skills:
+    - label: Skills
+      details: SQL, Python, R, Excel, Power BI, Leadership, Effective Communication,
+        Adaptability
+    Projects:
+    - name: MostInDemandSkills Platform
+      summary: Analyzing over 100 daily job postings from 5 platforms to assess skills
+        demand by role and country in data science and tech (Python, Streamlit, Apis,
+        n8n).
+      url: https://mostindemandskills.streamlit.app/
+design:
+  theme: classic
+  page:
+    size: us-letter
+    top_margin: 2cm
+    bottom_margin: 2cm
+    left_margin: 2cm
+    right_margin: 2cm
+    show_page_numbering: true
+    show_last_updated_date: true
+locale:
+  language: en
+rendercv_settings:
+  date: '2025-04-06'
+  bold_keywords: []

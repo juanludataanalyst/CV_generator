@@ -1,0 +1,26 @@
+{
+  "name": "cv_generator",
+  "version": "1.0.0",
+  "description": "Converts a PDF CV to an ATS-friendly PDF using JSON Resume standard with LLM parsing.",
+  "main": "generate_cv_puppeteer.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/juanludataanalyst/CV_generator.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/juanludataanalyst/CV_generator/issues"
+  },
+  "homepage": "https://github.com/juanludataanalyst/CV_generator#readme",
+  "dependencies": {
+    "puppeteer": "^24.6.0"
+  }
+}
