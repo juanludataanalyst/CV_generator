@@ -1,19 +1,125 @@
-def parse_to_json_resume(text: str) -> dict:
+import os
+import json
+import asyncio
+from dotenv import load_dotenv
+from typing import Dict, Any
+
+from pydantic_ai import Agent
+from pydantic_ai.providers.openai import OpenAIProvider
+from pydantic_ai.models.openai import OpenAIModel
+
+from cv_adapter.src.models import JsonResume
+
+load_dotenv()
+
+def get_model():
+    api_key = os.getenv("OPENROUTER_API_KEY", "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")
+    base_url = "https://openrouter.ai/api/v1"
+    model_name = "openrouter/quasar-alpha"  # or "openrouter/quasar-alpha" or other OpenRouter model
+
+    provider = OpenAIProvider(base_url=base_url, api_key=api_key)
+    return OpenAIModel(model_name, provider=provider)
+
+agent = Agent(get_model())
+
+
+async def parse_to_json_resume_async(text: str) -> Dict:
     """
-    Parses plain CV text into JSON Resume format using an LLM.
+    Parses CV text into JSON Resume format using an LLM via OpenRouter with pydantic-ai.
 
     Args:
-        text (str): Extracted plain text from the CV.
+        text (str): Extracted text from the CV.
 
     Returns:
-        dict: JSON Resume structured data.
+        Dict: JSON Resume formatted data.
     """
-    # Placeholder implementation
-    # Reason: Actual LLM integration will be added later
-    dummy_json_resume = {
-        "basics": {},
-        "work": [],
-        "education": [],
-        "skills": [],
-    }
-    return dummy_json_resume
+    prompt = f"""
+You are an expert in CV parsing.
+
+Take the following extracted CV text, which may have mixed sections (e.g., Profile and Experience blended due to layout issues), and structure it into the JSON Resume standard format.
+
+Separate clearly the "Profile" (summary) from "Professional Experience" (work history with dates and descriptions) and other sections like Education, Skills, Languages, and Projects.
+
+Preserve the original content without adding or modifying information beyond structuring.
+
+Here is the JSON Resume schema for reference:
+- basics: {{name, label, email, phone, url, summary, profiles: [{{network, username, url}}]}}
+- work: [{{company, position, website, startDate, endDate, summary, highlights}}]
+- education: [{{institution, area, studyType, startDate, endDate, score, courses}}]
+- skills: [{{name, level, keywords}}]
+- languages: [{{language, fluency}}]
+- projects: [{{name, description, highlights, keywords, startDate, endDate, url, roles, entity, type}}]
+
+CV Text:
+\"\"\"
+{text}
+\"\"\"
+
+Return the result as a JSON object. Use full URLs (e.g., "https://github.com/username") and set fields to null if no data is present instead of empty strings.
+"""
+
+    result = await agent.run(prompt)
+    json_str = result.data
+
+    print("----- Raw LLM output -----")
+    print(json_str)
+    print("----- End of LLM output -----")
+
+    try:
+        json_cv = json.loads(json_str)
+    except json.JSONDecodeError:
+        # Sometimes LLMs return JSON with trailing commas or formatting issues
+        # You may want to clean or fix common issues here
+        raise ValueError("Failed to parse LLM output as JSON")
+
+    def preprocess_json(data):
+        """
+        Recursively clean JSON:
+        - Convert empty string URLs to None
+        - Convert relative URLs to absolute URLs
+        """
+        if isinstance(data, dict):
+            new_data = {}
+            for k, v in data.items():
+                if isinstance(v, str):
+                    if k in ("url", "website") and (v.strip() == "" or v.strip() is None):
+                        new_data[k] = None
+                    elif k in ("url", "website") and not v.startswith("http"):
+                        new_data[k] = "https://" + v.lstrip("/")
+                    else:
+                        new_data[k] = v
+                elif isinstance(v, (dict, list)):
+                    new_data[k] = preprocess_json(v)
+                else:
+                    new_data[k] = v
+            return new_data
+        elif isinstance(data, list):
+            return [preprocess_json(item) for item in data]
+        else:
+            return data
+
+    json_cv = preprocess_json(json_cv)
+
+    validated_cv = JsonResume(**json_cv)
+    return validated_cv.model_dump(mode="json")
+
+
+def parse_to_json_resume(text: str) -> Dict:
+    """
+    Synchronous wrapper for async LLM parsing.
+    """
+    return asyncio.run(parse_to_json_resume_async(text))
+
+
+if __name__ == "__main__":
+    from cv_adapter.src.cv_extraction import extract_cv_text
+
+    text = extract_cv_text("Resume.pdf")
+    json_cv = parse_to_json_resume(text)
+
+    # Save to JSON file in root directory
+    output_path = "../parsed_resume.json"
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(json_cv, f, indent=2, ensure_ascii=False)
+
+    print(f"Saved parsed JSON Resume to {output_path}")
