@@ -1,0 +1,4 @@
+pdfminer.six==20231228
+reportlab==4.0.9
+pytest==8.1.1
+black==24.3.0

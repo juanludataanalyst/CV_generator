@@ -1,0 +1,3 @@
+# Ignore PDF files
+*.pdf
+cv_adapter/src/__pycache__/cv_extraction.cpython-313.pyc
