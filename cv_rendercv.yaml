@@ -83,17 +83,19 @@ cv:
     Education:
     - institution: Universidad Pablo de Olavide
       area: Big Data and Business Analytics
-      degree: Postgraduate
+      degree: PG
       start_date: 2016-01
       end_date: 2017-12
+      date: 2016-01 - 2017-12
       location: ''
       summary: ''
       highlights: []
     - institution: Universidad de Sevilla
       area: Telecommunication Engineering
-      degree: Bachelor's degree
+      degree: BSc
       start_date: 2010-01
       end_date: 2016-12
+      date: 2010-01 - 2016-12
       location: ''
       summary: ''
       highlights: []
@@ -117,6 +119,11 @@ design:
     right_margin: 2cm
     show_page_numbering: true
     show_last_updated_date: true
+  section_titles:
+    vertical_space_above: 1cm
+    vertical_space_below: 0.7cm
+  entries:
+    vertical_space_between_entries: 2.5em
 locale:
   language: en
 rendercv_settings:

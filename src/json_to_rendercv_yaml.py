@@ -9,11 +9,11 @@ def convert(json_path: str, yaml_path: str):
     location = basics.get("location") or {}
 
     cv = {
-        "name": basics.get("name", ""),
-        "email": basics.get("email", ""),
-        "phone": basics.get("phone", ""),
-        "location": location.get("address", ""),
-        "website": basics.get("url", ""),
+        "name": basics.get("name", "") or "",
+        "email": basics.get("email", "") or "",
+        "phone": basics.get("phone", "") or "",
+        "location": location.get("address", "") or "",
+        "website": basics.get("url", "") or None,
         "social_networks": [],
         "sections": {}
     }
@@ -51,15 +51,32 @@ def convert(json_path: str, yaml_path: str):
         end = edu.get("endDate", "Present")
         degree = edu.get("studyType", "")
         area = edu.get("area", "")
+        institution = edu.get("institution", "")
+
+        # Map degree to abbreviation (max ~5 chars)
+        degree_lower = degree.lower()
+        if "bachelor" in degree_lower:
+            degree_short = "BSc"
+        elif "postgraduate" in degree_lower:
+            degree_short = "PG"
+        elif "master" in degree_lower:
+            degree_short = "MSc"
+        elif "doctor" in degree_lower or "phd" in degree_lower:
+            degree_short = "PhD"
+        elif "associate" in degree_lower:
+            degree_short = "Assoc"
+        else:
+            degree_short = degree[:5]
+
         education_list.append({
-            "institution": edu.get("institution", ""),
+            "institution": institution,
             "area": area,
-            "degree": degree,
+            "degree": degree_short,
             "start_date": start,
             "end_date": end,
             "date": f"{start} - {end}",
             "location": edu.get("location", ""),
-            "summary": f"{degree} in {area}" if degree and area else degree or area,
+            "summary": "",
             "highlights": []
         })
     if education_list:
@@ -96,6 +113,13 @@ def convert(json_path: str, yaml_path: str):
                 "right_margin": "2cm",
                 "show_page_numbering": True,
                 "show_last_updated_date": True
+            },
+            "section_titles": {
+                "vertical_space_above": "1cm",
+                "vertical_space_below": "0.7cm"
+            },
+            "entries": {
+                "vertical_space_between_entries": "2.5em"
             }
         },
         "locale": {
