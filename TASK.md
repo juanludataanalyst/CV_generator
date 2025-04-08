@@ -13,4 +13,6 @@
 ---
 
 ## Completed Tasks
-- (Mark completed tasks here with completion date)
+- Set up PDF extraction with pdfminer.six - Completed April 08, 2025
+- Parse text to JSON Resume using LLM - Completed April 08, 2025
+- Generate ATS PDF - Completed April 08, 2025
