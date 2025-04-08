@@ -20,14 +20,14 @@ def get_model():
 
 agent = Agent(get_model())
 
-async def adapt_cv_to_job_async(cv_json: dict, job_description: str) -> dict:
+async def adapt_cv_to_job_async(cv_json: dict, job_description: str, target_score: int = 100) -> dict:
     """
     Calls LLM to adapt CV JSON to a specific job description.
     """
     prompt = f"""
 You are an expert CV writer and ATS optimizer.
 
-Your goal is to optimize the CV so that it achieves a **100% compatibility score** with the company's ATS system for the provided job description.
+Your goal is to optimize the CV so that it achieves approximately **{target_score}% compatibility score** with the company's ATS system for the provided job description.
 
 Given the following CV data in JSON format, and a job description, adapt the CV to better match the job, including:
 
@@ -66,8 +66,8 @@ Respond ONLY with the updated CV as a valid JSON object. Do NOT include any expl
 
     return updated_cv
 
-def adapt_cv_to_job(cv_json: dict, job_description: str) -> dict:
-    return asyncio.run(adapt_cv_to_job_async(cv_json, job_description))
+def adapt_cv_to_job(cv_json: dict, job_description: str, target_score: int = 100) -> dict:
+    return asyncio.run(adapt_cv_to_job_async(cv_json, job_description, target_score))
 
 if __name__ == "__main__":
     with open("../parsed_resume.json", "r", encoding="utf-8") as f:
