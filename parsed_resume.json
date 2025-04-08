@@ -24,9 +24,9 @@
       "endDate": "",
       "summary": "DevOps Engineer for QA team, supporting Blue Prism RPA Automation SaaS with Azure CI/CD pipelines. Skills used: Terraform, Ansible, Packer, Jenkins, Azure DevOps, Git, Powershell, Python, and Bash.",
       "highlights": [
-        "Re-designing Azure pipelines that build custom pre-baked Windows images for the QA testing. The original developer couldn’t resolve the constant pipeline breakages and reliability issues. I rebuilt the pipeline to install updates correctly using Ansible and have failovers for times of heavy Azure usage.",
-        "Building an automated testing environment using a Jinja2 template that dynamically creates Ansible playbooks to the specification of the user. The QA team's tests had a bottleneck when it came to installing Microsoft SQL and setting up Windows testing environments, so I drastically reduced these tests by building automated images based on Testrail configurations. This saved countless hours of testing time.",
-        "Migration from colocated servers into Azure pipelines. Their old QA testing infrastructure was built using an uncommented, unmanaged Python/VirtualBox setup interfaced with Jenkins. I worked as part of the team to redesign the QA testing infrastructure within Azure, using Testrail, Terraform, and Ansible via CI/CD pipelines. The result was a modern, resilient, and efficient QA process."
+        "Re-designing Azure pipelines that build custom pre-baked Windows images for QA testing, resolving pipeline breakages and reliability issues using Ansible and improved failovers.",
+        "Building automated testing environments with Jinja2 templates that dynamically create Ansible playbooks, drastically reducing test setup time and saving countless hours.",
+        "Migrating from colocated servers into Azure pipelines, modernizing the QA testing infrastructure using Testrail, Terraform, and Ansible via CI/CD pipelines, resulting in a modern, resilient, and efficient QA process."
       ]
     },
     {
@@ -35,11 +35,11 @@
       "website": null,
       "startDate": "2022-08",
       "endDate": "2024-07",
-      "summary": "Slater & Gordon were consolidating after acquiring 19 companies. I led infrastructure consolidation and migration of bare metal servers to the cloud.",
+      "summary": "Led and supported the migration of bare metal servers into the cloud during consolidation phase.",
       "highlights": [
-        "Mapped current infrastructure using Visio and proposed new CI/CD models to migrate bare metal infrastructure into the cloud. Performed cost analysis and researched technologies to improve existing processes.",
-        "Built initial pipelines and environment, creating an Ansible/Terraform template library scalable to their entire infrastructure.",
-        "Wrote new policy documents on Git workflows, DevOps workflows, and documented new processes."
+        "Mapped existing infrastructure using Visio, proposed new CI/CD models for cloud migration, including cost analysis and research into improved processes.",
+        "Built initial pipelines and environments, created scalable Ansible/Terraform template library.",
+        "Authored new policy documents to standardize Git workflows, DevOps processes, and documented new procedures."
       ]
     },
     {
@@ -48,18 +48,15 @@
       "website": null,
       "startDate": "2014-06",
       "endDate": "2020-09",
-      "summary": "Managed AWS hosted online operations for a British charity. Involved in backup and DNS management, server optimization, system design, redevelopment of web presence, and cloud-based process migration.",
+      "summary": "Managed online operations hosted on Amazon AWS, including backup, DNS management, system design, and redeveloping the entire web presence, moving offline processes to the cloud.",
       "highlights": [
-        "Designed and implemented online operations using Amazon EC2, SES, S3, VPC, Elastic IP, ELB, snapshots, and volume management.",
-        "Built bespoke servers for superior performance using LEMP, NGINX, MySQL, Redis, OPCache, EXIM through Ansible.",
-        "Implemented encrypted differential backups with Rclone and Duplicity to S3, Dropbox, SSH.",
-        "Created server failover and risk management procedures.",
-        "Automated upgrades via BASH, Python, WP-CLI, and Wraith.",
-        "Configured Discourse, Docker, YAML.",
-        "Developed custom PHP plugins and theme components for Wordpress.",
-        "Created websites delivered via S3 Buckets.",
-        "Developed and implemented a subscription-based payment system replacing offline processes, using Woocommerce, Learnpress, Cloudflare.",
-        "Built a CRM by two-way syncing Wordpress and Airtable."
+        "Designed and implemented Amazon EC2, SES, S3, VPC infrastructure with Elastic IP, ELB, snapshots, and volume management.",
+        "Built bespoke server builds with LEMP stack, optimized performance with NGINX, MYSQL, Redis, OPCache, EXIM, automated via Ansible.",
+        "Implemented encrypted differential backups using Rclone and Duplicity, server failover, and risk management procedures.",
+        "Set up unattended software upgrades with Bash, Python, WP-CLI, and Wraith.",
+        "Configured Discourse, Docker, YAML, and developed custom PHP plugins and themes for WordPress.",
+        "Delivered websites via S3 Buckets and developed subscription-based payment solutions with WooCommerce, Learnpress, Cloudflare.",
+        "Implemented CRM using two-way sync between WordPress and Airtable."
       ]
     },
     {
@@ -68,29 +65,29 @@
       "website": null,
       "startDate": "2017-07",
       "endDate": "2017-11",
-      "summary": "Sysadmin and architecture management of main server infrastructure running Linux, LEMP, and Drupal.",
+      "summary": "Sysadmin, architecture review and management of core server infrastructure running Linux, LEMP stack, and Drupal.",
       "highlights": [
-        "Performance testing and optimization with Jmeter and ApacheBench.",
-        "Resolved Drupal, NGINX cache, OPCache, Memcached, MariaDB issues.",
-        "Built multi-server master/slave MySQL cluster.",
-        "Managed server configs via BitBucket Git branches.",
-        "Overhauled processes and documentation.",
-        "Built staging, prod, and test pipelines to sync development with Jenkins.",
-        "Configured and managed the load balancer."
+        "Performance testing and server optimization using JMeter and ApacheBench.",
+        "Resolved Drupal, NGINX cache, Opcache, Memcached, and MariaDB bugs.",
+        "Built multi-server Master/Slave MySQL cluster for clients.",
+        "Managed server configurations via BitBucket Git branches.",
+        "Overhauled development processes and documentation.",
+        "Created staging, production, and test pipelines using Jenkins.",
+        "Configured and managed load balancer."
       ]
     },
     {
       "company": "Yorkshire Electrical Supplies Limited",
-      "position": "Solutions Architect (Consultant)",
+      "position": "Consultant",
       "website": null,
       "startDate": "2014-05",
       "endDate": "2015-12",
-      "summary": "Freelance contract for a local electrical supply company.",
+      "summary": "Freelance consultant for local electrical supply store.",
       "highlights": [
-        "Repaired outdated LedgerSMB accounts system and set up a virtualized, backed-up system using VMware.",
-        "Managed PostgreSQL scripting and maintenance.",
-        "Migrated accounts system to Intuit QuickBooks Pro.",
-        "Redesigned e-commerce website using Magento."
+        "Repaired and virtualized outdated LedgerSMB accounting system with automated VMware backups.",
+        "Managed and scripted PostgreSQL databases.",
+        "Migrated accounting system to Inuit Quickbooks Pro.",
+        "Redesigned website using Magento ecommerce."
       ]
     },
     {
@@ -99,52 +96,51 @@
       "website": null,
       "startDate": "2013-08",
       "endDate": "2014-03",
-      "summary": "Worked under ops/infrastructure manager on new payment gateway network.",
+      "summary": "Part of operations and infrastructure team building a new network payment gateway.",
       "highlights": [
-        "Installed and configured HSM hardware and security keys in data centers.",
-        "Installed Windows 2008/2013, Fedora, Ubuntu, CentOS, RedHat servers.",
-        "Administered monthly patch updates.",
-        "Configured PCI compliant servers with documentation.",
-        "Research, implementation, documentation of software/infrastructure solutions.",
-        "Set up load balancing via HAProxy.",
-        "Deployed two-factor authentication (Duo Security, Azure).",
-        "Automated backup solutions with Bash/batch scripting."
+        "Installed HSM hardware and security keys within data center.",
+        "Installed Windows and Linux servers on multiple distributions.",
+        "Administered monthly Windows Server updates.",
+        "Configured servers for PCI compliance and provided documentation.",
+        "Researched, implemented, and documented various software and infrastructure solutions.",
+        "Set up HAProxy load balancer.",
+        "Installed two-factor authentication solutions (Duo Security, Azure).",
+        "Implemented automated backup solutions with Bash and Batch scripting."
       ]
     },
     {
-      "company": "Webfusion / 123-Reg / Pipex",
-      "position": "Hosting Support",
+      "company": "Webfusion/123-Reg/Pipex",
+      "position": "Internet Hosting Support",
       "website": null,
       "startDate": "2008-07",
       "endDate": "2013-01",
-      "summary": "Customer support role for hosting and dedicated server customers.",
+      "summary": "Customer support role for premium dedicated server customers, with system administration and automation scripting.",
       "highlights": [
-        "Installed dedicated rack servers; virtualization; system administration.",
-        "Used ticketing systems for SLA compliance.",
-        "Performed migrations, backend tuning, and scripting automation.",
-        "Documented processes.",
-        "Supported premium dedicated server customers.",
-        "Managed 6000+ web servers (FreeBSD, Ubuntu, CentOS, Windows Server).",
+        "Installed dedicated rack servers, virtualization, and system administration.",
+        "Used ticketing systems to meet SLA targets.",
+        "Handled migrations, backend tuning, and automation scripting.",
+        "Documented support processes.",
+        "Supported over 6000 dedicated servers (FreeBSD, Linux, Windows).",
         "Configured/maintained Qmail, Exim, MailEnable, IIS, MySQL, Apache/PHP, SSH/RDP.",
-        "Repaired databases, tuned MySQL and Apache.",
-        "Used apt, yum, pacman, and source installs.",
-        "Heavy Unix CLI, cron, bash/python scripting.",
-        "Official Parallels Plesk training.",
+        "Repaired databases and optimized MySQL and Apache performance.",
+        "Performed package management using apt, yum, pacman, and source builds.",
+        "Extensive CLI, cron, Bash/Python scripting.",
+        "Officially Parallels Plesk trained.",
         "Server monitoring with Nagios and Cacti."
       ]
     },
     {
-      "company": "TEAMtalk Media",
+      "company": "Teamtalk Media",
       "position": "1st Line Support",
       "website": null,
       "startDate": "2005-08",
       "endDate": "2006-08",
-      "summary": "1st point of contact IT support in office environment.",
+      "summary": "First point of contact IT support for office staff.",
       "highlights": [
-        "Installed and supported Windows NT4/95/98/Me/2000/XP/2000 Server/2003 Server/Linux as well as Office 97/2000/XP.",
-        "Worked with Exchange 5.5/2000/2003, Netmeeting, RDP, GoverLAN, TightVNC.",
-        "Handled DNS server, roaming profiles, Outlook administration, network debugging.",
-        "Repaired PC, server hardware, printers, photocopiers, fax machines."
+        "Installed/supported Windows (NT4 through 2003), Linux, Office suites.",
+        "Used Microsoft Exchange, Netmeeting, RDP, GoverLAN, TightVNC.",
+        "Administered DNS, roaming profiles, Outlook, and network debugging.",
+        "Repaired desktop PCs, servers, and maintained peripherals."
       ]
     }
   ],
@@ -156,7 +152,7 @@
       "keywords": []
     },
     {
-      "name": "Web design, integration & testing",
+      "name": "Web Design, Integration & Testing",
       "level": "",
       "keywords": []
     },
@@ -176,76 +172,84 @@
       "keywords": []
     },
     {
-      "name": "Server performance testing & optimization",
+      "name": "Server Performance Testing & Optimization",
       "level": "",
       "keywords": []
     },
     {
-      "name": "Technologies",
+      "name": "MS Visio, Draw.io, Miro",
       "level": "",
-      "keywords": [
-        "MS Visio",
-        "Draw.io",
-        "Miro",
-        "Jira",
-        "Confluence",
-        "Trello",
-        "MS Sharepoint",
-        "Slack",
-        "Asana",
-        "Airtable",
-        "Jmeter",
-        "ApacheBench",
-        "Nagios",
-        "Virtualbox",
-        "VMware",
-        "Azure / AWS VM",
-        "Linux",
-        "Apache",
-        "NGINX",
-        "MySQL",
-        "Redis",
-        "Windows Server",
-        "Redhat",
-        "CentOS",
-        "Debian",
-        "Ubuntu",
-        "FreeBSD",
-        "HSM Hardware",
-        "Data centre installations",
-        "AWS EC2",
-        "AWS SES",
-        "VPC",
-        "Sendgrid",
-        "Cloud (AWS/Azure - SaaS / IaaS / PaaS)",
-        "Memcached",
-        "Varnish",
-        "Opcache",
-        "Python",
-        "PHP",
-        "HTML / CSS",
-        "Javascript",
-        "Exim",
-        "Dovecot",
-        "Postfix",
-        "Qmail",
-        "Ansible",
-        "Jenkins",
-        "Docker",
-        "Terraform",
-        "Packer",
-        "CI / CD Pipelines",
-        "Kubernetes",
-        "Plesk",
-        "Cpanel",
-        "Webmin",
-        "DirectAdmin",
-        "NoSQL (MongoDB)",
-        "PostgreSQL",
-        "Drupal",
-        "Magento",
-        "Wordpress"
-      ]
+      "keywords": []
+    },
+    {
+      "name": "Jira, Confluence, Trello, Sharepoint, Slack, Asana, Airtable",
+      "level": "",
+      "keywords": []
+    },
+    {
+      "name": "JMeter, ApacheBench, Nagios",
+      "level": "",
+      "keywords": []
+    },
+    {
+      "name": "Virtualbox, VMware, Azure, AWS VM",
+      "level": "",
+      "keywords": []
+    },
+    {
+      "name": "Linux (Redhat, CentOS, Debian, Ubuntu, FreeBSD)",
+      "level": "",
+      "keywords": []
+    },
+    {
+      "name": "Windows Server",
+      "level": "",
+      "keywords": []
+    },
+    {
+      "name": "HSM Hardware, Data Centre installations",
+      "level": "",
+      "keywords": []
+    },
+    {
+      "name": "AWS EC2, AWS SES, VPC, Sendgrid",
+      "level": "",
+      "keywords": []
+    },
+    {
+      "name": "Cloud (AWS / Azure SaaS, IaaS, PaaS)",
+      "level": "",
+      "keywords": []
+    },
+    {
+      "name": "Python, PHP, HTML, CSS, JavaScript",
+      "level": "",
+      "keywords": []
+    },
+    {
+      "name": "Exim, Dovecot, Postfix, Qmail",
+      "level": "",
+      "keywords": []
+    },
+    {
+      "name": "Ansible, Jenkins, Docker, Terraform, Packer, CI/CD Pipelines, Kubernetes",
+      "level": "",
+      "keywords": []
+    },
+    {
+      "name": "Plesk, Cpanel, Webmin, DirectAdmin",
+      "level": "",
+      "keywords": []
+    },
+    {
+      "name": "NoSQL (MongoDB), PostgreSQL",
+      "level": "",
+      "keywords": []
+    },
+    {
+      "name": "Drupal, Magento, WordPress",
+      "level": "",
+      "keywords": []
     }
   ],
   "languages": [],

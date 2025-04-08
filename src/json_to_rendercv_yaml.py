@@ -23,6 +23,7 @@ def convert(json_path: str, yaml_path: str):
             # Si es LinkedIn y no hay website, usar como website principal
             if profile.get("network", "").lower() == "linkedin" and not cv.get("website"):
                 cv["website"] = profile.get("url", "") or None
+                continue  # No agregar LinkedIn a social_networks para evitar duplicado
             cv["social_networks"].append({
                 "network": profile.get("network", ""),
                 "username": profile.get("username", "")
