@@ -8,21 +8,10 @@ from dateutil import parser
 from datetime import datetime
 
 from pydantic_ai import Agent
-from pydantic_ai.providers.openai import OpenAIProvider
-from pydantic_ai.models.openai import OpenAIModel
 
 load_dotenv()
 
-def get_model():
-    api_key = os.getenv("OPENROUTER_API_KEY", "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")
-    base_url = "https://openrouter.ai/api/v1"
-    model_name = "openrouter/quasar-alpha"
-    provider = OpenAIProvider(base_url=base_url, api_key=api_key)
-    return OpenAIModel(model_name, provider=provider)
-
-agent = Agent(get_model())
-
-async def extract_structured_data(text: str, is_job: bool = True) -> Dict:
+async def extract_structured_data(text: str, agent: Agent, is_job: bool = True) -> Dict:
     """
     Extracts skills, experience, and keywords from a job description or CV using an LLM.
     """
@@ -152,7 +141,7 @@ def calculate_ats_score(job_data: Dict, resume_data: Dict, resume_text: str, cv_
         'job_years': job_years
     }
 
-async def adapt_cv_to_job_async(cv_json: dict, job_description: str) -> dict:
+async def adapt_cv_to_job_async(cv_json: dict, job_description: str, agent: Agent) -> dict:
     """
     Adapts a CV JSON to a job description, optimizing it to the maximum ethically achievable level.
     Shows real-time logs to the user.
@@ -161,9 +150,9 @@ async def adapt_cv_to_job_async(cv_json: dict, job_description: str) -> dict:
     cv_text = json.dumps(cv_json, indent=2)
 
     # Extract structured data from job description
-    job_data = await extract_structured_data(job_description, is_job=True)
+    job_data = await extract_structured_data(job_description, agent, is_job=True)
     print("Analyzing initial CV compatibility with the job description...")
-    resume_data = await extract_structured_data(cv_text, is_job=False)
+    resume_data = await extract_structured_data(cv_text, agent, is_job=False)
 
     # Calculate initial ATS score
     initial_match = calculate_ats_score(job_data, resume_data, cv_text, cv_json)
@@ -234,11 +223,11 @@ Respond ONLY with the updated CV as a valid JSON object.
 
     return updated_cv
 
-def adapt_cv_to_job(cv_json: dict, job_description: str) -> dict:
+def adapt_cv_to_job(cv_json: dict, job_description: str, agent: Agent) -> dict:
     """
     Synchronous wrapper for async CV adaptation.
     """
-    return asyncio.run(adapt_cv_to_job_async(cv_json, job_description))
+    return asyncio.run(adapt_cv_to_job_async(cv_json, job_description, agent))
 
 # Ejemplo de uso
 if __name__ == "__main__":

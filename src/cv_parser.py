@@ -5,25 +5,11 @@ from dotenv import load_dotenv
 from typing import Dict, Any
 
 from pydantic_ai import Agent
-from pydantic_ai.providers.openai import OpenAIProvider
-from pydantic_ai.models.openai import OpenAIModel
-
 from models import JsonResume
 
 load_dotenv()
 
-def get_model():
-    api_key = os.getenv("OPENROUTER_API_KEY", "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")
-    base_url = "https://openrouter.ai/api/v1"
-    model_name = "openrouter/quasar-alpha"  # or "openrouter/quasar-alpha" or other OpenRouter model
-
-    provider = OpenAIProvider(base_url=base_url, api_key=api_key)
-    return OpenAIModel(model_name, provider=provider)
-
-agent = Agent(get_model())
-
-
-async def parse_to_json_resume_async(text: str) -> Dict:
+async def parse_to_json_resume_async(text: str, agent: Agent) -> Dict:
     """
     Parses CV text into JSON Resume format using an LLM via OpenRouter with pydantic-ai.
 
@@ -127,11 +113,11 @@ Return the result as a JSON object. Use full URLs (e.g., "https://github.com/use
     return validated_cv.model_dump(mode="json")
 
 
-def parse_to_json_resume(text: str) -> Dict:
+def parse_to_json_resume(text: str, agent: Agent) -> Dict:
     """
     Synchronous wrapper for async LLM parsing.
     """
-    return asyncio.run(parse_to_json_resume_async(text))
+    return asyncio.run(parse_to_json_resume_async(text, agent))
 
 
 if __name__ == "__main__":

@@ -1,10 +1,24 @@
 from cv_extraction import extract_cv_text
-from cv_parser import parse_to_json_resume, get_model
+from cv_parser import parse_to_json_resume
 from job_scraper import scrape_job_description
 from job_to_cv_parser import adapt_cv_to_job
 from json_to_rendercv_yaml import convert
 from pydantic_ai import Agent
+from dotenv import load_dotenv
+from pydantic_ai.providers.openai import OpenAIProvider
+from pydantic_ai.models.openai import OpenAIModel
+import os
 import json
+import subprocess
+
+load_dotenv()
+
+def get_model():
+    api_key = os.getenv("OPENROUTER_API_KEY", "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")
+    base_url = "https://openrouter.ai/api/v1"
+    model_name = "openrouter/quasar-alpha"
+    provider = OpenAIProvider(base_url=base_url, api_key=api_key)
+    return OpenAIModel(model_name, provider=provider)
 
 def main():
     """
@@ -15,6 +29,9 @@ def main():
     4. Adapt the CV to the job description using the ATS optimization system.
     """
     pdf_cv_path = "Resume.pdf"
+
+    # Create the LLM agent once
+    agent = Agent(get_model())
 
     # Step 1: Extract text from PDF CV
     cv_text = extract_cv_text(pdf_cv_path)
@@ -28,7 +45,7 @@ def main():
 
     # Step 2: Convert text to JSON Resume
     try:
-        json_cv = parse_to_json_resume(cv_text)
+        json_cv = parse_to_json_resume(cv_text, agent)
     except Exception as e:
         print(f"Error parsing CV to JSON: {e}")
         return
@@ -39,7 +56,6 @@ def main():
 
     # Step 3: Ask for job description URL and extract content
     url = input("Enter the job description URL: ").strip()
-    agent = Agent(get_model())
     job_description = scrape_job_description(url, agent)
 
     if job_description.startswith("Error"):
@@ -52,7 +68,7 @@ def main():
 
     # Step 4: Adapt the CV to the job description using ATS optimization
     try:
-        adapted_cv = adapt_cv_to_job(json_cv, job_description)
+        adapted_cv = adapt_cv_to_job(json_cv, job_description, agent)
     except Exception as e:
         print(f"Error adapting CV to the job description: {e}")
         return
@@ -66,6 +82,13 @@ def main():
     # Convert adapted_resume.json to YAML for RenderCV
     convert("adapted_resume.json", "cv_rendercv.yaml")
     print("Converted adapted_resume.json to cv_rendercv.yaml")
+
+    # Generate final PDF with RenderCV CLI
+    try:
+        subprocess.run(["rendercv", "cv_rendercv.yaml", "final_cv.pdf"], check=True)
+        print("Final PDF generated as final_cv.pdf")
+    except Exception as e:
+        print(f"Error generating final PDF: {e}")
 
 if __name__ == "__main__":
     main()

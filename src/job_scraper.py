@@ -1,7 +1,6 @@
 import requests
 from bs4 import BeautifulSoup, Comment
 from pydantic_ai import Agent
-from job_to_cv_parser import get_model
 
 
 def get_filtered_content(url: str) -> str:
@@ -65,14 +64,8 @@ def get_filtered_content(url: str) -> str:
 def extract_description_with_llm(plain_text: str, agent: Agent) -> str:
     """
     Uses an LLM agent to extract only the job description from the filtered plain text.
-
-    Args:
-        plain_text (str): The filtered plain text content.
-        agent (Agent): The pydantic_ai Agent instance.
-
-    Returns:
-        str: The extracted job description.
     """
+    import asyncio
     prompt = f"""
 Extract only the main job description from the following text. Ignore menus, footers, ads, or irrelevant content.
 
@@ -84,7 +77,6 @@ Return only the job description without any additional comments:
 {plain_text}
 \"\"\"
 """
-    import asyncio
     result = asyncio.run(agent.run(prompt))
     return result.data.strip()
 
@@ -92,13 +84,6 @@ Return only the job description without any additional comments:
 def scrape_job_description(url: str, agent: Agent) -> str:
     """
     Extracts the job description from a job posting URL using HTML filtering and an LLM agent.
-
-    Args:
-        url (str): The URL of the job posting.
-        agent (Agent): The pydantic_ai Agent instance.
-
-    Returns:
-        str: The extracted job description or an error message.
     """
     filtered_content = get_filtered_content(url)
     if filtered_content.startswith("Error"):
@@ -106,17 +91,3 @@ def scrape_job_description(url: str, agent: Agent) -> str:
 
     description = extract_description_with_llm(filtered_content, agent)
     return description
-
-
-if __name__ == "__main__":
-    agent = Agent(get_model())
-
-    url = input("Enter the job posting URL: ")
-    description = scrape_job_description(url, agent)
-
-    output_path = "job_description.txt"
-    with open(output_path, "w", encoding="utf-8") as f:
-        f.write(description)
-
-    print(f"\nJob description saved to {output_path}\n")
-    print(description)
