@@ -14,11 +14,14 @@ import subprocess
 load_dotenv()
 
 def get_model():
+    """
+    Configura el modelo de OpenRouter sin parámetros adicionales en el constructor.
+    """
     api_key = os.getenv("OPENROUTER_API_KEY", "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")
     base_url = "https://openrouter.ai/api/v1"
     model_name = "openrouter/quasar-alpha"
     provider = OpenAIProvider(base_url=base_url, api_key=api_key)
-    return OpenAIModel(model_name, provider=provider)
+    return OpenAIModel(model_name=model_name, provider=provider)
 
 def main():
     """
@@ -30,8 +33,11 @@ def main():
     """
     pdf_cv_path = "TimResume.pdf"
 
-    # Create the LLM agent once
-    agent = Agent(get_model())
+    # Create the LLM agent with seed and temperature in model_settings
+    agent = Agent(
+        model=get_model(),
+        model_settings={"seed": 42, "temperature": 0.5}  # Pasamos seed y temperature aquí
+    )
 
     # Step 1: Extract text from PDF CV
     cv_text = extract_cv_text(pdf_cv_path)
@@ -54,8 +60,8 @@ def main():
         json.dump(json_cv, f, ensure_ascii=False, indent=2)
     print("JSON Resume saved to parsed_resume.json")
 
-    # Step 3: Define job description URL ahttps://consensys.io/open-roles/6741051?source=web3.careerd extract content
-    url = "https://consensys.io/open-roles/6741051?source=web3.career"  # <-- Set your job description URL here
+    # Step 3: Define job description URL and extract content
+    url = "https://consensys.io/open-roles/6741051?source=web3.career"  # Set your job description URL here
     job_description = scrape_job_description(url, agent)
 
     if job_description.startswith("Error"):

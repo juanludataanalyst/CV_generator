@@ -117,3 +117,21 @@ flowchart TD
     I --> J[RenderCV CLI]
     J --> K[Final ATS-friendly PDF]
 ```
+
+---
+
+### Streamlit UI
+
+This project includes a web interface built with Streamlit that allows you to:
+
+- **Upload your CV in PDF format**
+- **Paste the job description URL**
+- **Click a button to generate an ATS-optimized CV**
+- **See a loading animation during processing**
+- **Download the final adapted PDF**
+
+Run the app with:
+
+```
+streamlit run app.py
+```

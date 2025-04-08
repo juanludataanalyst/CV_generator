@@ -8,7 +8,7 @@
 ---
 
 ## Discovered During Work
-- (Add new sub-tasks or TODOs here as they arise)
+- Develop a Streamlit UI to upload CV, input job URL, run the pipeline, and download the adapted PDF - April 08, 2025
 
 ---
 
