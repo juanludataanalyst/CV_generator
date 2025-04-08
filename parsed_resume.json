@@ -5,7 +5,7 @@
     "email": "juanludataanalyst@gmail.com",
     "phone": "+34608027426",
     "url": null,
-    "summary": "Data-driven problem solver who thrives at the intersection of business and technology. With a strong technical background, I bridge the gap between data and decision-making, leveraging my expertise in SQL, Python, R, Power BI and Statistical Methods. Proven track record of increasing revenue, improving efficiency and enhancing decision-making through analytics.",
+    "summary": "Data-driven problem solver who thrives at the intersection of business and technology. With a strong technical background, I bridge the gap between data and decision-making, leveraging my expertise in SQL, Python, R, Power BI and Statistical Methods. Proven track record of increasing Revenue, improving efficiency and enhancing decision-making through analytics",
     "location": null,
     "profiles": [
       {
@@ -29,7 +29,7 @@
       "endDate": "",
       "summary": "",
       "highlights": [
-        "Built data infraestructure from scratch, creating automated, scalable pipelines (Python, pandas) and dashboards (PowerBI) for real-time analytics.",
+        "Built data infrastructure from scratch, creating automated, scalable pipelines (Python, pandas) and dashboards (PowerBI) for real-time analytics.",
         "Optimized room distribution (R, Optimization Models) boosting occupancy by 20% and revenue by 15% compared to the previous year"
       ]
     },
@@ -71,7 +71,7 @@
         "Developed an LTV model (R, Machine Learning, TensorFlow, SQL) that improved marketing ROI by 18% through optimized ad spend allocation.",
         "Automated data pipelines (Python, numpy, pandas, SQL) reducing ETL execution time by 70% and cutting operational cost by €150K annually.",
         "Implemented data quality assurance protocols, reducing report errors and ensuring data quality (Python, pandas, matplotlib, CI/CD), ensuring data quality with over 25% improvement.",
-        "Contributed to optimizing in-game monetization strategies (R, Tydiverse, ggplot) increasing IAP revenue by 10% through data-driven price adjustments."
+        "Contributed to optimizing in-game monetization strategies (R, Tydiverse, ggpplot) increasing IAP revenue by 10% through data-driven price adjustments."
       ]
     },
     {
@@ -90,7 +90,7 @@
   "education": [
     {
       "institution": "Universidad Pablo de Olavide",
-      "area": "Big Data and Business Analitycs",
+      "area": "Big Data and Business Analytics",
       "studyType": "Postgraduate",
       "startDate": "2016",
       "endDate": "2017",
@@ -100,7 +100,7 @@
     {
       "institution": "Universidad de Sevilla",
       "area": "Telecommunication Engineering",
-      "studyType": "",
+      "studyType": "Bachelor",
       "startDate": "2010",
       "endDate": "2016",
       "score": "",
@@ -162,10 +162,11 @@
   "projects": [
     {
       "name": "MostInDemandSkills Platform",
-      "description": "Analyzing over 100 daily job postings from 5 platforms to assess skills demand by role and country in data science and tech (Python, Streamlit, APIs, n8n). Working on recommendation system to show users the skills they have learned based on their CV (Python, LLM, Langchain).",
+      "description": "",
       "highlights": [
-        "Analyzed 7000+ job postings to date.",
-        "Live app: mostindemandskills.streamlit.app"
+        "Analyzing over 100 daily job postings from 5 platforms to assess skills demand by role and country in data science and tech (Python, Streamlit, APIs, n8n).",
+        "Working on recommendation system to show users the skills they have learned based on their CV (Python, LLM, Langchain).",
+        "Analyzed 7000+ job postings to date. Live app: mostindemandskills.streamlit.app"
       ],
       "keywords": [
         "Python",
