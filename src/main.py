@@ -1,11 +1,14 @@
 from cv_extraction import extract_cv_text
-from cv_parser import parse_to_json_resume
+from cv_parser import parse_to_json_resume, get_model
+from job_scraper import scrape_job_description
+from pydantic_ai import Agent
 import json
 
 def main():
     """
     Paso 1: Extraer texto del CV en PDF (Resume.pdf).
     Paso 2: Convertir el texto a JSON Resume usando LLM.
+    Paso 3: Pedir URL de oferta laboral y extraer descripción.
     """
     pdf_cv_path = "Resume.pdf"
 
@@ -31,16 +34,32 @@ def main():
         print(f"Error al parsear el CV a JSON: {e}")
         return
 
-    # Mostrar parte del JSON para inspección
     print("\n--- JSON Resume generado (primeros 500 caracteres) ---\n")
     json_preview = json.dumps(json_cv, ensure_ascii=False, indent=2)[:500]
     print(json_preview)
     print("\n--- Fin del extracto JSON ---\n")
 
-    # Guardar JSON completo
     with open("parsed_resume.json", "w", encoding="utf-8") as f:
         json.dump(json_cv, f, ensure_ascii=False, indent=2)
     print("JSON Resume guardado en parsed_resume.json")
+
+    # Paso 3: Pedir URL y extraer descripción de la oferta
+    url = input("Introduce la URL de la oferta laboral: ").strip()
+    agent = Agent(get_model())
+    job_description = scrape_job_description(url, agent)
+
+    if job_description.startswith("Error"):
+        print(f"Error al obtener la oferta laboral: {job_description}")
+        return
+
+    # Mostrar y guardar la descripción
+    print("\n--- Descripción de la oferta (primeros 500 caracteres) ---\n")
+    print(job_description[:500])
+    print("\n--- Fin del extracto descripción ---\n")
+
+    with open("job_description.txt", "w", encoding="utf-8") as f:
+        f.write(job_description)
+    print("Descripción de la oferta guardada en job_description.txt")
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,186 @@
+{
+  "basics": {
+    "name": "Juan Luis Pérez",
+    "label": "DATA ANALYST",
+    "email": "juanludataanalyst@gmail.com",
+    "phone": "+34608027426",
+    "url": null,
+    "summary": "Data-driven problem solver who thrives at the intersection of business and technology. With a strong technical background, I bridge the gap between data and decision-making, leveraging my expertise in SQL, Python, R, Power BI and Statistical Methods. Proven track record of increasing revenue, improving efficiency and enhancing decision-making through analytics.",
+    "location": null,
+    "profiles": [
+      {
+        "network": "LinkedIn",
+        "username": "juanludataanalyst",
+        "url": "https://linkedin/in/juanludataanalyst"
+      },
+      {
+        "network": "GitHub",
+        "username": "juanludataanalyst",
+        "url": "https://github.com/juanludataanalyst"
+      }
+    ]
+  },
+  "work": [
+    {
+      "company": "R10 hostal chain @ Freelance",
+      "position": "Data Strategy Owner",
+      "website": null,
+      "startDate": "2025-01",
+      "endDate": "",
+      "summary": "",
+      "highlights": [
+        "Built data infraestructure from scratch, creating automated, scalable pipelines (Python, pandas) and dashboards (PowerBI) for real-time analytics.",
+        "Optimized room distribution (R, Optimization Models) boosting occupancy by 20% and revenue by 15% compared to the previous year"
+      ]
+    },
+    {
+      "company": "Family Care and Travel",
+      "position": "Break Time",
+      "website": null,
+      "startDate": "2023-01",
+      "endDate": "2024-12",
+      "summary": "",
+      "highlights": [
+        "Supported a family member during illness, developing empathy, responsibility and resilience.",
+        "Volunteered in international programs, sharpening leadership, adaptability and communication skills as an event organizer and receptionist."
+      ]
+    },
+    {
+      "company": "Scopely",
+      "position": "Data Analyst",
+      "website": null,
+      "startDate": "2018-09",
+      "endDate": "2022-12",
+      "summary": "",
+      "highlights": [
+        "Conducted advanced segmentation analysis (Python, R, Classification models, scikit-learn) to refine marketing strategies, achieving an 11% increase in user retention and 7% boost in ARPU.",
+        "Developed and maintained Power BI dashboards (DAX), reducing reporting time by 30% and enabling real-time decision-making.",
+        "Optimized game difficulty balancing in Frozen Free Fall (R and optimization models) decreasing churn by 3% and increasing active users by 2% per month.",
+        "Improved user engagement in Scrabble Go by reducing multiplayer turn intervals by 20%, resulting in a 12% increase in average gameplay time.",
+        "Collaborated with stakeholders, leading weekly performance meeting to drive +€1.5M in annual revenue growth through data-driven game optimization and effective communication."
+      ]
+    },
+    {
+      "company": "Genera Games",
+      "position": "Data Engineer – Data Scientist",
+      "website": null,
+      "startDate": "2017-05",
+      "endDate": "2018-09",
+      "summary": "",
+      "highlights": [
+        "Developed an LTV model (R, Machine Learning, TensorFlow, SQL) that improved marketing ROI by 18% through optimized ad spend allocation.",
+        "Automated data pipelines (Python, numpy, pandas, SQL) reducing ETL execution time by 70% and cutting operational cost by €150K annually.",
+        "Implemented data quality assurance protocols, reducing report errors and ensuring data quality (Python, pandas, matplotlib, CI/CD), ensuring data quality with over 25% improvement.",
+        "Contributed to optimizing in-game monetization strategies (R, Tydiverse, ggplot) increasing IAP revenue by 10% through data-driven price adjustments."
+      ]
+    },
+    {
+      "company": "RedBorder",
+      "position": "Data Analyst Internship",
+      "website": null,
+      "startDate": "2016-02",
+      "endDate": "2016-07",
+      "summary": "",
+      "highlights": [
+        "Implemented large-scale data pipelines using Apache Spark and Scala, reducing malware classification time by 30%.",
+        "Conducted EDA on 10M+ cybersecurity events, improving machine learning-based threat detection accuracy."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "institution": "Universidad Pablo de Olavide",
+      "area": "Big Data and Business Analitycs",
+      "studyType": "Postgraduate",
+      "startDate": "2016",
+      "endDate": "2017",
+      "score": "",
+      "courses": []
+    },
+    {
+      "institution": "Universidad de Sevilla",
+      "area": "Telecommunication Engineering",
+      "studyType": "",
+      "startDate": "2010",
+      "endDate": "2016",
+      "score": "",
+      "courses": []
+    }
+  ],
+  "skills": [
+    {
+      "name": "SQL",
+      "level": "",
+      "keywords": []
+    },
+    {
+      "name": "Python",
+      "level": "",
+      "keywords": []
+    },
+    {
+      "name": "R",
+      "level": "",
+      "keywords": []
+    },
+    {
+      "name": "Excel",
+      "level": "",
+      "keywords": []
+    },
+    {
+      "name": "Power BI",
+      "level": "",
+      "keywords": []
+    },
+    {
+      "name": "Leadership",
+      "level": "",
+      "keywords": []
+    },
+    {
+      "name": "Effective Communication",
+      "level": "",
+      "keywords": []
+    },
+    {
+      "name": "Adaptability",
+      "level": "",
+      "keywords": []
+    }
+  ],
+  "languages": [
+    {
+      "language": "Spanish",
+      "fluency": ""
+    },
+    {
+      "language": "English",
+      "fluency": "B2"
+    }
+  ],
+  "projects": [
+    {
+      "name": "MostInDemandSkills Platform",
+      "description": "Analyzing over 100 daily job postings from 5 platforms to assess skills demand by role and country in data science and tech (Python, Streamlit, APIs, n8n). Working on recommendation system to show users the skills they have learned based on their CV (Python, LLM, Langchain).",
+      "highlights": [
+        "Analyzed 7000+ job postings to date.",
+        "Live app: mostindemandskills.streamlit.app"
+      ],
+      "keywords": [
+        "Python",
+        "Streamlit",
+        "APIs",
+        "n8n",
+        "LLM",
+        "Langchain"
+      ],
+      "startDate": "2024",
+      "endDate": "",
+      "url": "https://mostindemandskills.streamlit.app/",
+      "roles": [],
+      "entity": "",
+      "type": ""
+    }
+  ]
+}
