@@ -20,10 +20,12 @@ def convert(json_path: str, yaml_path: str):
 
     if basics.get("profiles"):
         for profile in basics["profiles"]:
+            # Si es LinkedIn y no hay website, usar como website principal
+            if profile.get("network", "").lower() == "linkedin" and not cv.get("website"):
+                cv["website"] = profile.get("url", "") or None
             cv["social_networks"].append({
                 "network": profile.get("network", ""),
-                "username": profile.get("username", ""),
-                "url": profile.get("url", "")
+                "username": profile.get("username", "")
             })
 
     # Summary section

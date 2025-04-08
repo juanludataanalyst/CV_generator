@@ -3,21 +3,25 @@ cv:
   email: Tim.Jefferies@gmail.com
   phone: +44 7931314133
   location: ''
-  website: null
-  social_networks: []
+  website: https://linkedin.com/in/timjefferies
+  social_networks:
+  - network: LinkedIn
+    username: timjefferies
   sections:
     Summary:
-    - An accomplished and adaptable DevOps and Solutions Architect with extensive
-      expertise in multi-cloud platforms including AWS, Azure, and GCP. Proven track
-      record of building, delivering, documenting, and maintaining robust CI/CD pipelines
-      (GitHub Actions, Jenkins, Azure DevOps), enhancing security through identity
-      management tools like Okta, and configuring resilient cloud infrastructures.
-      Skilled at responding to IT incidents and collaborating via tools like Jira
-      Service Management. Possesses comprehensive technical knowledge, exceptional
-      problem-solving skills, and deep experience across internet hosting, finance,
-      charity, retail, and RPA industries. Applies advanced strategies that align
-      with enterprise standards to foster continuous improvement while effectively
-      translating technical concepts for diverse audiences.
+    - An accomplished and adaptable DevOps and Solutions Architect, possessing extensive
+      expertise in system architecture, identity management, security infrastructure,
+      and cloud platform configuration across AWS, Azure, and GCP. Proven track record
+      of building, delivering, and maintaining business and technology solutions in
+      diverse industries including finance, internet hosting, retail, charitable organizations,
+      and RPA. Expert in designing and optimizing CI/CD pipelines leveraging tools
+      like Azure DevOps, Jenkins, and GitHub Actions, ensuring efficient software
+      delivery. Experienced in managing incident response via Jira Service Management
+      and thorough documentation within Confluence. Adept at applying advanced strategies
+      aligned with enterprise and technical standards to drive continual infrastructure
+      improvements. Exceptional communicator, skilled at translating complex technical
+      concepts into accessible language for all stakeholders to foster collaboration
+      and achieve superior results.
     Experience:
     - company: Blue Prism (SSNC)
       position: DevOps Engineer
@@ -26,129 +30,139 @@ cv:
       location: ''
       summary: 'DevOps Engineer for QA team, supporting Blue Prism RPA Automation
         SaaS with Azure CI/CD pipelines. Skills used: Terraform, Ansible, Packer,
-        Jenkins, Azure DevOps, Git, Powershell, Python, Bash, with exposure to GitHub
-        and cloud platforms integration.'
+        Jenkins, Azure DevOps, Git, Powershell, Python, Bash, with ongoing improvements
+        in CI/CD pipeline automation and cloud platform configuration.'
       highlights:
       - Re-designed Azure pipelines that build custom pre-baked Windows images for
-        QA testing, implementing reliable automation via Ansible and enhancing process
-        documentation.
-      - Developed automated testing environments using dynamic Jinja2 templates and
-        integrated infrastructure documentation using Confluence.
-      - Migrated from colocated servers into Azure pipelines, redesigning QA testing
-        infrastructure using Testrail, Terraform, and Ansible via CI/CD, contributing
-        to a modern, resilient, well-documented QA process.
-      - Collaborated with IT teams on incident resolution and management using Jira
-        Service Management, supporting minimal downtime and high availability.
+        QA testing, improving reliability through automation and failovers using Ansible.
+      - Built an automated testing environment utilizing dynamic Jinja2-driven Ansible
+        playbooks, streamlining Microsoft SQL and Windows environment provisioning
+        to reduce test cycles.
+      - Collaborated in migrating colocated servers to optimized Azure pipelines,
+        redesigning QA test infrastructure using Testrail, Terraform, and Ansible
+        within CI/CD workflows.
+      - Enhanced documentation practices for DevOps and infrastructure processes within
+        Confluence to facilitate knowledge sharing.
+      - Integrated source control and automation strategies with Git and began initial
+        adoption of GitHub Actions for pipeline orchestration and workflow management.
     - company: Slater & Gordon Ltd
       position: Solutions Architect
       start_date: 2022-08
       end_date: 2024-07
       location: ''
-      summary: Supported migration of bare metal servers into a consolidated cloud
-        environment, leveraging AWS and Azure and introducing standardized infrastructure
-        documentation.
+      summary: Led infrastructure consolidation following multiple acquisitions, migrating
+        bare metal servers to cloud platforms and establishing robust, scalable environments
+        leveraging AWS and Azure.
       highlights:
-      - Mapped existing infrastructure using Visio, designing scalable CI/CD models
-        (including GitHub Actions) aligned with AWS Landing Zone best practices.
-      - Built initial cloud environments and automated pipelines utilizing Ansible,
-        Terraform, and Git workflows across multi-cloud platforms.
-      - Authored infrastructure and process documentation in Confluence to streamline
-        cloud adoption.
-      - Introduced concepts around cloud security enhancement, including integration
-        with Okta identity management.
+      - Mapped existing infrastructure using Visio and designed new CI/CD pipeline
+        models for cloud migration, incorporating automation via Terraform and Ansible
+        templates.
+      - Developed reusable Ansible/Terraform libraries supporting scalable infrastructure-as-code
+        deployment on cloud platforms including AWS, Azure, and preliminary efforts
+        on GCP.
+      - Implemented cloud platform configuration and management, enhancing security
+        infrastructure with identity and access management best practices.
+      - Prepared documentation of architecture, DevOps workflows, and Git/GitHub processes
+        within Confluence for internal teams.
+      - Proposed use of AWS Landing Zone to standardize multi-account cloud environments,
+        improving governance and compliance capabilities.
     - company: Lishi International
       position: System Architect and DevOps
       start_date: 2014-06
       end_date: 2020-09
       location: ''
-      summary: Managed online operations for a UK charity, including full architecture
-        design on AWS, emphasizing security, scalability, and process automation.
+      summary: Managed and optimized AWS-hosted online infrastructure for a UK charity,
+        focusing on secure cloud operations, backup automation, and cloudflare integration.
       highlights:
-      - Designed and implemented AWS-based architecture (EC2, SES, S3, VPC, ELB) and
-        documented infrastructure solutions.
-      - Built bespoke servers using Ansible-driven automation and integrated backups
-        with encrypted offsite storage.
-      - Developed unattended upgrades and Docker containerized services, implementing
-        cost-effective cloud solutions.
-      - Integrated third-party services with CRM and payment platforms, ensuring secure
-        and reliable access.
+      - Architected online operations using multiple AWS services (EC2, SES, S3, VPC),
+        including implementation of server performance optimization and automated
+        encrypted backups.
+      - Deployed and managed websites via S3 buckets with CDN and threat mitigation
+        facilitated by Cloudflare.
+      - Automated server management with Ansible, Bash, and Python scripts.
+      - Developed CRM integration, subscription-based payment systems, and streamlined
+        cloud-based workflows.
+      - Enhanced identity management processes with cloud-based authentication controls,
+        laying groundwork for future Okta or similar integrations.
     - company: Skvare
       position: DevOps
       start_date: 2017-07
       end_date: 2017-11
       location: ''
-      summary: Managed core Drupal/Linux server infrastructure, driving automation
-        and performance optimization.
+      summary: Oversaw architecture and systems administration for Drupal-based platforms,
+        focusing on performance enhancement, CI/CD workflows, and documentation improvements.
       highlights:
-      - Conducted architecture reviews, system administration, and multi-server cluster
-        management.
-      - Built Jenkins-based CI/CD pipelines and collaborated via issue tracking to
-        streamline deployments.
-      - Managed deployments with Git repositories (Bitbucket and GitHub), contributing
-        to infrastructure documentation.
+      - Optimized Linux, LEMP stack, and database clusters for scalability and reliability.
+      - Built multi-server MySQL replication clusters and managed deployments through
+        Git branches with BitBucket.
+      - Configured Jenkins-based CI/CD pipelines, including staging, testing, and
+        production synchronization.
+      - Improved internal documentation within Confluence, integrating DevOps best
+        practices.
+      - Managed incident response workflows, aligning with Jira Service Management
+        principles.
     - company: Yorkshire Electrical Supplies Limited
-      position: Solutions Architect
+      position: Solutions Architect (Consultant)
       start_date: 2014-05
       end_date: 2015-12
       location: ''
-      summary: Freelance consultant modernizing business infrastructure and e-commerce
-        systems.
+      summary: Delivered IT infrastructure upgrades, virtualization, and business
+        system migration, enhancing reliability with cloud-based components.
       highlights:
-      - Virtualized key business systems, implemented automated backup strategies.
-      - Administered databases including PostgreSQL and migration tasks.
-      - Redesigned e-commerce platform with a focus on scalability and security.
-    - company: Mint Wireless
+      - Implemented VMware virtualization with automated, backed-up systems.
+      - Led PostgreSQL scripting, migration to QuickBooks, and redeveloped Magento-based
+        e-commerce site.
+      - Established foundation for cloud platform adoption and future identity management.
+      - Integrated DNS and cloud services for improved operational resilience.
+    - company: Mint Wireless Limited
       position: System Administrator
       start_date: 2013-08
       end_date: 2014-03
       location: ''
-      summary: Built PCI-compliant payment gateway solutions, focusing on secure infrastructure
-        design.
+      summary: Supported deployment of secure payment gateway infrastructure with
+        emphasis on security infrastructure, compliance, and multi-platform server
+        management.
       highlights:
-      - Installed, configured, and secured Linux and Windows Servers across on-prem
-        and cloud environments.
-      - Installed HSM hardware, implemented 2FA (Duo/Azure), and contributed to identity/access
-        management improvements.
-      - Researched and documented infrastructure implementations with a focus on security
-        auditing.
-    - company: Mint Wireless
-      position: System Administrator
-      start_date: 2014-05
-      end_date: 2014-06
-      location: ''
-      summary: Continuation of prior contract work.
-      highlights: []
-    - company: Webfusion/123-Reg/Pipex
+      - Configured HSM hardware and managed security key installations, contributing
+        to PCI compliance.
+      - Deployed Windows and Linux servers, automated backup solutions, and load balancing
+        with HAProxy.
+      - Implemented multi-factor authentication mechanisms including Duo Security
+        and Azure integration.
+      - Documented secure configuration processes, identity and access controls.
+      - Contributed to incident response workflows aligned with ticketing systems.
+    - company: Webfusion / 123-Reg / Pipex
       position: Hosting Support
       start_date: 2008-07
       end_date: 2013-01
       location: ''
-      summary: Customer support and hosting infrastructure management for dedicated
-        server deployments.
+      summary: Provided support and infrastructure management for a large hosting
+        environment utilizing multi-cloud and hybrid technologies.
       highlights:
-      - Managed installation, migrations, and performance tuning across FreeBSD, Linux,
-        and Windows platforms.
-      - Created automation and documentation to optimize support workflows.
-      - Met SLAs through rapid incident response, minimizing disruptions.
-    - company: Teamtalk Media
+      - Managed, maintained, and troubleshooted 6,000+ servers across diverse platforms.
+      - Utilized ticketing systems akin to Jira Service Management to ensure SLA adherence.
+      - Automated server provisioning and migration processes via scripting.
+      - Documented operational processes extensively for internal knowledge sharing.
+      - Administered system monitoring, backups, and security infrastructure components.
+    - company: TEAMtalk Media
       position: 1st Line Support
       start_date: 2005-08
       end_date: 2006-08
       location: ''
-      summary: Frontline IT support with exposure to Windows Server administration
-        and incident response.
+      summary: Provided front-line IT support including identity and access management,
+        hardware repair, and troubleshooting in a mixed-platform environment.
       highlights:
-      - Handled installations, troubleshooting, and repair of diverse hardware/software
-        components.
-      - Supported user account management and permissions, contributing to secure
-        access controls.
+      - Installed, configured, and supported diverse Windows and Linux environments.
+      - Managed Exchange, DNS, roaming profiles, and network administration.
+      - Supported user identity management, contributing to overall security posture.
+      - Performed hardware repairs and peripheral support.
     Skills:
     - label: Skills
-      details: 'Cloud Platforms: AWS, Azure, GCP, Cloudflare, CI/CD and Source Control,
-        Identity Management & Security, Incident Response & IT Service Management,
-        Infrastructure Documentation, Server & Application Technologies, Programming
-        & Scripting, Performance Testing & Optimization, Project Management & Collaboration,
-        Virtualization & Containerization, Web Technologies & CMS'
+      details: Solution & Enterprise Architecture, Web design, integration & testing,
+        PCI Compliance, Agile Methodology (SCRUM, Kanban), Technical Analysis, Evaluation
+        & Assurance, Server performance testing & optimization, Cloud Platforms &
+        Technologies, DevOps Tools & CI/CD Pipelines, Incident & Service Management,
+        Technologies
 design:
   theme: classic
   page:

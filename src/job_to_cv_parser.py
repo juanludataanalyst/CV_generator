@@ -218,6 +218,7 @@ Instructions:
 - Incorporate missing skills and keywords from the job description only if they are plausible given the candidate's profile or reasonably learnable, distributing them naturally across sections (e.g., summary, work experience, skills).
 - Do not invent false information.
 - Preserve all work experience entries with their original start and end dates.
+- **Preserve all social profiles (e.g., LinkedIn) in the `basics.profiles` section.**
 - Maintain the JSON Resume format and a professional, natural tone.
 
 Initial compatibility details:
