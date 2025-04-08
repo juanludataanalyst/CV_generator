@@ -49,15 +49,9 @@ def main():
         f.write(job_description)
     print("Descripción de la oferta guardada en job_description.txt")
 
-    # Paso 4: Pedir score objetivo y adaptar el CV con nuevo sistema
+    # Paso 4: Adaptar el CV con el sistema basado en ATS (sin score objetivo)
     try:
-        score = int(input("Introduce el score objetivo (75-100): ").strip())
-    except ValueError:
-        print("Score inválido, usando 90 por defecto.")
-        score = 90
-
-    try:
-        adapted_cv = adapt_cv_to_job(json_cv, job_description, score)
+        adapted_cv = adapt_cv_to_job(json_cv, job_description)
     except Exception as e:
         print(f"Error al adaptar el CV a la oferta: {e}")
         return

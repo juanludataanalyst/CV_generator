@@ -4,6 +4,8 @@ import asyncio
 import re
 from dotenv import load_dotenv
 from typing import Dict
+from dateutil import parser
+from datetime import datetime
 
 from pydantic_ai import Agent
 from pydantic_ai.providers.openai import OpenAIProvider
@@ -22,49 +24,101 @@ agent = Agent(get_model())
 
 async def extract_structured_data(text: str, is_job: bool = True) -> Dict:
     """
-    Extracts skills, experience, and keywords from job description or resume text using LLM.
+    Extrae habilidades, experiencia y palabras clave de una descripción de trabajo o CV usando un LLM.
     """
-    prompt = f"""
-Extract the following information from this {'job description' if is_job else 'resume'}:
-1. A list of required skills (e.g., "Python", "Machine Learning").
-2. The minimum years of experience required (as a number, e.g., 3). If not specified, return 0.
-3. The 10 most important keywords or phrases that should appear in a resume to match this job (e.g., "data analysis", "cloud computing").
+    print("Extrayendo datos estructurados del " + ("job description" if is_job else "CV") + "...")
+    if is_job:
+        prompt = f"""
+Extrae la siguiente información de esta descripción de trabajo:
+1. Una lista de TODAS las habilidades requeridas (por ejemplo, "Python", "Machine Learning").
+2. Los años mínimos de experiencia requeridos (como número, por ejemplo, 3). Si no se especifica, devuelve 0.
+3. Las 10 palabras clave o frases más importantes que deberían aparecer en un CV para coincidir con este trabajo (por ejemplo, "data analysis", "cloud computing").
 
-Text:
+Texto:
 \"\"\"
 {text}
 \"\"\"
 
-Return the result as a JSON object with keys: "skills", "experience", "keywords".
-Respond ONLY with the JSON object.
+Devuelve el resultado como un objeto JSON con las claves: "skills", "experience", "keywords".
+Responde SÓLO con el objeto JSON.
+"""
+    else:
+        prompt = f"""
+Extrae la siguiente información de este CV:
+1. Una lista de TODAS las habilidades mencionadas.
+2. Las 10 palabras clave o frases más importantes que representen la experiencia del candidato.
+
+Texto:
+\"\"\"
+{text}
+\"\"\"
+
+Devuelve el resultado como un objeto JSON con las claves: "skills", "keywords".
+Responde SÓLO con el objeto JSON.
 """
     result = await agent.run(prompt)
+    print("Datos estructurados extraídos con éxito.")
     return json.loads(result.data)
 
-def calculate_ats_score(job_data: Dict, resume_data: Dict, resume_text: str) -> Dict:
+def calculate_total_experience(cv_json: dict) -> int:
     """
-    Calculates ATS compatibility score based on skills, experience, and keywords.
+    Calcula los años totales de experiencia desde la sección "work" del CV JSON.
+    """
+    work_entries = cv_json.get("work", [])
+    if not work_entries:
+        return 0
+
+    earliest_start = None
+    latest_end = None
+
+    for entry in work_entries:
+        start_str = entry.get("startDate")
+        end_str = entry.get("endDate", "")  # Si endDate está vacío, es un trabajo actual
+
+        if start_str:
+            try:
+                start_date = parser.parse(start_str)
+                if earliest_start is None or start_date < earliest_start:
+                    earliest_start = start_date
+            except:
+                continue
+
+        if end_str:
+            try:
+                end_date = parser.parse(end_str)
+                if latest_end is None or end_date > latest_end:
+                    latest_end = end_date
+            except:
+                continue
+        else:
+            # Trabajo actual, usa la fecha de hoy
+            latest_end = datetime.now()
+
+    if earliest_start and latest_end:
+        total_years = (latest_end - earliest_start).days / 365.25
+        return int(total_years)
+    return 0
+
+def calculate_ats_score(job_data: Dict, resume_data: Dict, resume_text: str, cv_json: dict) -> Dict:
+    """
+    Calcula el puntaje de compatibilidad ATS basado en habilidades, experiencia y palabras clave.
     """
     score = 0
     max_score = 100
 
-    # Skills (40%)
+    # Habilidades (40%)
     job_skills = set(s.lower() for s in job_data['skills'])
     resume_skills = set(s.lower() for s in resume_data['skills'])
     skill_matches = len(job_skills.intersection(resume_skills))
     skill_score = (skill_matches / max(len(job_skills), 1)) * 40 if job_skills else 40
     score += skill_score
 
-    # Experience (30%)
+    # Experiencia (30%)
     try:
         job_years = int(job_data['experience'])
     except:
         job_years = 0
-    try:
-        resume_years = int(resume_data['experience'])
-    except:
-        resume_years = 0
-
+    resume_years = calculate_total_experience(cv_json)
     if job_years == 0:
         exp_score = 30
     elif resume_years >= job_years:
@@ -73,14 +127,14 @@ def calculate_ats_score(job_data: Dict, resume_data: Dict, resume_text: str) -> 
         exp_score = (resume_years / job_years) * 30
     score += exp_score
 
-    # Keywords (30%)
+    # Palabras clave (30%)
     job_keywords = set(k.lower() for k in job_data['keywords'])
     resume_text_lower = resume_text.lower()
     keyword_matches = sum(1 for k in job_keywords if k in resume_text_lower)
     keyword_score = (keyword_matches / max(len(job_keywords), 1)) * 30 if job_keywords else 30
     score += keyword_score
 
-    # Details
+    # Detalles
     missing_skills = list(job_skills - resume_skills)
     missing_keywords = [k for k in job_keywords if k not in resume_text_lower]
     exp_gap = max(job_years - resume_years, 0)
@@ -98,87 +152,54 @@ def calculate_ats_score(job_data: Dict, resume_data: Dict, resume_text: str) -> 
         'job_years': job_years
     }
 
-def get_dynamic_prompt(gap: float, match_data: Dict, target_score: int) -> str:
+async def adapt_cv_to_job_async(cv_json: dict, job_description: str) -> dict:
     """
-    Generates a dynamic prompt for the LLM based on the gap to the target score.
+    Adapta un CV JSON a una descripción de trabajo, optimizando al máximo éticamente alcanzable.
+    Muestra logs en tiempo real al usuario.
     """
-    missing_skills = ", ".join(match_data["missing_skills"]) or "None"
-    missing_keywords = ", ".join(match_data["missing_keywords"]) or "None"
-    exp_gap = match_data["experience_gap"]
-
-    if gap <= 10:
-        instruction = (
-            "The CV is close to the target ATS score. Emphasize existing skills, experience, and keywords "
-            "that match the job description. Distribute them naturally across sections (e.g., summary, skills, work) "
-            "to reinforce compatibility without major changes."
-        )
-    elif gap <= 30:
-        instruction = (
-            "The CV requires moderate adjustments to reach the target ATS score. Incorporate missing skills and keywords "
-            "naturally into relevant sections (e.g., skills, work experience, summary). Adjust experience descriptions "
-            "to align more closely with job requirements, closing minor gaps."
-        )
-    else:
-        instruction = (
-            "The CV needs significant optimization to reach the target ATS score. Rewrite key sections to include all "
-            "missing skills and keywords from the job description where plausible. Enhance the experience section to "
-            "minimize the gap, rephrasing or emphasizing relevant aspects to maximize ATS compatibility."
-        )
-
-    details = (
-        f"\n\nOptimization details:\n"
-        f"- Missing skills: {missing_skills}\n"
-        f"- Missing keywords: {missing_keywords}\n"
-        f"- Experience gap: {exp_gap} years"
-    )
-    return instruction + details
-
-async def adapt_cv_to_job_async(cv_json: dict, job_description: str, target_score: int = 75) -> dict:
-    """
-    Adapts a CV JSON to a job description, aiming for a user-defined ATS target score (75-100%).
-    """
-    target_score = max(75, min(target_score, 100))
-
+    print("Iniciando proceso de optimización del CV...")
     cv_text = json.dumps(cv_json, indent=2)
 
-    # Extract structured data
+    # Extraer datos estructurados del job description
     job_data = await extract_structured_data(job_description, is_job=True)
+    print("Analizando compatibilidad inicial del CV con la oferta...")
     resume_data = await extract_structured_data(cv_text, is_job=False)
 
-    # Calculate initial ATS score
-    initial_match = calculate_ats_score(job_data, resume_data, cv_text)
+    # Calcular puntaje ATS inicial
+    initial_match = calculate_ats_score(job_data, resume_data, cv_text, cv_json)
     initial_score = initial_match['score']
-    gap = max(target_score - initial_score, 0)
 
-    print("\n=== Initial ATS Analysis ===")
-    print(f"Initial ATS Score: {initial_score}%")
-    print(f"Target ATS Score: {target_score}%")
-    print(f"Gap to Target: {gap:.2f}%")
-    print(f"Skills Matched: {initial_match['skill_matches']} / {initial_match['total_skills']}")
-    print(f"Keywords Matched: {initial_match['keyword_matches']} / {initial_match['total_keywords']}")
-    print(f"Experience: {initial_match['resume_years']} years (Job requires: {initial_match['job_years']})")
-    print(f"Missing Skills: {initial_match['missing_skills']}")
-    print(f"Missing Keywords: {initial_match['missing_keywords']}")
-    print(f"Experience Gap: {initial_match['experience_gap']} years")
+    print("\n=== Análisis ATS Inicial ===")
+    print(f"Puntaje ATS Inicial: {initial_score}%")
+    print(f"Habilidades Coincidentes: {initial_match['skill_matches']} / {initial_match['total_skills']}")
+    print(f"Palabras Clave Coincidentes: {initial_match['keyword_matches']} / {initial_match['total_keywords']}")
+    print(f"Experiencia: {initial_match['resume_years']} años (Trabajo requiere: {initial_match['job_years']})")
+    print(f"Habilidades Faltantes: {initial_match['missing_skills']}")
+    print(f"Palabras Clave Faltantes: {initial_match['missing_keywords']}")
+    print(f"Brecha de Experiencia: {initial_match['experience_gap']} años")
 
-    # Generate dynamic prompt
-    instruction = get_dynamic_prompt(gap, initial_match, target_score)
+    # Si el puntaje inicial es menor a 75%, proceder con optimización
+    if initial_score < 75:
+        print("\nOptimizando el CV para alcanzar el máximo puntaje ético posible...")
+        prompt = f"""
+Eres un experto en redacción de CVs y optimización ATS.
 
-    prompt = f"""
-You are an expert CV writer and ATS optimizer.
+Tu objetivo es optimizar el CV para alcanzar el máximo porcentaje de compatibilidad ético posible con el sistema ATS de la empresa para la descripción de trabajo proporcionada.
 
-Your goal is to optimize the CV to achieve approximately **{target_score}% compatibility** with the company's ATS system for the provided job description.
+Instrucciones:
+- Analiza las habilidades, experiencia y palabras clave del CV y compáralas con la descripción del trabajo.
+- Resalta y enfatiza las fortalezas existentes del candidato que coincidan con los requisitos.
+- Incorpora habilidades y palabras clave faltantes de la descripción del trabajo solo si son plausibles según el perfil del candidato o si son razonablemente aprendibles, distribuyéndolas naturalmente en las secciones (por ejemplo, resumen, experiencia laboral, habilidades).
+- No inventes información falsa.
+- Preserva todas las entradas de experiencia laboral con sus fechas originales de inicio y fin.
+- Mantén el formato JSON Resume y un tono profesional y natural.
 
-Follow these instructions to adapt the CV:
-{instruction}
+Detalles de compatibilidad inicial:
+- Habilidades faltantes: {', '.join(initial_match['missing_skills']) or 'Ninguna'}
+- Palabras clave faltantes: {', '.join(initial_match['missing_keywords']) or 'Ninguna'}
+- Brecha de experiencia: {initial_match['experience_gap']} años
 
-**Guidelines:**
-- Maintain the JSON Resume format.
-- Do not invent false information, but you may add plausible skills or keywords from the job description if they align with the candidate's background or are learnable, especially for higher target scores.
-- Seamlessly integrate changes into descriptive sections (e.g., summary, work experience, skills).
-- Ensure a professional and natural tone.
-
-Job Description:
+Descripción del Trabajo:
 \"\"\"
 {job_description}
 \"\"\"
@@ -188,34 +209,59 @@ CV JSON:
 {cv_text}
 \"\"\"
 
-Return the updated CV as a JSON object.
-Respond ONLY with the updated CV as a valid JSON object.
+Devuelve el CV actualizado como un objeto JSON.
+Responde SÓLO con el CV actualizado como un objeto JSON válido.
 """
+        result = await agent.run(prompt)
+        updated_cv = json.loads(result.data)
+    else:
+        print("\nEl puntaje ATS inicial ya es suficientemente alto (>=75%). No se requiere optimización.")
+        updated_cv = cv_json
 
-    result = await agent.run(prompt)
-    json_str = result.data
-    # Ocultar salida cruda del LLM
-    try:
-        updated_cv = json.loads(json_str)
-    except json.JSONDecodeError:
-        raise ValueError("Failed to parse LLM output as JSON")
-
-    # Recalculate ATS score
+    # Recalcular puntaje ATS final
+    print("Calculando el puntaje ATS final del CV optimizado...")
     updated_cv_text = json.dumps(updated_cv, indent=2)
     updated_resume_data = await extract_structured_data(updated_cv_text, is_job=False)
-    final_match = calculate_ats_score(job_data, updated_resume_data, updated_cv_text)
+    final_match = calculate_ats_score(job_data, updated_resume_data, updated_cv_text, updated_cv)
     updated_cv["ats_match_score"] = final_match["score"]
 
-    print("\n=== Final ATS Analysis ===")
-    print(f"Final ATS Score: {final_match['score']}%")
-    print(f"Skills Matched: {final_match['skill_matches']} / {final_match['total_skills']}")
-    print(f"Keywords Matched: {final_match['keyword_matches']} / {final_match['total_keywords']}")
-    print(f"Experience: {final_match['resume_years']} years (Job requires: {final_match['job_years']})")
+    print("\n=== Análisis ATS Final ===")
+    print(f"Puntaje ATS Final (Máximo Éticamente Alcanzable): {final_match['score']}%")
+    print(f"Habilidades Coincidentes: {final_match['skill_matches']} / {final_match['total_skills']}")
+    print(f"Palabras Clave Coincidentes: {final_match['keyword_matches']} / {final_match['total_keywords']}")
+    print(f"Experiencia: {final_match['resume_years']} años (Trabajo requiere: {final_match['job_years']})")
+    print("Proceso de optimización completado.")
 
     return updated_cv
 
-def adapt_cv_to_job(cv_json: dict, job_description: str, target_score: int = 75) -> dict:
+def adapt_cv_to_job(cv_json: dict, job_description: str) -> dict:
     """
-    Synchronous wrapper for async CV adaptation.
+    Envoltorio síncrono para la adaptación asíncrona del CV.
     """
-    return asyncio.run(adapt_cv_to_job_async(cv_json, job_description, target_score))
+    return asyncio.run(adapt_cv_to_job_async(cv_json, job_description))
+
+# Ejemplo de uso
+if __name__ == "__main__":
+    # CV JSON de ejemplo
+    cv_json = {
+        "basics": {
+            "name": "Juan Luis Pérez",
+            "label": "DATA ANALYST",
+            "summary": "Data-driven problem solver with expertise in SQL, Python, and Power BI."
+        },
+        "work": [
+            {"company": "Scopely", "position": "Data Analyst", "startDate": "2018-09", "endDate": "2022-12"},
+            {"company": "R10", "position": "Data Strategy Owner", "startDate": "2025-01", "endDate": ""}
+        ],
+        "skills": [
+            {"name": "SQL"}, {"name": "Python"}, {"name": "Power BI"}
+        ]
+    }
+    job_description = """
+    Senior Data Analyst role requiring SQL, Python, Power BI, Tableau, and 3+ years of experience.
+    Focus on game analytics, A/B testing, and player retention.
+    """
+    updated_cv = adapt_cv_to_job(cv_json, job_description)
+    with open("adapted_resume.json", "w", encoding="utf-8") as f:
+        json.dump(updated_cv, f, indent=2)
+    print("CV adaptado guardado en adapted_resume.json")
