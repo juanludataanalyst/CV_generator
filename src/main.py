@@ -54,8 +54,8 @@ def main():
         json.dump(json_cv, f, ensure_ascii=False, indent=2)
     print("JSON Resume saved to parsed_resume.json")
 
-    # Step 3: Ask for job description URL and extract content
-    url = input("Enter the job description URL: ").strip()
+    # Step 3: Define job description URL and extract content
+    url = "https://jobs.smartrecruiters.com/Cint/744000051522071-data-analyst-?trid=2d92f286-613b-4daf-9dfa-6340ffbecf73"  # <-- Set your job description URL here
     job_description = scrape_job_description(url, agent)
 
     if job_description.startswith("Error"):
