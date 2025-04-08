@@ -1,6 +1,7 @@
 import os
 import json
 import asyncio
+import re
 from dotenv import load_dotenv
 from typing import Dict
 
@@ -14,39 +15,168 @@ def get_model():
     api_key = os.getenv("OPENROUTER_API_KEY", "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")
     base_url = "https://openrouter.ai/api/v1"
     model_name = "openrouter/quasar-alpha"
-
     provider = OpenAIProvider(base_url=base_url, api_key=api_key)
     return OpenAIModel(model_name, provider=provider)
 
 agent = Agent(get_model())
 
-async def adapt_cv_to_job_async(cv_json: dict, job_description: str, target_score: int = 100) -> dict:
+async def extract_structured_data(text: str, is_job: bool = True) -> Dict:
     """
-    Calls LLM to adapt CV JSON to a specific job description.
+    Extracts skills, experience, and keywords from job description or resume text using LLM.
     """
+    prompt = f"""
+Extract the following information from this {'job description' if is_job else 'resume'}:
+1. A list of required skills (e.g., "Python", "Machine Learning").
+2. The minimum years of experience required (as a number, e.g., 3). If not specified, return 0.
+3. The 10 most important keywords or phrases that should appear in a resume to match this job (e.g., "data analysis", "cloud computing").
+
+Text:
+\"\"\"
+{text}
+\"\"\"
+
+Return the result as a JSON object with keys: "skills", "experience", "keywords".
+Respond ONLY with the JSON object.
+"""
+    result = await agent.run(prompt)
+    return json.loads(result.data)
+
+def calculate_ats_score(job_data: Dict, resume_data: Dict, resume_text: str) -> Dict:
+    """
+    Calculates ATS compatibility score based on skills, experience, and keywords.
+    """
+    score = 0
+    max_score = 100
+
+    # Skills (40%)
+    job_skills = set(s.lower() for s in job_data['skills'])
+    resume_skills = set(s.lower() for s in resume_data['skills'])
+    skill_matches = len(job_skills.intersection(resume_skills))
+    skill_score = (skill_matches / max(len(job_skills), 1)) * 40 if job_skills else 40
+    score += skill_score
+
+    # Experience (30%)
+    try:
+        job_years = int(job_data['experience'])
+    except:
+        job_years = 0
+    try:
+        resume_years = int(resume_data['experience'])
+    except:
+        resume_years = 0
+
+    if job_years == 0:
+        exp_score = 30
+    elif resume_years >= job_years:
+        exp_score = 30
+    else:
+        exp_score = (resume_years / job_years) * 30
+    score += exp_score
+
+    # Keywords (30%)
+    job_keywords = set(k.lower() for k in job_data['keywords'])
+    resume_text_lower = resume_text.lower()
+    keyword_matches = sum(1 for k in job_keywords if k in resume_text_lower)
+    keyword_score = (keyword_matches / max(len(job_keywords), 1)) * 30 if job_keywords else 30
+    score += keyword_score
+
+    # Details
+    missing_skills = list(job_skills - resume_skills)
+    missing_keywords = [k for k in job_keywords if k not in resume_text_lower]
+    exp_gap = max(job_years - resume_years, 0)
+
+    return {
+        'score': min(round(score, 2), max_score),
+        'missing_skills': missing_skills,
+        'missing_keywords': missing_keywords,
+        'experience_gap': exp_gap,
+        'skill_matches': skill_matches,
+        'total_skills': len(job_skills),
+        'keyword_matches': keyword_matches,
+        'total_keywords': len(job_keywords),
+        'resume_years': resume_years,
+        'job_years': job_years
+    }
+
+def get_dynamic_prompt(gap: float, match_data: Dict, target_score: int) -> str:
+    """
+    Generates a dynamic prompt for the LLM based on the gap to the target score.
+    """
+    missing_skills = ", ".join(match_data["missing_skills"]) or "None"
+    missing_keywords = ", ".join(match_data["missing_keywords"]) or "None"
+    exp_gap = match_data["experience_gap"]
+
+    if gap <= 10:
+        instruction = (
+            "The CV is close to the target ATS score. Emphasize existing skills, experience, and keywords "
+            "that match the job description. Distribute them naturally across sections (e.g., summary, skills, work) "
+            "to reinforce compatibility without major changes."
+        )
+    elif gap <= 30:
+        instruction = (
+            "The CV requires moderate adjustments to reach the target ATS score. Incorporate missing skills and keywords "
+            "naturally into relevant sections (e.g., skills, work experience, summary). Adjust experience descriptions "
+            "to align more closely with job requirements, closing minor gaps."
+        )
+    else:
+        instruction = (
+            "The CV needs significant optimization to reach the target ATS score. Rewrite key sections to include all "
+            "missing skills and keywords from the job description where plausible. Enhance the experience section to "
+            "minimize the gap, rephrasing or emphasizing relevant aspects to maximize ATS compatibility."
+        )
+
+    details = (
+        f"\n\nOptimization details:\n"
+        f"- Missing skills: {missing_skills}\n"
+        f"- Missing keywords: {missing_keywords}\n"
+        f"- Experience gap: {exp_gap} years"
+    )
+    return instruction + details
+
+async def adapt_cv_to_job_async(cv_json: dict, job_description: str, target_score: int = 75) -> dict:
+    """
+    Adapts a CV JSON to a job description, aiming for a user-defined ATS target score (75-100%).
+    """
+    target_score = max(75, min(target_score, 100))
+
+    cv_text = json.dumps(cv_json, indent=2)
+
+    # Extract structured data
+    job_data = await extract_structured_data(job_description, is_job=True)
+    resume_data = await extract_structured_data(cv_text, is_job=False)
+
+    # Calculate initial ATS score
+    initial_match = calculate_ats_score(job_data, resume_data, cv_text)
+    initial_score = initial_match['score']
+    gap = max(target_score - initial_score, 0)
+
+    print("\n=== Initial ATS Analysis ===")
+    print(f"Initial ATS Score: {initial_score}%")
+    print(f"Target ATS Score: {target_score}%")
+    print(f"Gap to Target: {gap:.2f}%")
+    print(f"Skills Matched: {initial_match['skill_matches']} / {initial_match['total_skills']}")
+    print(f"Keywords Matched: {initial_match['keyword_matches']} / {initial_match['total_keywords']}")
+    print(f"Experience: {initial_match['resume_years']} years (Job requires: {initial_match['job_years']})")
+    print(f"Missing Skills: {initial_match['missing_skills']}")
+    print(f"Missing Keywords: {initial_match['missing_keywords']}")
+    print(f"Experience Gap: {initial_match['experience_gap']} years")
+
+    # Generate dynamic prompt
+    instruction = get_dynamic_prompt(gap, initial_match, target_score)
+
     prompt = f"""
 You are an expert CV writer and ATS optimizer.
 
-Your goal is to optimize the CV so that it achieves approximately **{target_score}% compatibility score** with the company's ATS system for the provided job description.
+Your goal is to optimize the CV to achieve approximately **{target_score}% compatibility** with the company's ATS system for the provided job description.
 
-Adjust the adaptation intensity based on the target score as follows:
+Follow these instructions to adapt the CV:
+{instruction}
 
-- **50-60%:** Minimal adaptation. Add a few relevant keywords and minor tweaks. Keep most of the original CV unchanged.
-- **70-80%:** Moderate adaptation. Emphasize relevant skills and experience, integrate several keywords naturally, and adjust descriptions to better fit the job.
-- **90-100%:** Maximum adaptation. Aggressively optimize the CV by integrating most relevant keywords, skills, and technologies from the job description, rephrasing sections to maximize ATS compatibility, while maintaining a natural and professional tone.
-
-**IMPORTANT:**  
-- If the target score is **above 90%**, you should **integrate as many relevant keywords, skills, and technologies from the job description as possible**, even if they are not explicitly mentioned in the original CV, as long as they are plausible or the candidate is willing to learn them. This includes adding technologies, tools, or skills like "Snowflake", "BigQuery", etc., if they appear in the job description.  
-- If the target score is **90% or below**, be **more conservative**: only emphasize or slightly rephrase existing skills and experiences, and **do not add technologies or skills that are not clearly related to the candidate's background**.
-
-Given the following CV data in JSON format, and a job description, adapt the CV accordingly, including:
-
-- Emphasizing relevant skills and experience
-- Adding keywords from the job description where appropriate
-- Incorporating relevant keywords, skills, and technologies from the job description to maximize ATS compatibility, as long as they are plausible or the candidate is willing to learn them (especially if the score is above 90%)
-- Seamlessly integrating these into the descriptive sections of the CV (e.g., summary, work experience, achievements)
-- Keeping the JSON Resume format
-- Do not invent false information, but you may add plausible skills or technologies
+**Guidelines:**
+- Maintain the JSON Resume format.
+- Do not invent false information, but you may add plausible skills or keywords from the job description if they align with the candidate's background or are learnable, especially for higher target scores.
+- Seamlessly integrate changes into descriptive sections (e.g., summary, work experience, skills).
+- Ensure a professional and natural tone.
 
 Job Description:
 \"\"\"
@@ -55,130 +185,37 @@ Job Description:
 
 CV JSON:
 \"\"\"
-{json.dumps(cv_json, indent=2)}
+{cv_text}
 \"\"\"
 
 Return the updated CV as a JSON object.
-
-Respond ONLY with the updated CV as a valid JSON object. Do NOT include any explanations, comments, or markdown formatting.
+Respond ONLY with the updated CV as a valid JSON object.
 """
 
     result = await agent.run(prompt)
     json_str = result.data
-    print("LLM raw output:\n", json_str)  # Print the raw LLM output for inspection
+    print("\nLLM Raw Output:\n", json_str)
     try:
         updated_cv = json.loads(json_str)
     except json.JSONDecodeError:
         raise ValueError("Failed to parse LLM output as JSON")
 
-    # Add initial ATS match score
-    updated_cv["ats_match_score"] = 100
+    # Recalculate ATS score
+    updated_cv_text = json.dumps(updated_cv, indent=2)
+    updated_resume_data = await extract_structured_data(updated_cv_text, is_job=False)
+    final_match = calculate_ats_score(job_data, updated_resume_data, updated_cv_text)
+    updated_cv["ats_match_score"] = final_match["score"]
+
+    print("\n=== Final ATS Analysis ===")
+    print(f"Final ATS Score: {final_match['score']}%")
+    print(f"Skills Matched: {final_match['skill_matches']} / {final_match['total_skills']}")
+    print(f"Keywords Matched: {final_match['keyword_matches']} / {final_match['total_keywords']}")
+    print(f"Experience: {final_match['resume_years']} years (Job requires: {final_match['job_years']})")
 
     return updated_cv
 
-def adapt_cv_to_job(cv_json: dict, job_description: str, target_score: int = 100) -> dict:
+def adapt_cv_to_job(cv_json: dict, job_description: str, target_score: int = 75) -> dict:
+    """
+    Synchronous wrapper for async CV adaptation.
+    """
     return asyncio.run(adapt_cv_to_job_async(cv_json, job_description, target_score))
-
-if __name__ == "__main__":
-    with open("../parsed_resume.json", "r", encoding="utf-8") as f:
-        cv_data = json.load(f)
-
-    job_description = """
-Shape the future of gaming with Codigames! 👾
-
-At Codigames, we craft engaging Idle and Tycoon games that captivate millions of players around the globe. Our passion lies in delivering innovative and memorable gaming experiences, supported by a culture that values creativity, collaboration, and continuous improvement. If you’re looking to make an impact in the gaming industry and be part of an exciting journey, Codigames is the perfect place for you!
-
-🚀 Your role
-
-As a Senior Data Analyst at Codigames, you will work closely with the Product, Marketing, and LiveOps teams to extract actionable insights from large volumes of data, optimizing the performance of our games and campaigns. You will also support game economy balancing, monetization strategies, and predictive modeling to enhance player engagement and revenue growth.
-
-This is a key role in our data strategy, with a direct impact on business-critical decisions and product direction. You’ll collaborate closely with Product and our game economists, becoming a trusted partner in shaping game performance and economic balance. You’ll report directly to our CTO, ensuring visibility and alignment at the highest level.
-
-While you’ll join with a strong technical focus, we’re looking for someone with the potential and ambition to take a step forward in the medium term and lead our growing data function—bringing together analysts and engineers into a high-impact, cross-functional team.
-
-Our data team is still small, but we’re investing heavily to scale it, and this role is central to that transformation. If you’re excited about building, leading, and leaving a mark, this is the place.
-
-
-💻 Key responsibilities
-
-    Analyze player behavior data and key metrics to improve retention, monetization, and engagement.
-
-    Develop dashboards and reports to provide real-time visibility into game performance.
-
-    Support decision-making through statistical models, machine learning techniques, and predictive analytics.
-
-    Collaborate with the Product team to define and track KPIs related to game economy and user experience.
-
-    Design, implement, and evaluate A/B tests to optimize monetization, ad placement, and player retention strategies.
-
-    Work closely with the marketing team to analyze the effectiveness of acquisition and retention campaigns.
-
-    Segment players and design personalized recommendation systems to improve engagement.
-
-    Ensure data quality, accuracy, and consistency across our analytics tools.
-
-    Contribute to the development of internal data tools for automation and efficiency improvements.
-
-
-🎯Skills you’ll need to succeed
-
-    3+ years of experience in data analysis, preferably in gaming, ad monetization, or mobile apps industry.
-
-    Strong proficiency in SQL, Python, and data visualization tools (Tableau, Looker, Power BI, etc.).
-
-    Experience in statistical analysis, machine learning models, and predictive analytics.
-
-    Familiarity with event tracking tools such as Google Analytics, Amplitude, or Firebase.
-
-    Solid understanding of game economy metrics (DAU, ARPU, LTV, churn rate, conversion funnels, etc.).
-
-    Strategic mindset and excellent communication skills—able to influence stakeholders and align data work with business goals.
-
-    Ability to work in dynamic environments and collaborate with cross-functional teams.
-
-    Fluent in English and/or Spanish.
-
-🛠️Nice-to-have skills
-
-    Experience with big data and cloud platforms (BigQuery, AWS, Snowflake).
-
-    Experience in developing and optimizing ad monetization strategies.
-
-    Previous experience mentoring or leading data professionals is a plus—but not a requirement.
-
-    Knowledge of reinforcement learning or AI-driven personalization techniques.
-
-    Background in economy design or game balancing.
-
-Perks & benefits
-
-🌍 Work from anywhere: Enjoy the freedom of a 100% remote model—work from any corner of the world!
-
-🏢 Valencia HQ: Prefer an office environment? Drop by our workspace in sunny Valencia.
-
-🚀 Grow with us: Join at a pivotal moment and help us build the foundations of a world-class data team from the ground up.
-
-⏰ Flexible schedules: Enjoy a structured workweek with flexibility to start your day between 8 AM and 9:30 AM and short Fridays, while being in a time zone within +/- 3 hours of Spain, ensuring smooth collaboration across teams and a good work-life balance.
-
-🌞 Summer hours: Shorter workdays during the summer months so you can soak up the sun!
-
-💪 Health & wellness: Take advantage of exclusive gym discounts to stay active and energized.
-
-🎉 Team events: Connect with your colleagues at fun annual events, celebrating our wins and fostering team spirit.
-
-🤝 Trust-based culture: Thrive in an environment where autonomy and accountability go hand in hand.
-
-🏡 Work-life balance: We respect your time—because life is more than just work.
-
-🌟 Make an impact: Be part of a company shaping the gaming industry and reaching millions of players worldwide.
-
-
-🌍👥At Codigames, we are committed to fostering an inclusive and diverse workplace. We believe that a variety of perspectives, backgrounds, and experiences strengthens our team and drives our success. Employment decisions at Codigames are based on skills, qualifications, and values—without discrimination on the basis of race, gender, sexual orientation, age, religion, disability, or any other characteristic protected by law. We are dedicated to creating a work environment where everyone feels respected, valued, and empowered to contribute their best.
-"""
-
-    updated_cv = adapt_cv_to_job(cv_data, job_description)
-
-    with open("../adapted_resume.json", "w", encoding="utf-8") as f:
-        json.dump(updated_cv, f, indent=2, ensure_ascii=False)
-
-    print("Updated CV saved to ../adapted_resume.json")
