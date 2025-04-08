@@ -46,8 +46,18 @@ Return the result as a JSON object with keys: "skills", "keywords".
 Respond ONLY with the JSON object.
 """
     result = await agent.run(prompt)
+    print("LLM response (job_to_cv_parser):")
+    print(result.data)
+    if not result.data.strip():
+        raise ValueError("LLM returned an empty response in extract_structured_data.")
+    try:
+        parsed = json.loads(result.data)
+    except json.JSONDecodeError:
+        print("Error: LLM response is not valid JSON:")
+        print(result.data)
+        raise
     print("Structured data extracted successfully.")
-    return json.loads(result.data)
+    return parsed
 
 def calculate_total_experience(cv_json: dict) -> int:
     """
@@ -210,7 +220,7 @@ Respond ONLY with the updated CV as a valid JSON object.
     # Recalculate final ATS score
     print("Calculating final ATS score of the optimized CV...")
     updated_cv_text = json.dumps(updated_cv, indent=2)
-    updated_resume_data = await extract_structured_data(updated_cv_text, is_job=False)
+    updated_resume_data = await extract_structured_data(updated_cv_text, agent, is_job=False)
     final_match = calculate_ats_score(job_data, updated_resume_data, updated_cv_text, updated_cv)
     updated_cv["ats_match_score"] = final_match["score"]
 

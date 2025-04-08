@@ -32,11 +32,14 @@ def convert(json_path: str, yaml_path: str):
     # Experience section
     experience_list = []
     for job in data.get("work", []):
+        end_date = job.get("endDate", "").strip()
+        if not end_date:
+            end_date = "present"
         experience_list.append({
             "company": job.get("company", ""),
             "position": job.get("position", ""),
             "start_date": job.get("startDate", ""),
-            "end_date": job.get("endDate", ""),
+            "end_date": end_date,
             "location": job.get("location", ""),
             "summary": job.get("summary", ""),
             "highlights": job.get("highlights", [])

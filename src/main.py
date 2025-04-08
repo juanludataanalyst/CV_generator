@@ -85,8 +85,8 @@ def main():
 
     # Generate final PDF with RenderCV CLI
     try:
-        subprocess.run(["rendercv", "cv_rendercv.yaml", "final_cv.pdf"], check=True)
-        print("Final PDF generated as final_cv.pdf")
+        subprocess.run(["rendercv", "render", "cv_rendercv.yaml"], check=True)
+        print("Final PDF generated.")
     except Exception as e:
         print(f"Error generating final PDF: {e}")
 

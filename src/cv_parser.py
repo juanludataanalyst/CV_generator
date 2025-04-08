@@ -45,6 +45,8 @@ Return the result as a JSON object. Use full URLs (e.g., "https://github.com/use
 """
 
     result = await agent.run(prompt)
+    print("LLM response (cv_parser):")
+    print(result.data)
     json_str = result.data
 
     # Ocultar salida cruda del LLM

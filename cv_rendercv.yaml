@@ -11,30 +11,32 @@ cv:
     username: juanludataanalyst
   sections:
     Summary:
-    - Senior Data Analyst with extensive experience driving data-informed decision-making
-      to optimize product performance, player retention, and monetization in gaming.
-      Expert in segmentation, KPI tracking, predictive analytics, dashboards/reporting,
-      statistical modeling, and data automation. Skilled collaborator partnering across
-      Product, Marketing, and technical teams to shape data strategy, improve user
-      engagement, and support game economy balancing through actionable insights and
-      A/B testing.
+    - Analytical and business-oriented Senior Data Analyst with 5+ years of experience
+      in the mobile gaming and apps industry. Proven track record delivering data-driven
+      insights, improving player engagement, and optimizing monetization strategies
+      through predictive analytics, statistical modeling, and A/B testing. Skilled
+      at transforming big data into actionable intelligence using tools like SQL,
+      Python, R, Power BI, Tableau, and cloud-based analytics solutions. Strong communicator
+      with a strategic mindset who collaborates cross-functionally to influence product
+      direction, game economy design, and ad monetization. Fluent in Spanish and proficient
+      in English.
     Experience:
-    - company: R10 hostal chain (Freelance)
+    - company: R10 hostal chain @ Freelance
       position: Data Strategy Owner
       start_date: 2025-01
-      end_date: ''
+      end_date: present
       location: ''
-      summary: Leading data initiatives focused on KPI tracking, automation, dashboards,
-        and reporting to enhance operational decision-making.
+      summary: ''
       highlights:
       - Built data infrastructure from scratch, creating automated, scalable pipelines
-        (Python, pandas) and dashboards (Power BI) for real-time analytics and reporting.
-      - Developed KPI dashboards to monitor revenue, occupancy, and marketing ROI,
-        improving data-driven decision making.
-      - Optimized resource allocation and segmentation strategies to boost occupancy
-        by 20% and revenue by 15% compared to the previous year.
-    - company: Family Care and Travel (Break Time)
-      position: ''
+        (Python, pandas) and dashboards (PowerBI, Tableau) for real-time analytics
+        and data visualization.
+      - Optimized room distribution (R, Optimization Models, statistical analysis)
+        boosting occupancy by 20% and revenue by 15% compared to the previous year.
+      - Developed predictive analytics models to forecast demand trends, supporting
+        strategic decision-making and resource allocation.
+    - company: Family Care and Travel
+      position: Break Time
       start_date: 2023-01
       end_date: 2024-12
       location: ''
@@ -43,60 +45,58 @@ cv:
       - Supported a family member during illness, developing empathy, responsibility,
         and resilience.
       - Volunteered in international programs, sharpening leadership, adaptability,
-        and communication skills as an event organizer and receptionist.
+        cross-functional collaboration, and communication skills.
     - company: Scopely
       position: Data Analyst
       start_date: 2018-09
       end_date: 2022-12
       location: ''
-      summary: Delivered actionable insights to optimize game performance, player
-        retention, monetization, and economy balancing by leveraging predictive analytics,
-        dashboards, and statistical modeling in collaboration with Product and Marketing
-        teams.
+      summary: ''
       highlights:
-      - Conducted advanced player segmentation analysis (Python, R, classification
-        models, scikit-learn) for player behavior analysis, resulting in an 11% increase
-        in retention and a 7% boost in ARPU.
-      - Developed and maintained dashboards and reporting (Power BI, DAX) providing
-        real-time visibility into key KPIs, reducing reporting time by 30%.
-      - Supported game economy balancing in Frozen Free Fall (R, optimization models),
-        decreasing churn by 3% and increasing active users by 2% monthly.
-      - Collaborated with Product and Marketing teams to define KPIs, analyze marketing
-        campaign effectiveness, and improve monetization and engagement strategies.
-      - Designed and evaluated A/B tests to optimize gameplay features, monetization,
-        and in-app purchases, contributing to €1.5M annual revenue growth.
-      - Improved user engagement in Scrabble Go by analyzing player behavior and reducing
-        multiplayer turn intervals by 20%, increasing gameplay time by 12%.
-      - Utilized predictive analytics and data-driven decision-making approaches to
-        identify growth opportunities and optimize player retention.
+      - Conducted advanced segmentation and data analysis (Python, R, Classification
+        models, scikit-learn) to refine marketing strategies, achieving an 11% increase
+        in user retention and 7% boost in ARPU.
+      - Developed and maintained Power BI and Tableau dashboards, providing real-time
+        visibility into player engagement and game economy metrics.
+      - Designed and evaluated multiple A/B tests optimizing monetization, ad placement,
+        and player retention strategies.
+      - Optimized game difficulty balancing in Frozen Free Fall (R, optimization models),
+        decreasing churn by 3% and increasing active users by 2% monthly, contributing
+        to game economy design improvements.
+      - Enhanced user engagement in Scrabble Go by reducing multiplayer turn intervals
+        by 20%, resulting in a 12% increase in average gameplay time.
+      - Collaborated with product, marketing, and LiveOps teams on predictive analytics
+        projects and KPI tracking to support business-critical decisions.
+      - Led weekly stakeholder meetings presenting key insights to drive €1.5M annual
+        revenue growth, leveraging communication and strategic thinking skills.
     - company: Genera Games
       position: Data Engineer – Data Scientist
       start_date: 2017-05
       end_date: 2018-09
       location: ''
-      summary: Contributed to data pipeline automation, predictive modeling, economic
-        analysis, and advanced analytics to support marketing and product optimization.
+      summary: ''
       highlights:
-      - Developed an LTV predictive modeling framework (R, machine learning, TensorFlow,
-        SQL), improving marketing ROI by 18% through optimized ad spend.
-      - Automated data pipelines (Python, numpy, pandas, SQL) increasing efficiency
-        and enabling timely dashboards and reporting.
-      - Implemented data quality assurance protocols ensuring accuracy and consistency
-        critical for predictive analytics and statistical modeling.
-      - Optimized in-game monetization strategies and assisted in game economy analysis,
-        increasing IAP revenue by 10% through data-informed price balancing.
+      - Developed LTV and churn models (R, Machine Learning, TensorFlow, SQL) for
+        predictive analytics that improved marketing ROI by 18%.
+      - Automated data pipelines (Python, numpy, pandas, SQL, BigQuery) reducing ETL
+        execution time by 70% and operational costs by €150K annually.
+      - Improved data quality for analytics platforms (Amplitude, Firebase), ensuring
+        accurate event tracking and consistent reporting.
+      - Supported economy balancing and in-game monetization strategies with data-driven
+        insights, increasing IAP revenue by 10%.
+      - Contributed to player segmentation and AI-driven personalization prototypes
+        to enhance player engagement.
     - company: RedBorder
       position: Data Analyst Internship
       start_date: 2016-02
       end_date: 2016-07
       location: ''
-      summary: Applied exploratory data analysis and large-scale pipeline development
-        with Apache Spark to support predictive analytics.
+      summary: ''
       highlights:
-      - Implemented large-scale data pipelines using Apache Spark and Scala, reducing
-        malware classification time by 30%.
-      - Conducted EDA on 10M+ cybersecurity events, improving machine learning-based
-        threat detection accuracy.
+      - Implemented large-scale data pipelines using Apache Spark and Scala, optimizing
+        big data processing and reducing malware classification time by 30%.
+      - Conducted exploratory data analysis (EDA) on 10M+ cybersecurity events, improving
+        machine learning-based threat detection.
     Education:
     - institution: Universidad Pablo de Olavide
       area: Big Data and Business Analytics
@@ -109,7 +109,7 @@ cv:
       highlights: []
     - institution: Universidad de Sevilla
       area: Telecommunication Engineering
-      degree: ''
+      degree: BSc
       start_date: '2010'
       end_date: '2016'
       date: 2010 - 2016
@@ -118,13 +118,14 @@ cv:
       highlights: []
     Skills:
     - label: Skills
-      details: SQL, Python, R, Power BI, Excel, Data Automation, KPI Tracking, A/B
-        Testing, Game Economy Analysis, Player Segmentation, Collaboration, Leadership,
-        Effective Communication, Adaptability, Predictive Analytics, Statistical Modeling
+      details: SQL, Python, R, Power BI, Tableau, Data Analysis, Firebase & Amplitude,
+        Game Analytics, AWS, Big Data Technologies, Leadership & Mentoring, Strategic
+        Mindset, Cross-Functional Collaboration, Effective Communication, Adaptability
     Projects:
     - name: MostInDemandSkills Platform
-      summary: Developed a data-driven web tool providing dashboards and reporting
-        on technology job market trends using predictive analytics and data automation.
+      summary: Analyzing over 100 daily job postings from 5 platforms to assess skills
+        demand by role and country in data science, gaming, and technology (Python,
+        Streamlit, APIs, n8n).
       url: https://mostindemandskills.streamlit.app/
 design:
   theme: classic

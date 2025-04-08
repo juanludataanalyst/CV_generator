@@ -78,6 +78,8 @@ Return only the job description without any additional comments:
 \"\"\"
 """
     result = asyncio.run(agent.run(prompt))
+    print("LLM response (job_scraper):")
+    print(result.data)
     return result.data.strip()
 
 
