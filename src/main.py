@@ -1,6 +1,7 @@
 from cv_extraction import extract_cv_text
 from cv_parser import parse_to_json_resume, get_model
 from job_scraper import scrape_job_description
+from job_to_cv_parser import adapt_cv_to_job
 from pydantic_ai import Agent
 import json
 
@@ -9,6 +10,7 @@ def main():
     Paso 1: Extraer texto del CV en PDF (Resume.pdf).
     Paso 2: Convertir el texto a JSON Resume usando LLM.
     Paso 3: Pedir URL de oferta laboral y extraer descripción.
+    Paso 4: Adaptar el CV a la oferta con un score objetivo.
     """
     pdf_cv_path = "Resume.pdf"
 
@@ -52,7 +54,6 @@ def main():
         print(f"Error al obtener la oferta laboral: {job_description}")
         return
 
-    # Mostrar y guardar la descripción
     print("\n--- Descripción de la oferta (primeros 500 caracteres) ---\n")
     print(job_description[:500])
     print("\n--- Fin del extracto descripción ---\n")
@@ -60,6 +61,29 @@ def main():
     with open("job_description.txt", "w", encoding="utf-8") as f:
         f.write(job_description)
     print("Descripción de la oferta guardada en job_description.txt")
+
+    # Paso 4: Pedir score objetivo y adaptar el CV
+    try:
+        score = int(input("Introduce el score objetivo (ej. 90): ").strip())
+    except ValueError:
+        print("Score inválido, usando 100 por defecto.")
+        score = 100
+
+    try:
+        adapted_cv = adapt_cv_to_job(json_cv, job_description, score)
+    except Exception as e:
+        print(f"Error al adaptar el CV a la oferta: {e}")
+        return
+
+    # Mostrar y guardar el CV adaptado
+    print("\n--- CV adaptado (primeros 500 caracteres) ---\n")
+    adapted_preview = json.dumps(adapted_cv, ensure_ascii=False, indent=2)[:500]
+    print(adapted_preview)
+    print("\n--- Fin del extracto CV adaptado ---\n")
+
+    with open("adapted_resume.json", "w", encoding="utf-8") as f:
+        json.dump(adapted_cv, f, ensure_ascii=False, indent=2)
+    print("CV adaptado guardado en adapted_resume.json")
 
 if __name__ == "__main__":
     main()

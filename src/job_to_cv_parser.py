@@ -29,14 +29,24 @@ You are an expert CV writer and ATS optimizer.
 
 Your goal is to optimize the CV so that it achieves approximately **{target_score}% compatibility score** with the company's ATS system for the provided job description.
 
-Given the following CV data in JSON format, and a job description, adapt the CV to better match the job, including:
+Adjust the adaptation intensity based on the target score as follows:
+
+- **50-60%:** Minimal adaptation. Add a few relevant keywords and minor tweaks. Keep most of the original CV unchanged.
+- **70-80%:** Moderate adaptation. Emphasize relevant skills and experience, integrate several keywords naturally, and adjust descriptions to better fit the job.
+- **90-100%:** Maximum adaptation. Aggressively optimize the CV by integrating most relevant keywords, skills, and technologies from the job description, rephrasing sections to maximize ATS compatibility, while maintaining a natural and professional tone.
+
+**IMPORTANT:**  
+- If the target score is **above 90%**, you should **integrate as many relevant keywords, skills, and technologies from the job description as possible**, even if they are not explicitly mentioned in the original CV, as long as they are plausible or the candidate is willing to learn them. This includes adding technologies, tools, or skills like "Snowflake", "BigQuery", etc., if they appear in the job description.  
+- If the target score is **90% or below**, be **more conservative**: only emphasize or slightly rephrase existing skills and experiences, and **do not add technologies or skills that are not clearly related to the candidate's background**.
+
+Given the following CV data in JSON format, and a job description, adapt the CV accordingly, including:
 
 - Emphasizing relevant skills and experience
 - Adding keywords from the job description where appropriate
-- Incorporating all relevant keywords, skills, and technologies from the job description into the CV to maximize ATS compatibility, even if they are not explicitly mentioned in the original CV, as long as they are plausible skills or areas the candidate is willing to learn
-- Seamlessly integrate relevant keywords, skills, and technologies from the job description into the descriptive sections of the CV (e.g., summary, work experience, achievements) in a natural, professional, and comprehensible way
+- Incorporating relevant keywords, skills, and technologies from the job description to maximize ATS compatibility, as long as they are plausible or the candidate is willing to learn them (especially if the score is above 90%)
+- Seamlessly integrating these into the descriptive sections of the CV (e.g., summary, work experience, achievements)
 - Keeping the JSON Resume format
-- Do not invent false information, but you may add relevant skills or technologies from the job description if they are plausible or the candidate is willing to learn them
+- Do not invent false information, but you may add plausible skills or technologies
 
 Job Description:
 \"\"\"
