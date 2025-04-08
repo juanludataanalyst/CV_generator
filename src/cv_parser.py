@@ -100,6 +100,32 @@ Return the result as a JSON object. Use full URLs (e.g., "https://github.com/use
 
     json_cv = preprocess_json(json_cv)
 
+    # Reemplazar None o "" en campos string opcionales por ""
+    # En campos URL por None
+    # En campos lista por []
+    def replace_null_strings(data):
+        list_fields = {"profiles", "highlights", "courses", "keywords", "roles"}
+        if isinstance(data, dict):
+            for k, v in data.items():
+                if k in ("url", "website"):
+                    if v is None or v == "":
+                        data[k] = None
+                elif k in list_fields:
+                    if v is None or v == "":
+                        data[k] = []
+                    elif isinstance(v, (dict, list)):
+                        replace_null_strings(v)
+                elif v is None:
+                    data[k] = ""
+                elif isinstance(v, (dict, list)):
+                    replace_null_strings(v)
+        elif isinstance(data, list):
+            for item in data:
+                replace_null_strings(item)
+        return data
+
+    json_cv = replace_null_strings(json_cv)
+
     validated_cv = JsonResume(**json_cv)
     return validated_cv.model_dump(mode="json")
 
