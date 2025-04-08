@@ -1,26 +1,26 @@
-import json
 from cv_extraction import extract_cv_text
-from cv_parser import parse_to_json_resume
-from ats_generator import generate_ats_pdf
-
 
 def main():
     """
-    Main pipeline to convert a PDF CV into an ATS-friendly PDF.
+    Paso 1: Extraer texto del CV en PDF (Resume.pdf) y mostrarlo.
     """
-    try:
-        with open("../parsed_resume.json", "r", encoding="utf-8") as f:
-            json_cv = json.load(f)
-        output_path = "../output.pdf"
-        generate_ats_pdf(json_cv, output_path)
-        print(f"ATS CV generated at {output_path}")
-    except FileNotFoundError:
-        print("Error: parsed_resume.json not found.")
-    except json.JSONDecodeError as e:
-        print(f"Error decoding parsed_resume.json: {e}")
-    except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+    pdf_cv_path = "Resume.pdf"
 
+    cv_text = extract_cv_text(pdf_cv_path)
+
+    if not cv_text:
+        print("Error: No se pudo extraer texto del CV.")
+        return
+
+    # Mostrar los primeros 500 caracteres para inspección rápida
+    print("\n--- Texto extraído (primeros 500 caracteres) ---\n")
+    print(cv_text[:500])
+    print("\n--- Fin del extracto ---\n")
+
+    # Guardar el texto completo para revisión
+    with open("cv_text.txt", "w", encoding="utf-8") as f:
+        f.write(cv_text)
+    print("Texto completo guardado en cv_text.txt")
 
 if __name__ == "__main__":
     main()
