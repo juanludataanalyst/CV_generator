@@ -107,8 +107,27 @@ def calculate_ats_score(job_data: Dict, resume_data: Dict, resume_text: str, cv_
 
     # Habilidades (40%)
     job_skills = set(s.lower() for s in job_data['skills'])
-    resume_skills = set(s.lower() for s in resume_data['skills'])
-    skill_matches = len(job_skills.intersection(resume_skills))
+
+    # Extraer tokens individuales de las skills del CV
+    resume_skill_tokens = set()
+    resume_skills_lower = []
+    for skill in resume_data['skills']:
+        skill_l = skill.lower()
+        resume_skills_lower.append(skill_l)
+        tokens = skill_l.replace('(', ' ').replace(')', ' ').replace(',', ' ').split()
+        resume_skill_tokens.update(tokens)
+
+    skill_matches = 0
+    for js in job_skills:
+        if ' ' in js:
+            # Skill de varias palabras: buscar como substring en alguna skill del CV
+            if any(js in skill for skill in resume_skills_lower):
+                skill_matches += 1
+        else:
+            # Skill de una palabra: buscar en tokens
+            if js in resume_skill_tokens:
+                skill_matches += 1
+
     skill_score = (skill_matches / max(len(job_skills), 1)) * 40 if job_skills else 40
     score += skill_score
 
@@ -134,7 +153,15 @@ def calculate_ats_score(job_data: Dict, resume_data: Dict, resume_text: str, cv_
     score += keyword_score
 
     # Detalles
-    missing_skills = list(job_skills - resume_skills)
+    missing_skills = []
+    for js in job_skills:
+        if ' ' in js:
+            if not any(js in skill for skill in resume_skills_lower):
+                missing_skills.append(js)
+        else:
+            if js not in resume_skill_tokens:
+                missing_skills.append(js)
+
     missing_keywords = [k for k in job_keywords if k not in resume_text_lower]
     exp_gap = max(job_years - resume_years, 0)
 

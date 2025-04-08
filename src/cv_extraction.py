@@ -13,7 +13,7 @@ def extract_cv_text(pdf_path: str) -> str:
     """
     try:
         text = extract_text(pdf_path)
-        with open("prueba", 'w') as archivo:
+        with open("prueba", 'w', encoding='utf-8') as archivo:
             archivo.writelines(text)
         return text
     except Exception as e:

@@ -22,7 +22,8 @@ def convert(json_path: str, yaml_path: str):
         for profile in basics["profiles"]:
             cv["social_networks"].append({
                 "network": profile.get("network", ""),
-                "username": profile.get("username", "")
+                "username": profile.get("username", ""),
+                "url": profile.get("url", "")
             })
 
     # Summary section

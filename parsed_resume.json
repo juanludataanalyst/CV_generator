@@ -1,187 +1,259 @@
 {
   "basics": {
-    "name": "Juan Luis Pérez",
-    "label": "DATA ANALYST",
-    "email": "juanludataanalyst@gmail.com",
-    "phone": "+34608027426",
+    "name": "Tim Jefferies",
+    "label": "DevOps and Solutions Architect",
+    "email": "Tim.Jefferies@gmail.com",
+    "phone": "+44 7931314133",
     "url": null,
-    "summary": "Data-driven problem solver who thrives at the intersection of business and technology. With a strong technical background, I bridge the gap between data and decision-making, leveraging my expertise in SQL, Python, R ,Power BI and Statistical Methods. Proven track record of increasing Revenue, improving efficiency and enhancing decision-making through analytics",
-    "location": null,
+    "summary": "An accomplished and adaptable DevOps and Solutions Architect, possessing extensive expertise in system architecture and cloud technology. A track record of successfully building, delivering, and maintaining business and technology solutions in diverse sectors, including internet hosting, finance, charitable organizations, retail, and RPA. Boasting a comprehensive technical background and exceptional problem-solving skills, consistently bridging the gap between organizational requirements and cutting-edge technologies. Applies advanced strategies that align with enterprise and technical standards to drive ongoing improvements. Possessing strong communication skills, able to translate complex technical concepts into easily digestible formats for both technical and non-technical stakeholders. Creates collaborative environments and effectively manages expectations to deliver superior results.",
+    "location": {
+      "address": null,
+      "postalCode": null,
+      "city": "Carlin How",
+      "countryCode": null,
+      "region": ""
+    },
     "profiles": [
       {
         "network": "LinkedIn",
-        "username": "juanludataanalyst",
-        "url": "https://linkedin.com/in/juanludataanalyst"
-      },
-      {
-        "network": "GitHub",
-        "username": "juanludataanalyst",
-        "url": "https://github.com/juanludataanalyst"
+        "username": "timjefferies",
+        "url": "https://linkedin.com/in/timjefferies"
       }
     ]
   },
   "work": [
     {
-      "company": "R10 hostal chain (Freelance)",
-      "position": "Data Strategy Owner",
+      "company": "Blue Prism (SSNC)",
+      "position": "DevOps Engineer",
       "website": null,
-      "startDate": "2025-01",
+      "startDate": "2021-10",
       "endDate": "",
-      "summary": "",
+      "summary": "DevOps Engineer for QA team, supporting Blue Prism RPA Automation SaaS with Azure CI/CD pipelines. Skills used: Terraform, Ansible, Packer, Jenkins, Azure DevOps, Git, Powershell, Python, and Bash.",
       "highlights": [
-        "Built data infrastructure from scratch, creating automated, scalable pipelines (Python, pandas) and dashboards (PowerBI) for real-time analytics.",
-        "Optimized room distribution (R, Optimization Models) boosting occupancy by 20% and revenue by 15% compared to the previous year"
+        "Re-designed Azure pipelines that build custom pre-baked Windows images for QA testing. The original developer couldn’t resolve the constant pipeline breakages and reliability issues. Rebuilt the pipeline to install updates correctly using Ansible and implemented failovers for times of heavy Azure usage.",
+        "Built automated testing environments using a Jinja2 template dynamically creating Ansible playbooks tailored to user specs, drastically reducing bottlenecks during installation of Microsoft SQL and Windows environments, saving countless hours.",
+        "Migrated from colocated servers into Azure pipelines, redesigning QA testing infrastructure using Testrail, Terraform, and Ansible via CI/CD, resulting in a modern, resilient, and efficient QA process."
       ]
     },
     {
-      "company": "Break Time",
-      "position": "Family Care and Travel",
+      "company": "Slater & Gordon Ltd",
+      "position": "Solutions Architect",
       "website": null,
-      "startDate": "2023-01",
-      "endDate": "2024-12",
-      "summary": "",
+      "startDate": "2022-08",
+      "endDate": "2024-07",
+      "summary": "Supported migration of bare metal servers into the cloud as part of consolidation efforts after acquiring 19 companies.",
       "highlights": [
-        "Supported a family member during illness, developing empathy, responsibility and resilience.",
-        "Volunteered in international programs, sharpening leadership, adaptability and communication skills as an event organizer and receptionist."
+        "Mapped current infrastructure using Visio and proposed CI/CD models for migration, including cost analysis and technology research.",
+        "Built initial pipelines and environment, creating scalable Ansible/Terraform template libraries.",
+        "Authored policy documents to standardize Git workflows, DevOps workflows, and process documentation."
       ]
     },
     {
-      "company": "Scopely",
-      "position": "Data Analyst",
+      "company": "Lishi International",
+      "position": "System Architect and DevOps",
       "website": null,
-      "startDate": "2018-09",
-      "endDate": "2022-12",
-      "summary": "",
+      "startDate": "2014-06",
+      "endDate": "2020-09",
+      "summary": "Managed online operations for a UK charity, including full infrastructure design using AWS and redevelopment of their entire online presence.",
       "highlights": [
-        "Conducted advanced segmentation analysis (Python, R, Classification models, scikit-learn) to refine marketing strategies, achieving an 11% increase in user retention and 7% boost in ARPU.",
-        "Developed and maintained Power BI dashboards (DAX), reducing reporting time by 30% and enabling real-time decision-making.",
-        "Optimized game difficulty balancing in Frozen Free Fall (R and optimization models) decreasing churn by 3% and increasing active users by 2% per month.",
-        "Improved user engagement in Scrabble Go by reducing multiplayer turn intervals by 20%, resulting in a 12% increase in average gameplay time.",
-        "Collaborated with stakeholders, leading weekly performance meeting to drive +€1.5M in annual revenue growth through data-driven game optimization and effective communication."
+        "Designed and implemented AWS-based architecture: EC2, SES, S3, VPC, Elastic IP, ELB, snapshots, volume management.",
+        "Built bespoke servers with LEMP, NGINX, MYSQL, Redis, OPCache, EXIM via Ansible.",
+        "Implemented encrypted backups with Rclone/Duplicity to S3, Dropbox, SSH. Wrote failover and risk management procedures.",
+        "Developed unattended software upgrades and Docker-based services.",
+        "Created custom plugins and themes for Wordpress, S3-hosted websites, WooCommerce-based payment solutions.",
+        "Integrated Airtable CRM via Wordpress sync."
       ]
     },
     {
-      "company": "Genera Games",
-      "position": "Data Engineer – Data Scientist",
+      "company": "Skvare",
+      "position": "DevOps",
       "website": null,
-      "startDate": "2017-05",
-      "endDate": "2018-09",
-      "summary": "",
+      "startDate": "2017-07",
+      "endDate": "2017-11",
+      "summary": "Managed core Drupal/Linux server infrastructure, performance testing, and process automation.",
       "highlights": [
-        "Developed an LTV model (R, Machine Learning, TensorFlow, SQL) that improved marketing ROI by 18% through optimized ad spend allocation.",
-        "Automated data pipelines (Python, numpy, pandas, SQL) reducing ETL execution time by 70% and cutting operational cost by €150K annually.",
-        "Implemented data quality assurance protocols, reducing report errors and ensuring data quality (Python, pandas, matplotlib, CI/CD), achieving over 25% improvement.",
-        "Contributed to optimizing in-game monetization strategies (R, Tidyverse, ggplot) increasing IAP revenue by 10% through data-driven price adjustments."
+        "Conducted system administration, architecture review, and management of LEMP/Drupal stack.",
+        "Performed testing using JMeter and ApacheBench.",
+        "Resolved issues with Drupal caching layers and MariaDB.",
+        "Built multi-server MySQL Master/Slave clusters.",
+        "Managed server configurations via Bitbucket Git.",
+        "Created CI/CD pipelines with Jenkins and handled load balancer configuration."
       ]
     },
     {
-      "company": "RedBorder",
-      "position": "Data Analyst Internship",
+      "company": "Yorkshire Electrical Supplies Limited",
+      "position": "Solutions Architect",
       "website": null,
-      "startDate": "2016-02",
-      "endDate": "2016-07",
-      "summary": "",
+      "startDate": "2014-05",
+      "endDate": "2015-12",
+      "summary": "Freelance consulting for electrical supply store.",
       "highlights": [
-        "Implemented large-scale data pipelines using Apache Spark and Scala, reducing malware classification time by 30%.",
-        "Conducted EDA on 10M+ cybersecurity events, improving machine learning-based threat detection accuracy."
+        "Repaired and virtualized LedgerSMB accounts system with automated VMware backups.",
+        "Managed PostgreSQL scripting and administration.",
+        "Migrated accounts to Inuit Quickbooks Pro.",
+        "Redesigned ecommerce website using Magento."
+      ]
+    },
+    {
+      "company": "Mint Wireless",
+      "position": "System Administrator",
+      "website": null,
+      "startDate": "2013-08",
+      "endDate": "2014-03",
+      "summary": "Built solutions for network payment gateway under the infrastructure manager.",
+      "highlights": [
+        "Installed/configured HSM hardware and security keys within a datacenter.",
+        "Installed/administered Windows and Linux server images.",
+        "Managed Windows Server patching, configured servers for PCI compliance.",
+        "Research, implementation, documentation of infrastructure solutions.",
+        "Set up HAProxy load balancing and 2FA solutions (Duo/Azure).",
+        "Implemented automated backup scripts."
+      ]
+    },
+    {
+      "company": "Mint Wireless",
+      "position": "System Administrator",
+      "website": null,
+      "startDate": "2014-05",
+      "endDate": "2014-06",
+      "summary": "Continuation of prior contract work.",
+      "highlights": []
+    },
+    {
+      "company": "Webfusion/123-Reg/Pipex",
+      "position": "Hosting Support",
+      "website": null,
+      "startDate": "2008-07",
+      "endDate": "2013-01",
+      "summary": "Customer support for dedicated hosting customers and server infrastructure.",
+      "highlights": [
+        "Installed and managed dedicated rack servers including virtualization.",
+        "Met ticketing SLA targets.",
+        "Handled migrations, automation scripting, and process documentation.",
+        "Supported FreeBSD, Ubuntu, CentOS, Windows servers hosting over 6000 clients.",
+        "Configured/maintained mail servers and performed database/web server tuning.",
+        "Used CLI, cron, bash/python scripting, and monitoring tools like Nagios/Cacti.",
+        "Trained in Parallels Plesk."
+      ]
+    },
+    {
+      "company": "Teamtalk Media",
+      "position": "1st Line Support",
+      "website": null,
+      "startDate": "2005-08",
+      "endDate": "2006-08",
+      "summary": "First contact support for office staff.",
+      "highlights": [
+        "Installed and supported Windows (NT4 through Server 2003) and Linux OS, Office suites.",
+        "Used Exchange servers, RDP, NetMeeting, VNC, GoverLAN.",
+        "Administered DNS, roaming profiles, Outlook, debugged network via CLI.",
+        "Repaired hardware: PCs, servers, printers, copiers, fax machines."
       ]
     }
   ],
-  "education": [
-    {
-      "institution": "Universidad Pablo de Olavide",
-      "area": "Big Data and Business Analytics",
-      "studyType": "Postgraduate",
-      "startDate": "2016",
-      "endDate": "2017",
-      "score": "",
-      "courses": []
-    },
-    {
-      "institution": "Universidad de Sevilla",
-      "area": "Telecommunication Engineering",
-      "studyType": "Bachelor",
-      "startDate": "2010",
-      "endDate": "2016",
-      "score": "",
-      "courses": []
-    }
-  ],
+  "education": [],
   "skills": [
     {
-      "name": "SQL",
+      "name": "Solution & Enterprise Architecture",
       "level": "",
       "keywords": []
     },
     {
-      "name": "Python",
+      "name": "Web design, integration & testing",
       "level": "",
       "keywords": []
     },
     {
-      "name": "R",
+      "name": "PCI Compliance",
       "level": "",
       "keywords": []
     },
     {
-      "name": "Excel",
+      "name": "Agile Methodology (SCRUM, Kanban)",
       "level": "",
       "keywords": []
     },
     {
-      "name": "Power BI",
+      "name": "Technical Analysis, Evaluation & Assurance",
       "level": "",
       "keywords": []
     },
     {
-      "name": "Leadership",
+      "name": "Server performance testing & optimization",
       "level": "",
       "keywords": []
     },
     {
-      "name": "Effective Communication",
+      "name": "MS Visio, Draw.io, Miro",
       "level": "",
       "keywords": []
     },
     {
-      "name": "Adaptability",
+      "name": "Jira, Confluence, Trello, MS SharePoint, Slack, Asana, Airtable",
+      "level": "",
+      "keywords": []
+    },
+    {
+      "name": "Jmeter, ApacheBench, Nagios",
+      "level": "",
+      "keywords": []
+    },
+    {
+      "name": "Virtualbox, VMware, Azure / AWS VMs",
+      "level": "",
+      "keywords": []
+    },
+    {
+      "name": "Linux, Apache, NGINX, MySQL, Redis, Memcached, Varnish, Opcache",
+      "level": "",
+      "keywords": []
+    },
+    {
+      "name": "Windows Server, Redhat, CentOS, Debian, Ubuntu, FreeBSD",
+      "level": "",
+      "keywords": []
+    },
+    {
+      "name": "HSM Hardware, Data center installations",
+      "level": "",
+      "keywords": []
+    },
+    {
+      "name": "AWS EC2, SES, VPC, Sendgrid, Azure Cloud Services (SaaS/IaaS/PaaS)",
+      "level": "",
+      "keywords": []
+    },
+    {
+      "name": "Python, PHP, HTML/CSS, JavaScript",
+      "level": "",
+      "keywords": []
+    },
+    {
+      "name": "Exim, Dovecot, Postfix, Qmail",
+      "level": "",
+      "keywords": []
+    },
+    {
+      "name": "Ansible, Jenkins, Docker, Terraform, Packer, CI/CD Pipelines, Kubernetes",
+      "level": "",
+      "keywords": []
+    },
+    {
+      "name": "Plesk, Cpanel, Webmin, DirectAdmin",
+      "level": "",
+      "keywords": []
+    },
+    {
+      "name": "NoSQL (MongoDB), PostgreSQL",
+      "level": "",
+      "keywords": []
+    },
+    {
+      "name": "Drupal, Magento, Wordpress",
       "level": "",
       "keywords": []
     }
   ],
-  "languages": [
-    {
-      "language": "Spanish",
-      "fluency": ""
-    },
-    {
-      "language": "English",
-      "fluency": "B2"
-    }
-  ],
-  "projects": [
-    {
-      "name": "MostInDemandSkills Platform",
-      "description": "Analyzing over 100 daily job postings from 5 platforms to assess skills demand by role and country in data science and tech (Python, Streamlit, APIs, n8n). Working on recommendation system to show users the skills they have learned based on their CV (Python, LLM, Langchain). Analyzed 7000+ job postings to date.",
-      "highlights": [
-        "Analyzing over 100 daily job postings from 5 platforms to assess skills demand by role and country in data science and tech (Python, Streamlit, APIs, n8n).",
-        "Working on recommendation system to show users the skills they have learned based on their CV (Python, LLM, Langchain).",
-        "Analyzed 7000+ job postings to date."
-      ],
-      "keywords": [
-        "Python",
-        "Streamlit",
-        "APIs",
-        "n8n",
-        "LLM",
-        "Langchain"
-      ],
-      "startDate": "2024",
-      "endDate": "",
-      "url": "https://mostindemandskills.streamlit.app/",
-      "roles": [],
-      "entity": "",
-      "type": ""
-    }
-  ]
+  "languages": [],
+  "projects": []
 }

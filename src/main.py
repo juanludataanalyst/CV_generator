@@ -28,7 +28,7 @@ def main():
     3. Ask for the job description URL and extract its content.
     4. Adapt the CV to the job description using the ATS optimization system.
     """
-    pdf_cv_path = "Resume.pdf"
+    pdf_cv_path = "TimResume.pdf"
 
     # Create the LLM agent once
     agent = Agent(get_model())
@@ -54,8 +54,8 @@ def main():
         json.dump(json_cv, f, ensure_ascii=False, indent=2)
     print("JSON Resume saved to parsed_resume.json")
 
-    # Step 3: Define job description URL and extract content
-    url = "https://jobs.smartrecruiters.com/Cint/744000051522071-data-analyst-?trid=2d92f286-613b-4daf-9dfa-6340ffbecf73"  # <-- Set your job description URL here
+    # Step 3: Define job description URL ahttps://consensys.io/open-roles/6741051?source=web3.careerd extract content
+    url = "https://consensys.io/open-roles/6741051?source=web3.career"  # <-- Set your job description URL here
     job_description = scrape_job_description(url, agent)
 
     if job_description.startswith("Error"):

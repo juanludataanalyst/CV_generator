@@ -1,134 +1,154 @@
 cv:
-  name: Juan Luis Pérez
-  email: juanludataanalyst@gmail.com
-  phone: '+34608027426'
+  name: Tim Jefferies
+  email: Tim.Jefferies@gmail.com
+  phone: +44 7931314133
   location: ''
   website: null
-  social_networks:
-  - network: LinkedIn
-    username: juanludataanalyst
-  - network: GitHub
-    username: juanludataanalyst
+  social_networks: []
   sections:
     Summary:
-    - Proactive Data Analyst with strong expertise in Python (pandas, NumPy), SQL
-      queries, R and Power BI. Skilled in data exploration, manipulation, automation,
-      and large dataset analysis to derive actionable insights. Experienced in developing
-      automated data pipelines, interactive dashboards, validating data accuracy,
-      and collaborating with internal stakeholders. Passionate about data visualization,
-      campaign performance analysis, and optimizing data collection processes to support
-      strategic decision-making.
+    - An accomplished and adaptable DevOps and Solutions Architect with extensive
+      expertise in multi-cloud platforms including AWS, Azure, and GCP. Proven track
+      record of building, delivering, documenting, and maintaining robust CI/CD pipelines
+      (GitHub Actions, Jenkins, Azure DevOps), enhancing security through identity
+      management tools like Okta, and configuring resilient cloud infrastructures.
+      Skilled at responding to IT incidents and collaborating via tools like Jira
+      Service Management. Possesses comprehensive technical knowledge, exceptional
+      problem-solving skills, and deep experience across internet hosting, finance,
+      charity, retail, and RPA industries. Applies advanced strategies that align
+      with enterprise standards to foster continuous improvement while effectively
+      translating technical concepts for diverse audiences.
     Experience:
-    - company: R10 hostal chain (Freelance)
-      position: Data Strategy Owner
-      start_date: 2025-01
+    - company: Blue Prism (SSNC)
+      position: DevOps Engineer
+      start_date: 2021-10
       end_date: present
       location: ''
-      summary: ''
+      summary: 'DevOps Engineer for QA team, supporting Blue Prism RPA Automation
+        SaaS with Azure CI/CD pipelines. Skills used: Terraform, Ansible, Packer,
+        Jenkins, Azure DevOps, Git, Powershell, Python, Bash, with exposure to GitHub
+        and cloud platforms integration.'
       highlights:
-      - Built data infrastructure from scratch, creating automated, scalable pipelines
-        (Python, pandas) for data collection, transformation, and validation, as well
-        as dashboards (PowerBI, Tableau) for real-time analytics and data visualization.
-      - Optimized room distribution (R, Optimization Models) boosting occupancy by
-        20% and revenue by 15% compared to the previous year.
-      - Developed interactive dashboard reports to communicate business insights effectively
-        to internal stakeholders, supporting decision making and campaign optimization.
-    - company: Break Time
-      position: Family Care and Travel
-      start_date: 2023-01
-      end_date: 2024-12
+      - Re-designed Azure pipelines that build custom pre-baked Windows images for
+        QA testing, implementing reliable automation via Ansible and enhancing process
+        documentation.
+      - Developed automated testing environments using dynamic Jinja2 templates and
+        integrated infrastructure documentation using Confluence.
+      - Migrated from colocated servers into Azure pipelines, redesigning QA testing
+        infrastructure using Testrail, Terraform, and Ansible via CI/CD, contributing
+        to a modern, resilient, well-documented QA process.
+      - Collaborated with IT teams on incident resolution and management using Jira
+        Service Management, supporting minimal downtime and high availability.
+    - company: Slater & Gordon Ltd
+      position: Solutions Architect
+      start_date: 2022-08
+      end_date: 2024-07
       location: ''
-      summary: ''
+      summary: Supported migration of bare metal servers into a consolidated cloud
+        environment, leveraging AWS and Azure and introducing standardized infrastructure
+        documentation.
       highlights:
-      - Supported a family member during illness, developing empathy, responsibility
-        and resilience.
-      - Volunteered in international programs, sharpening leadership, adaptability,
-        and communication skills as an event organizer and receptionist.
-    - company: Scopely
-      position: Data Analyst
-      start_date: 2018-09
-      end_date: 2022-12
+      - Mapped existing infrastructure using Visio, designing scalable CI/CD models
+        (including GitHub Actions) aligned with AWS Landing Zone best practices.
+      - Built initial cloud environments and automated pipelines utilizing Ansible,
+        Terraform, and Git workflows across multi-cloud platforms.
+      - Authored infrastructure and process documentation in Confluence to streamline
+        cloud adoption.
+      - Introduced concepts around cloud security enhancement, including integration
+        with Okta identity management.
+    - company: Lishi International
+      position: System Architect and DevOps
+      start_date: 2014-06
+      end_date: 2020-09
       location: ''
-      summary: ''
+      summary: Managed online operations for a UK charity, including full architecture
+        design on AWS, emphasizing security, scalability, and process automation.
       highlights:
-      - Conducted advanced segmentation analysis (Python, R, Classification models,
-        scikit-learn) on large datasets to identify trends and insights, refining
-        marketing strategies which increased user retention by 11% and ARPU by 7%.
-      - Developed and maintained automated Power BI dashboards (DAX), reducing reporting
-        time by 30% and enabling real-time decision-making through effective dashboard
-        development and data visualization.
-      - Optimized game difficulty balancing in Frozen Free Fall (R and optimization
-        models) decreasing churn by 3% and increasing active users by 2% per month.
-      - Improved user engagement in Scrabble Go by reducing multiplayer turn intervals
-        by 20%, resulting in a 12% increase in average gameplay time.
-      - Collaborated with product and marketing stakeholders, leading weekly performance
-        meetings, providing data-driven recommendations that drove €1.5M in annual
-        revenue growth.
-      - Supported campaign performance analysis and contributed to marketing benchmark
-        development and optimization via data analysis.
-    - company: Genera Games
-      position: Data Engineer – Data Scientist
-      start_date: 2017-05
-      end_date: 2018-09
+      - Designed and implemented AWS-based architecture (EC2, SES, S3, VPC, ELB) and
+        documented infrastructure solutions.
+      - Built bespoke servers using Ansible-driven automation and integrated backups
+        with encrypted offsite storage.
+      - Developed unattended upgrades and Docker containerized services, implementing
+        cost-effective cloud solutions.
+      - Integrated third-party services with CRM and payment platforms, ensuring secure
+        and reliable access.
+    - company: Skvare
+      position: DevOps
+      start_date: 2017-07
+      end_date: 2017-11
       location: ''
-      summary: ''
+      summary: Managed core Drupal/Linux server infrastructure, driving automation
+        and performance optimization.
       highlights:
-      - Developed LTV models (R, Machine Learning, TensorFlow, SQL queries) to optimize
-        ad spend allocation and marketing ROI by 18%.
-      - Automated data extraction, manipulation, and transformation pipelines (Python,
-        numpy, pandas, SQL), reducing ETL execution time by 70% and operational costs
-        by €150K annually.
-      - Implemented rigorous data validation protocols, improving data quality by
-        over 25%, and ensuring accuracy for analysis and reporting.
-      - Contributed to monetization strategy optimization (R, Tidyverse, ggplot),
-        increasing IAP revenue by 10% through data-driven pricing adjustments.
-      - Worked with large datasets using cloud-based analytics platforms including
-        Apache Spark and Databricks for streamlining analytics workflows.
-    - company: RedBorder
-      position: Data Analyst Internship
-      start_date: 2016-02
-      end_date: 2016-07
+      - Conducted architecture reviews, system administration, and multi-server cluster
+        management.
+      - Built Jenkins-based CI/CD pipelines and collaborated via issue tracking to
+        streamline deployments.
+      - Managed deployments with Git repositories (Bitbucket and GitHub), contributing
+        to infrastructure documentation.
+    - company: Yorkshire Electrical Supplies Limited
+      position: Solutions Architect
+      start_date: 2014-05
+      end_date: 2015-12
       location: ''
-      summary: ''
+      summary: Freelance consultant modernizing business infrastructure and e-commerce
+        systems.
       highlights:
-      - Implemented automated large-scale data pipelines using Apache Spark and Scala,
-        reducing malware classification time by 30%.
-      - Conducted exploratory data analysis (EDA) on 10M+ cybersecurity events, improving
-        threat detection models with advanced data manipulation and transformation
-        techniques.
-    Education:
-    - institution: Universidad Pablo de Olavide
-      area: Big Data and Business Analytics
-      degree: PG
-      start_date: '2016'
-      end_date: '2017'
-      date: 2016 - 2017
+      - Virtualized key business systems, implemented automated backup strategies.
+      - Administered databases including PostgreSQL and migration tasks.
+      - Redesigned e-commerce platform with a focus on scalability and security.
+    - company: Mint Wireless
+      position: System Administrator
+      start_date: 2013-08
+      end_date: 2014-03
       location: ''
-      summary: ''
+      summary: Built PCI-compliant payment gateway solutions, focusing on secure infrastructure
+        design.
+      highlights:
+      - Installed, configured, and secured Linux and Windows Servers across on-prem
+        and cloud environments.
+      - Installed HSM hardware, implemented 2FA (Duo/Azure), and contributed to identity/access
+        management improvements.
+      - Researched and documented infrastructure implementations with a focus on security
+        auditing.
+    - company: Mint Wireless
+      position: System Administrator
+      start_date: 2014-05
+      end_date: 2014-06
+      location: ''
+      summary: Continuation of prior contract work.
       highlights: []
-    - institution: Universidad de Sevilla
-      area: Telecommunication Engineering
-      degree: BSc
-      start_date: '2010'
-      end_date: '2016'
-      date: 2010 - 2016
+    - company: Webfusion/123-Reg/Pipex
+      position: Hosting Support
+      start_date: 2008-07
+      end_date: 2013-01
       location: ''
-      summary: ''
-      highlights: []
+      summary: Customer support and hosting infrastructure management for dedicated
+        server deployments.
+      highlights:
+      - Managed installation, migrations, and performance tuning across FreeBSD, Linux,
+        and Windows platforms.
+      - Created automation and documentation to optimize support workflows.
+      - Met SLAs through rapid incident response, minimizing disruptions.
+    - company: Teamtalk Media
+      position: 1st Line Support
+      start_date: 2005-08
+      end_date: 2006-08
+      location: ''
+      summary: Frontline IT support with exposure to Windows Server administration
+        and incident response.
+      highlights:
+      - Handled installations, troubleshooting, and repair of diverse hardware/software
+        components.
+      - Supported user account management and permissions, contributing to secure
+        access controls.
     Skills:
     - label: Skills
-      details: SQL Queries, Python Scripting, R, Excel (MS Excel), Power BI, Tableau,
-        Automation, Data Manipulation, Data Analysis, Data Visualization, Data Collection,
-        Communication, Cloud-based Analytics Platforms, Media Measurement Analytics,
-        Leadership, Adaptability
-    Projects:
-    - name: MostInDemandSkills Platform
-      summary: Analyzing over 100 daily job postings from 5 platforms to assess skills
-        demand by role and country in data science and tech (Python, Streamlit, APIs,
-        n8n). Working on recommendation system to show users the skills they have
-        learned based on their CV (Python, LLM, Langchain). Also developed dashboards
-        for visualization using Streamlit.
-      url: https://mostindemandskills.streamlit.app/
+      details: 'Cloud Platforms: AWS, Azure, GCP, Cloudflare, CI/CD and Source Control,
+        Identity Management & Security, Incident Response & IT Service Management,
+        Infrastructure Documentation, Server & Application Technologies, Programming
+        & Scripting, Performance Testing & Optimization, Project Management & Collaboration,
+        Virtualization & Containerization, Web Technologies & CMS'
 design:
   theme: classic
   page:
