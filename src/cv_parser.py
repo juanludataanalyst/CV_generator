@@ -61,10 +61,7 @@ Return the result as a JSON object. Use full URLs (e.g., "https://github.com/use
     result = await agent.run(prompt)
     json_str = result.data
 
-    print("----- Raw LLM output -----")
-    print(json_str)
-    print("----- End of LLM output -----")
-
+    # Ocultar salida cruda del LLM
     try:
         json_cv = json.loads(json_str)
     except json.JSONDecodeError:

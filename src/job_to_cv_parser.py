@@ -194,7 +194,7 @@ Respond ONLY with the updated CV as a valid JSON object.
 
     result = await agent.run(prompt)
     json_str = result.data
-    print("\nLLM Raw Output:\n", json_str)
+    # Ocultar salida cruda del LLM
     try:
         updated_cv = json.loads(json_str)
     except json.JSONDecodeError:
