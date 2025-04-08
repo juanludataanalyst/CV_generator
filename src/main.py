@@ -2,6 +2,7 @@ from cv_extraction import extract_cv_text
 from cv_parser import parse_to_json_resume, get_model
 from job_scraper import scrape_job_description
 from job_to_cv_parser import adapt_cv_to_job
+from json_to_rendercv_yaml import convert
 from pydantic_ai import Agent
 import json
 
@@ -61,6 +62,10 @@ def main():
     print("Adapted CV saved to adapted_resume.json")
 
     print(f"Final ATS Match Score: {adapted_cv.get('ats_match_score', 'N/A')}%")
+
+    # Convert adapted_resume.json to YAML for RenderCV
+    convert("adapted_resume.json", "cv_rendercv.yaml")
+    print("Converted adapted_resume.json to cv_rendercv.yaml")
 
 if __name__ == "__main__":
     main()

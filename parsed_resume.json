@@ -11,7 +11,7 @@
       {
         "network": "LinkedIn",
         "username": "juanludataanalyst",
-        "url": "https://linkedin/in/juanludataanalyst"
+        "url": "https://linkedin.com/in/juanludataanalyst"
       },
       {
         "network": "GitHub",
@@ -22,20 +22,20 @@
   },
   "work": [
     {
-      "company": "R10 hostal chain @ Freelance",
+      "company": "R10 hostal chain (Freelance)",
       "position": "Data Strategy Owner",
       "website": null,
       "startDate": "2025-01",
       "endDate": "",
       "summary": "",
       "highlights": [
-        "Built data infrastructure from scratch, creating automated, scalable pipelines (Python, pandas) and dashboards (PowerBI) for real-time analytics.",
-        "Optimized room distribution (R, Optimization Models) boosting occupancy by 20% and revenue by 15% compared to the previous year"
+        "Built data infrastructure from scratch, creating automated, scalable pipelines (Python, pandas) and dashboards (Power BI) for real-time analytics.",
+        "Optimized room distribution (R, Optimization Models) boosting occupancy by 20% and revenue by 15% compared to the previous year."
       ]
     },
     {
-      "company": "Family Care and Travel",
-      "position": "Break Time",
+      "company": "Family Care and Travel (Break Time)",
+      "position": "",
       "website": null,
       "startDate": "2023-01",
       "endDate": "2024-12",
@@ -57,7 +57,7 @@
         "Developed and maintained Power BI dashboards (DAX), reducing reporting time by 30% and enabling real-time decision-making.",
         "Optimized game difficulty balancing in Frozen Free Fall (R and optimization models) decreasing churn by 3% and increasing active users by 2% per month.",
         "Improved user engagement in Scrabble Go by reducing multiplayer turn intervals by 20%, resulting in a 12% increase in average gameplay time.",
-        "Collaborated with stakeholders, leading weekly performance meeting to drive +€1.5M in annual revenue growth through data-driven game optimization and effective communication."
+        "Collaborated with stakeholders, leading weekly performance meetings to drive +€1.5M in annual revenue growth through data-driven game optimization and effective communication."
       ]
     },
     {
@@ -70,8 +70,8 @@
       "highlights": [
         "Developed an LTV model (R, Machine Learning, TensorFlow, SQL) that improved marketing ROI by 18% through optimized ad spend allocation.",
         "Automated data pipelines (Python, numpy, pandas, SQL) reducing ETL execution time by 70% and cutting operational cost by €150K annually.",
-        "Implemented data quality assurance protocols, reducing report errors and ensuring data quality (Python, pandas, matplotlib, CI/CD), ensuring data quality with over 25% improvement.",
-        "Contributed to optimizing in-game monetization strategies (R, Tydiverse, ggpplot) increasing IAP revenue by 10% through data-driven price adjustments."
+        "Implemented data quality assurance protocols, reducing report errors and ensuring data quality (Python, pandas, matplotlib, CI/CD), resulting in over 25% improvement.",
+        "Contributed to optimizing in-game monetization strategies (R, Tidyverse, ggplot), increasing IAP revenue by 10% through data-driven price adjustments."
       ]
     },
     {
@@ -100,7 +100,7 @@
     {
       "institution": "Universidad de Sevilla",
       "area": "Telecommunication Engineering",
-      "studyType": "Bachelor",
+      "studyType": "",
       "startDate": "2010",
       "endDate": "2016",
       "score": "",
@@ -168,14 +168,7 @@
         "Working on recommendation system to show users the skills they have learned based on their CV (Python, LLM, Langchain).",
         "Analyzed 7000+ job postings to date. Live app: mostindemandskills.streamlit.app"
       ],
-      "keywords": [
-        "Python",
-        "Streamlit",
-        "APIs",
-        "n8n",
-        "LLM",
-        "Langchain"
-      ],
+      "keywords": [],
       "startDate": "2024",
       "endDate": "",
       "url": "https://mostindemandskills.streamlit.app/",
