@@ -10,4 +10,4 @@ openai
 python-dateutil
 PyYAML
 email-validator
-rendercv
+rendercv[full]

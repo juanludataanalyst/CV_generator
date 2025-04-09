@@ -262,7 +262,8 @@ Respond ONLY with the updated CV as a valid JSON object.
     print(f"Experience: {final_match['resume_years']} years (Job requires: {final_match['job_years']})")
     print("CV optimization process completed.")
 
-    return updated_cv
+    final_score = final_match['score']
+    return adapted_cv, initial_match, final_match, initial_score, final_score
 
 # Ejemplo de uso
 if __name__ == "__main__":

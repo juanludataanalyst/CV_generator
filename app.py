@@ -24,7 +24,7 @@ if st.button("Generate ATS-optimized CV") and uploaded_file and job_url:
 
         # Run the pipeline
         try:
-            run_pipeline("uploaded_cv.pdf", job_url, log_callback=log)
+            results = run_pipeline("uploaded_cv.pdf", job_url, log_callback=log)
         except Exception as e:
             log(f"Error: {e}")
             st.error("An error occurred during processing.")
@@ -35,4 +35,12 @@ if st.button("Generate ATS-optimized CV") and uploaded_file and job_url:
             pdf_bytes = f.read()
 
     st.success("Done! Download your adapted CV below.")
+
+    st.subheader("ATS Analysis")
+    st.write(f"Initial ATS Score: {results['initial_score']}%")
+    st.write(f"Final ATS Score: {results['final_score']}%")
+    st.write("Missing Skills:", results['final_match']['missing_skills'])
+    st.write("Missing Keywords:", results['final_match']['missing_keywords'])
+    st.write("Experience Gap:", results['final_match']['experience_gap'], "years")
+
     st.download_button("Download adapted CV", data=pdf_bytes, file_name="Adapted_CV.pdf", mime="application/pdf")
