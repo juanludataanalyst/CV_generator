@@ -10,6 +10,7 @@ import subprocess
 import json
 import os
 import asyncio
+import streamlit as st
 
 def run_llm(agent, prompt):
     return asyncio.run(agent.run(prompt))
