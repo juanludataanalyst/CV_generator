@@ -30,28 +30,29 @@ def get_filtered_content(url: str) -> str:
         for comment in soup.find_all(string=lambda text: isinstance(text, Comment)):
             comment.extract()
 
-        # Heuristic: find the main content block by keywords or size
-        content = None
-        main_tags = ["main", "article", "section", "div"]
-        keywords = ["description", "job", "responsibilities", "details", "requirements"]
+        # Heuristic: find the main content block by keywords
+        candidates = []
+        keywords = ["description", "job", "responsibilities", "details", "requirements", "posting", "vacancy", "position", "role", "summary", "body", "content"]
 
-        for tag_name in main_tags:
-            for tag in soup.find_all(tag_name):
-                if any(
-                    keyword in str(tag.get("class", "")).lower()
-                    or keyword in str(tag.get("id", "")).lower()
-                    or keyword in tag.get_text().lower()
-                    for keyword in keywords
-                ):
-                    content = tag
-                    break
-                elif not content and tag.get_text(strip=True):
-                    if len(tag.get_text().split()) > 50:
-                        content = tag
-            if content:
-                break
+        for tag in soup.find_all(["main", "article", "section", "div"]):
+            text = tag.get_text(separator=" ", strip=True)
+            if not text or len(text.split()) < 30:
+                continue
+            score = 0
+            attrs = (tag.get("class", []) or []) + [tag.get("id", "")]
+            attrs_text = " ".join(attrs).lower()
+            if any(k in attrs_text for k in keywords):
+                score += 2
+            if any(k in text.lower() for k in keywords):
+                score += 1
+            candidates.append((score, len(text), tag))
 
-        if not content:
+        # Sort by score and length
+        candidates.sort(reverse=True)
+
+        if candidates:
+            content = candidates[0][2]
+        else:
             content = soup.body
 
         plain_text = content.get_text(separator="\n", strip=True)
@@ -83,13 +84,27 @@ Return only the job description without any additional comments:
     return result.data.strip()
 
 
-def scrape_job_description(url: str, agent: Agent) -> str:
+def scrape_job_description(url: str, agent: Agent, log_callback=None) -> str:
     """
     Extracts the job description from a job posting URL using HTML filtering and an LLM agent.
     """
     filtered_content = get_filtered_content(url)
+
+    print(f"[DEBUG] Filtered content length: {len(filtered_content)}")
+    print(f"[DEBUG] Filtered content starts with: {filtered_content[:100]}")
+
     if filtered_content.startswith("Error"):
         return filtered_content
+
+    try:
+        with open("job_description.txt", "w", encoding="utf-8") as f:
+            f.write(filtered_content)
+        print("Saved job_description.txt successfully.")
+    except Exception as e:
+        print(f"Error saving job_description.txt: {e}")
+
+    print("Filtered content preview:")
+    print(filtered_content[:1000])  # primeros 1000 caracteres
 
     description = extract_description_with_llm(filtered_content, agent)
     return description

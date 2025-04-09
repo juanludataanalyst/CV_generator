@@ -47,7 +47,10 @@ def run_pipeline(pdf_path: str, job_url: str, log_callback=None):
     json_cv = parse_to_json_resume(cv_text, agent)
 
     log("Scraping job description...")
-    job_description = scrape_job_description(job_url, agent)
+    job_description = scrape_job_description(job_url, agent, log_callback=log)
+
+    if job_description.startswith("Error"):
+        raise RuntimeError("Error scraping page, please paste the description manually.")
 
     log("Adapting CV to job description...")
     adapted_cv, initial_match, final_match, initial_score, final_score = adapt_cv_to_job(json_cv, job_description, agent)

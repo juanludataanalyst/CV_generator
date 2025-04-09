@@ -3,19 +3,17 @@ cv:
   email: juanludataanalyst@gmail.com
   phone: '+34608027426'
   location: ''
-  website: https://linkedin.com/in/juanludataanalyst
+  website: https://linkedin/in/juanludataanalyst
   social_networks:
   - network: GitHub
     username: juanludataanalyst
   sections:
     Summary:
-    - Data-driven problem solver passionate about leveraging technology to drive business
-      value. With a strong background in data engineering, analytics, and automation
-      (SQL, Python, R, Power BI), and hands-on experience building scalable pipelines,
-      I am expanding my expertise in cloud platforms (AWS, Azure, GCP), DevOps practices,
-      CI/CD pipelines, and security infrastructure including identity management with
-      Okta. Adept at optimizing internal systems, managing IT requests, and documenting
-      processes using tools like Confluence to bridge gaps between teams and technology.
+    - Data-driven problem solver who thrives at the intersection of business and technology.
+      With a strong technical background, I bridge the gap between data and decision-making,
+      leveraging my expertise in SQL, Python, R, Power BI and Statistical Methods.
+      Proven track record of increasing Revenue, improving efficiency and enhancing
+      decision-making through analytics
     Experience:
     - company: R10 hostal chain @ Freelance
       position: Data Strategy Owner
@@ -25,16 +23,9 @@ cv:
       summary: ''
       highlights:
       - Built data infrastructure from scratch, creating automated, scalable pipelines
-        (Python, pandas), optimizing data quality, and leveraging cloud platforms
-        for deployment.
-      - Created and managed interactive dashboards (PowerBI) for real-time analytics,
-        improving operational decision-making.
+        (Python, pandas) and dashboards (PowerBI) for real-time analytics.
       - Optimized room distribution (R, Optimization Models) boosting occupancy by
-        20% and revenue by 15% compared to the previous year.
-      - Worked on improving internal management systems by integrating with cloud
-        services (AWS, Azure, GCP) for more scalable solutions.
-      - Documented key data and infrastructure processes within knowledge management
-        systems such as Confluence, enhancing collaboration.
+        20% and revenue by 15% compared to the previous year
     - company: Family Care and Travel
       position: Break Time
       start_date: 2023-01
@@ -59,14 +50,12 @@ cv:
       - Developed and maintained Power BI dashboards (DAX), reducing reporting time
         by 30% and enabling real-time decision-making.
       - Optimized game difficulty balancing in Frozen Free Fall (R and optimization
-        models), decreasing churn by 3% and increasing active users by 2% per month.
+        models) decreasing churn by 3% and increasing active users by 2% per month.
       - Improved user engagement in Scrabble Go by reducing multiplayer turn intervals
         by 20%, resulting in a 12% increase in average gameplay time.
-      - Collaborated with stakeholders, leading weekly performance meetings to drive
+      - Collaborated with stakeholders, leading weekly performance meeting to drive
         +€1.5M in annual revenue growth through data-driven game optimization and
         effective communication.
-      - Supported internal management systems improvement, utilizing cloud platforms
-        (AWS) for data storage and sharing, and documenting processes via Confluence.
     - company: Genera Games
       position: Data Engineer – Data Scientist
       start_date: 2017-05
@@ -78,16 +67,13 @@ cv:
         marketing ROI by 18% through optimized ad spend allocation.
       - Automated data pipelines (Python, numpy, pandas, SQL) reducing ETL execution
         time by 70% and cutting operational cost by €150K annually.
-      - Implemented data quality assurance protocols, reducing report errors and improving
-        data quality (Python, pandas, matplotlib).
-      - Contributed to optimizing in-game monetization strategies (R, Tidyverse, ggplot),
-        increasing IAP revenue by 10%.
-      - Maintained CI/CD pipelines (Jenkins, Git) for data product deployments, gaining
-        familiarity with DevOps concepts and workflow automation.
-      - Explored integration with cloud services (AWS, Azure) and tools such as GitHub
-        and Confluence for improved workflow documentation and collaboration.
+      - Implemented data quality assurance protocols, reducing report errors and ensuring
+        data quality (Python, pandas, matplotlib, CI/CD), ensuring data quality with
+        over 25% improvement.
+      - Contributed to optimizing in-game monetization strategies (R, Tidyverse, ggplot)
+        increasing IAP revenue by 10% through data-driven price adjustments.
     - company: RedBorder
-      position: Data Analyst Intern
+      position: Data Analyst Internship
       start_date: 2016-02
       end_date: 2016-07
       location: ''
@@ -97,8 +83,6 @@ cv:
         malware classification time by 30%.
       - Conducted EDA on 10M+ cybersecurity events, improving machine learning-based
         threat detection accuracy.
-      - Gained exposure to security infrastructure and identity management concepts
-        within cybersecurity data analysis environments.
     Education:
     - institution: Universidad Pablo de Olavide
       area: Big Data and Business Analytics
@@ -111,7 +95,7 @@ cv:
       highlights: []
     - institution: Universidad de Sevilla
       area: Telecommunication Engineering
-      degree: Under
+      degree: Degre
       start_date: '2010'
       end_date: '2016'
       date: 2010 - 2016
@@ -120,12 +104,14 @@ cv:
       highlights: []
     Skills:
     - label: Skills
-      details: SQL, Python, R, Power BI, Excel, DevOps, Cloud Platforms, Security
-        Infrastructure, Incident Response, Documentation, Git & GitHub, Leadership,
-        Effective Communication, Adaptability
+      details: Data and Business Analytics
     Projects:
     - name: MostInDemandSkills Platform
-      summary: ''
+      summary: Analyzing over 100 daily job postings from 5 platforms to assess skills
+        demand by role and country in data science and tech (Python, Streamlit, APIs,
+        n8n). Working on recommendation system to show users the skills they have
+        learned based on their CV (Python, LLM, Langchain). Analyzed 7000+ job postings
+        to date.
       url: https://mostindemandskills.streamlit.app/
 design:
   theme: classic
