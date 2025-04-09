@@ -21,40 +21,47 @@ def get_model():
     provider = OpenAIProvider(base_url=base_url, api_key=api_key)
     return OpenAIModel(model_name, provider=provider)
 
-def run_pipeline(pdf_path: str, job_url: str):
+def run_pipeline(pdf_path: str, job_url: str, log_callback=None):
     """
     Run the full CV adaptation pipeline.
 
     Args:
         pdf_path (str): Path to the uploaded CV PDF.
         job_url (str): URL of the job description.
+        log_callback (callable, optional): Function to log messages.
     """
-    # 1. Extract text from PDF
+    def log(msg):
+        if log_callback:
+            log_callback(msg)
+        else:
+            print(msg)
+
+    log("Extracting text from PDF...")
     cv_text = extract_cv_text(pdf_path)
 
-    # 2. Create LLM agent
+    
     agent = Agent(get_model())
 
-    # 3. Parse text to JSON Resume
+    log("Parsing CV to JSON Resume...")
     json_cv = parse_to_json_resume(cv_text, agent)
 
-    # 4. Scrape job description
+    log("Scraping job description...")
     job_description = scrape_job_description(job_url, agent)
 
-    # 5. Adapt CV to job description
+    log("Adapting CV to job description...")
     adapted_cv = adapt_cv_to_job(json_cv, job_description, agent)
 
-    # 6. Save adapted CV JSON
+    log("Saving adapted CV ...")
     with open("adapted_resume.json", "w", encoding="utf-8") as f:
         json.dump(adapted_cv, f, indent=2, ensure_ascii=False)
 
-    # 7. Convert to YAML for RenderCV
+    log("Converting for render..")
     convert("adapted_resume.json", "cv_rendercv.yaml")
 
     import glob
     import shutil
 
-    # 8. Generate final PDF with RenderCV CLI
+    log("Generating final PDF...")
     try:
         result = subprocess.run(
             ["rendercv", "render", "cv_rendercv.yaml"],
@@ -63,16 +70,16 @@ def run_pipeline(pdf_path: str, job_url: str):
             text=True
         )
     except subprocess.CalledProcessError as e:
-        print("RenderCV failed with exit code", e.returncode)
-        print("STDOUT:\n", e.stdout)
-        print("STDERR:\n", e.stderr)
+        log(f"RenderCV failed with exit code {e.returncode}")
+        log(f"STDOUT:\n{e.stdout}")
+        log(f"STDERR:\n{e.stderr}")
         raise
 
-    # 9. Find the generated PDF in rendercv_output/
+    log("Finding generated PDF...")
     pdf_files = glob.glob("rendercv_output/*.pdf")
     if not pdf_files:
         raise FileNotFoundError("No PDF generated in rendercv_output/")
     latest_pdf = max(pdf_files, key=os.path.getmtime)
 
-    # 10. Copy or move it to final_cv.pdf
+    log("Copying final PDF to final_cv.pdf")
     shutil.copy(latest_pdf, "final_cv.pdf")
