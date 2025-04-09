@@ -44,7 +44,7 @@ if (st.button("Generate ATS-optimized CV")
     with st.spinner("Processing..."):
         log("Starting pipeline...")
         try:
-            results = run_pipeline(st.session_state["uploaded_cv_path"], job_url, log_callback=log)
+            results = run_pipeline(st.session_state["uploaded_cv_path"], job_url=job_url, job_text=None, log_callback=log)
             if "error" in results and results["error"] == "scraping_failed":
                 st.session_state["scraping_failed"] = True
                 log("Scraping failed. Please provide the job description manually.")
@@ -59,62 +59,30 @@ if (st.button("Generate ATS-optimized CV")
             st.error(f"An unexpected error occurred: {e}")
 
 # Manejo del fallo del scraping
-if st.session_state["scraping_failed"] and not st.session_state["continue_with_manual"]:
+if st.session_state["scraping_failed"]:
     st.warning("Error scraping page. Please paste the job description manually below and click 'Continue'.")
+
     st.session_state["manual_job_text"] = st.text_area(
         "Paste the job description here:",
         value=st.session_state["manual_job_text"]
     )
+
     if st.button("Continue with pasted description") and st.session_state["manual_job_text"].strip():
         st.session_state["continue_with_manual"] = True
 
-# Procesamiento con descripción manual
-if st.session_state["continue_with_manual"] and st.session_state["uploaded_cv_path"]:
+if st.session_state.get("continue_with_manual") and st.session_state.get("manual_job_text", "").strip():
     with st.spinner("Processing with manual job description..."):
-        # Extraer texto del CV
-        from src.cv_parser import extract_cv_text
-        cv_text = extract_cv_text(st.session_state["uploaded_cv_path"])
-
-        # Inicializar agente
-        agent = None
         try:
-            from pipeline import get_model
-            from pydantic_ai import Agent as PAgent
-            agent = PAgent(get_model())
-        except Exception as e:
-            st.error(f"Error initializing agent: {e}")
-            st.stop()
-
-        # Parsear CV a JSON
-        from src.cv_parser import parse_to_json_resume
-        json_cv = parse_to_json_resume(cv_text, agent)
-
-        # Adaptar CV
-        from src.job_to_cv_parser import adapt_cv_to_job
-        adapted_cv, initial_match, final_match, initial_score, final_score = adapt_cv_to_job(
-            json_cv, st.session_state["manual_job_text"], agent
-        )
-
-        # Guardar JSON adaptado
-        with open("adapted_resume.json", "w", encoding="utf-8") as f:
-            json.dump(adapted_cv, f, indent=2, ensure_ascii=False)
-
-        # Convertir a YAML
-        from src.json_to_rendercv_yaml import convert
-        convert("adapted_resume.json", "cv_rendercv.yaml")
-
-        # Generar PDF
-        try:
-            subprocess.run(["rendercv", "render", "cv_rendercv.yaml"], check=True)
-            pdf_files = glob.glob("rendercv_output/*.pdf")
-            if not pdf_files:
-                st.error("No PDF generated.")
-                st.stop()
-            latest_pdf = max(pdf_files, key=os.path.getmtime)
-            shutil.copy(latest_pdf, "final_cv.pdf")
+            from pipeline import run_pipeline
+            results = run_pipeline(
+                st.session_state["uploaded_cv_path"],
+                job_url=None,
+                job_text=st.session_state["manual_job_text"],
+                log_callback=log
+            )
             with open("final_cv.pdf", "rb") as f:
                 pdf_bytes = f.read()
             st.success("Done! Download your adapted CV below.")
             st.download_button("Download adapted CV", data=pdf_bytes, file_name="Adapted_CV.pdf", mime="application/pdf")
         except Exception as e:
-            st.error(f"Error generating PDF: {e}")
+            st.error(f"Error processing manual job description: {e}")

@@ -3,86 +3,118 @@ cv:
   email: juanludataanalyst@gmail.com
   phone: '+34608027426'
   location: ''
-  website: https://linkedin/in/juanludataanalyst
+  website: https://linkedin.com/in/juanludataanalyst
   social_networks:
   - network: GitHub
     username: juanludataanalyst
   sections:
     Summary:
-    - Data-driven problem solver who thrives at the intersection of business and technology.
-      With a strong technical background, I bridge the gap between data and decision-making,
-      leveraging my expertise in SQL, Python, R, Power BI and Statistical Methods.
-      Proven track record of increasing Revenue, improving efficiency and enhancing
-      decision-making through analytics
+    - Data-driven problem solver skilled in business intelligence, predictive modeling,
+      and marketing analytics, thriving at the intersection of business and technology.
+      Adept at transforming large datasets into actionable insights using advanced
+      data analysis, data visualization, and dashboard creation. Proven expertise
+      in SQL, Python, R, Power BI, and cloud platforms (AWS). Strong communicator
+      with a track record of enhancing business performance through data-driven decisions,
+      collaborating across functions, and optimizing campaign performance. Passionate
+      about web3 technologies and continuous learning.
     Experience:
     - company: R10 hostal chain @ Freelance
       position: Data Strategy Owner
       start_date: 2025-01
       end_date: present
       location: ''
-      summary: ''
+      summary: Leading end-to-end analytics initiatives including business intelligence
+        architecture, dashboard creation, and campaign performance tracking for a
+        growing hospitality brand.
       highlights:
-      - Built data infrastructure from scratch, creating automated, scalable pipelines
-        (Python, pandas) and dashboards (PowerBI) for real-time analytics.
-      - Optimized room distribution (R, Optimization Models) boosting occupancy by
-        20% and revenue by 15% compared to the previous year
+      - Built cloud-based data infrastructure (AWS), integrating disparate data sources
+        to enable actionable business intelligence and marketing analytics.
+      - Created automated, scalable ETL pipelines (Python, pandas) and interactive
+        dashboards (Power BI) for real-time KPI tracking and data visualization across
+        sales, bookings, and campaign channels.
+      - Implemented marketing analytics frameworks to measure performance of promotional
+        campaigns, improving ROI tracking.
+      - Developed predictive models in R to forecast occupancy and revenue trends,
+        supporting strategic decision-making.
+      - Collaborated cross-functionally with operations and marketing teams to align
+        data strategy with business objectives.
+      - Mentored junior freelancers on data best practices and data visualization
+        techniques.
+      - Optimized room distribution using optimization models (R), boosting occupancy
+        by 20% and revenue by 15% compared to previous year.
     - company: Family Care and Travel
       position: Break Time
       start_date: 2023-01
       end_date: 2024-12
       location: ''
-      summary: ''
+      summary: Focused on personal development and soft skills essential for analytics
+        leadership roles, including communication and project management.
       highlights:
-      - Supported a family member during illness, developing empathy, responsibility
+      - Supported a family member during illness, developing empathy, responsibility,
         and resilience.
-      - Volunteered in international programs, sharpening leadership, adaptability
-        and communication skills as an event organizer and receptionist.
+      - Volunteered in international programs, sharpening leadership, adaptability,
+        cross-cultural collaboration, and communication skills.
+      - Organized and oversaw multiple events and projects, enhancing project management
+        capabilities in multifaceted environments.
     - company: Scopely
       position: Data Analyst
       start_date: 2018-09
       end_date: 2022-12
       location: ''
-      summary: ''
+      summary: Led full-cycle data analysis and visualization efforts driving revenue
+        growth and user engagement in a dynamic gaming environment through data modeling,
+        predictive analytics, and campaign optimization.
       highlights:
-      - Conducted advanced segmentation analysis (Python, R, Classification models,
-        scikit-learn) to refine marketing strategies, achieving an 11% increase in
-        user retention and 7% boost in ARPU.
-      - Developed and maintained Power BI dashboards (DAX), reducing reporting time
-        by 30% and enabling real-time decision-making.
-      - Optimized game difficulty balancing in Frozen Free Fall (R and optimization
-        models) decreasing churn by 3% and increasing active users by 2% per month.
-      - Improved user engagement in Scrabble Go by reducing multiplayer turn intervals
-        by 20%, resulting in a 12% increase in average gameplay time.
-      - Collaborated with stakeholders, leading weekly performance meeting to drive
-        +€1.5M in annual revenue growth through data-driven game optimization and
-        effective communication.
+      - Conducted advanced segmentation analysis (Python, R, classification models,
+        scikit-learn) and predictive modeling to refine marketing strategies, achieving
+        an 11% increase in user retention and 7% boost in ARPU.
+      - Designed, developed, and maintained comprehensive Power BI dashboards (DAX),
+        facilitating multi-channel campaign performance tracking and reducing reporting
+        time by 30%.
+      - Applied statistical analysis and data visualization to identify optimization
+        opportunities within product and marketing initiatives.
+      - Optimized game difficulty balancing (R, optimization models), reducing churn
+        and increasing active users.
+      - Improved engagement metrics by redesigning gameplay mechanisms based on data-driven
+        insights.
+      - Led weekly cross-functional performance meetings, translating complex data
+        into strategic recommendations, contributing to over €1.5M in annual revenue
+        growth.
+      - Collaborated with client services, marketing, and product teams, enhancing
+        communication and aligning data analytics with business intelligence goals.
     - company: Genera Games
       position: Data Engineer – Data Scientist
       start_date: 2017-05
       end_date: 2018-09
       location: ''
-      summary: ''
+      summary: Developed data analytics solutions integrating business intelligence,
+        marketing analytics, and automation to enhance user acquisition and monetization.
       highlights:
-      - Developed an LTV model (R, Machine Learning, TensorFlow, SQL) that improved
-        marketing ROI by 18% through optimized ad spend allocation.
-      - Automated data pipelines (Python, numpy, pandas, SQL) reducing ETL execution
-        time by 70% and cutting operational cost by €150K annually.
-      - Implemented data quality assurance protocols, reducing report errors and ensuring
-        data quality (Python, pandas, matplotlib, CI/CD), ensuring data quality with
-        over 25% improvement.
-      - Contributed to optimizing in-game monetization strategies (R, Tidyverse, ggplot)
-        increasing IAP revenue by 10% through data-driven price adjustments.
+      - Developed an LTV predictive model (R, machine learning, TensorFlow, SQL) improving
+        ROI of marketing campaigns by 18%.
+      - Automated ETL pipelines (Python, NumPy, pandas, SQL) to integrate and process
+        data from multiple platforms, improving efficiency and database management,
+        reducing ETL execution time by 70%.
+      - Implemented data quality assurance protocols and dashboards, improving data
+        consistency and supporting marketing analytics efforts.
+      - Created data visualization tools (R, ggplot) offering actionable insights
+        for campaign optimization and product strategies.
+      - Supported campaign performance tracking and reporting improvements, enabling
+        better decision-making for cross-functional teams.
     - company: RedBorder
       position: Data Analyst Internship
       start_date: 2016-02
       end_date: 2016-07
       location: ''
-      summary: ''
+      summary: Conducted large-scale data analysis leveraging cloud infrastructure
+        and predictive modeling to support cybersecurity initiatives.
       highlights:
-      - Implemented large-scale data pipelines using Apache Spark and Scala, reducing
-        malware classification time by 30%.
-      - Conducted EDA on 10M+ cybersecurity events, improving machine learning-based
-        threat detection accuracy.
+      - Built large-scale ETL pipelines using Apache Spark and Scala on cloud environments
+        (AWS), reducing malware classification time by 30%.
+      - Applied exploratory data analysis, predictive modeling, and statistical techniques
+        on 10M+ cybersecurity events to improve threat detection accuracy.
+      - Expanded skills in cloud infrastructure and big data management within a cross-functional
+        collaborative environment.
     Education:
     - institution: Universidad Pablo de Olavide
       area: Big Data and Business Analytics
@@ -95,7 +127,7 @@ cv:
       highlights: []
     - institution: Universidad de Sevilla
       area: Telecommunication Engineering
-      degree: Degre
+      degree: ''
       start_date: '2010'
       end_date: '2016'
       date: 2010 - 2016
@@ -104,14 +136,15 @@ cv:
       highlights: []
     Skills:
     - label: Skills
-      details: Data and Business Analytics
+      details: SQL, Python, R, Power BI, Excel, AWS, Tableau, Google Analytics, Mixpanel,
+        JavaScript, Communication Skills, Project Management, Leadership, Adaptability,
+        Java
     Projects:
     - name: MostInDemandSkills Platform
       summary: Analyzing over 100 daily job postings from 5 platforms to assess skills
         demand by role and country in data science and tech (Python, Streamlit, APIs,
-        n8n). Working on recommendation system to show users the skills they have
-        learned based on their CV (Python, LLM, Langchain). Analyzed 7000+ job postings
-        to date.
+        n8n). Project utilizes cloud infrastructure and data visualization to power
+        real-time analytics dashboards.
       url: https://mostindemandskills.streamlit.app/
 design:
   theme: classic

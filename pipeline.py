@@ -22,15 +22,7 @@ def get_model():
     provider = OpenAIProvider(base_url=base_url, api_key=api_key)
     return OpenAIModel(model_name, provider=provider)
 
-def run_pipeline(pdf_path: str, job_url: str, log_callback=None):
-    """
-    Run the full CV adaptation pipeline.
-
-    Args:
-        pdf_path (str): Path to the uploaded CV PDF.
-        job_url (str): URL of the job description.
-        log_callback (callable, optional): Function to log messages.
-    """
+def run_pipeline(pdf_path: str, job_url: str = None, job_text: str = None, log_callback=None):
     def log(msg):
         if log_callback:
             log_callback(msg)
@@ -40,20 +32,28 @@ def run_pipeline(pdf_path: str, job_url: str, log_callback=None):
     log("Extracting text from PDF...")
     cv_text = extract_cv_text(pdf_path)
 
-    
     agent = Agent(get_model())
 
     log("Parsing CV to JSON Resume...")
     json_cv = parse_to_json_resume(cv_text, agent)
 
-    log("Scraping job description...")
-    job_description = scrape_job_description(job_url, agent, log_callback=log)
+    if job_text:
+        log("Using manual job description provided by user.")
+    else:
+        log("Scraping job description...")
+        job_text = scrape_job_description(job_url, agent, log_callback=log)
+        if job_text.startswith("Error"):
+            return {"error": "scraping_failed"}
 
-    if job_description.startswith("Error"):
-        return {"error": "scraping_failed"}
+    return _run_pipeline_core(cv_text, job_text, agent, log)
 
+def _run_pipeline_core(cv_text, job_text, agent, log):
     log("Adapting CV to job description...")
-    adapted_cv, initial_match, final_match, initial_score, final_score = adapt_cv_to_job(json_cv, job_description, agent)
+    adapted_cv, initial_match, final_match, initial_score, final_score = adapt_cv_to_job(
+        parse_to_json_resume(cv_text, agent),
+        job_text,
+        agent
+    )
 
     log("Saving adapted CV JSON...")
     with open("adapted_resume.json", "w", encoding="utf-8") as f:
@@ -67,7 +67,7 @@ def run_pipeline(pdf_path: str, job_url: str, log_callback=None):
 
     log("Generating final PDF with RenderCV CLI...")
     try:
-        result = subprocess.run(
+        subprocess.run(
             ["rendercv", "render", "cv_rendercv.yaml"],
             check=True,
             capture_output=True,
