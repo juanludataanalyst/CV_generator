@@ -10,13 +10,12 @@ import subprocess
 import json
 import os
 import asyncio
-import streamlit as st
 
 def run_llm(agent, prompt):
     return asyncio.run(agent.run(prompt))
 
 def get_model():
-    api_key = st.secrets["OPENROUTER_API_KEY"]
+    api_key =  "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"
     base_url = "https://openrouter.ai/api/v1"
     model_name = "openrouter/quasar-alpha"
     provider = OpenAIProvider(base_url=base_url, api_key=api_key)
