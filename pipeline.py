@@ -15,7 +15,7 @@ def run_llm(agent, prompt):
     return asyncio.run(agent.run(prompt))
 
 def get_model():
-    api_key =  "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"
+    api_key = st.secrets("OPENROUTER_API_KEY")
     base_url = "https://openrouter.ai/api/v1"
     model_name = "openrouter/quasar-alpha"
     provider = OpenAIProvider(base_url=base_url, api_key=api_key)
@@ -51,11 +51,11 @@ def run_pipeline(pdf_path: str, job_url: str, log_callback=None):
     log("Adapting CV to job description...")
     adapted_cv = adapt_cv_to_job(json_cv, job_description, agent)
 
-    log("Saving adapted CV ...")
+    log("Saving adapted CV JSON...")
     with open("adapted_resume.json", "w", encoding="utf-8") as f:
         json.dump(adapted_cv, f, indent=2, ensure_ascii=False)
 
-    log("Converting for..")
+    log("Converting to YAML for RenderCV...")
     convert("adapted_resume.json", "cv_rendercv.yaml")
 
     import glob
