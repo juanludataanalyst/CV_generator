@@ -2,53 +2,55 @@
 
 - Phone: +34 608 02 74 26
 - Email: [juanludataanalyst@gmail.com](mailto:juanludataanalyst@gmail.com)
-- LinkedIn: [juanludataanalyst](https://linkedin.com/in/juanludataanalyst)
+- Website: [www.linkedin.cominjuanludataanalyst](https://www.linkedin.com/in/juanludataanalyst)
 - GitHub: [juanludataanalyst](https://github.com/juanludataanalyst)
 
 
 # Summary
 
-Proactive Data Analyst with strong expertise in Python (pandas, NumPy), SQL queries, R and Power BI. Skilled in data exploration, manipulation, automation, and large dataset analysis to derive actionable insights. Experienced in developing automated data pipelines, interactive dashboards, validating data accuracy, and collaborating with internal stakeholders. Passionate about data visualization, campaign performance analysis, and optimizing data collection processes to support strategic decision-making.
+Data-driven problem solver thriving at the intersection of business, data engineering, and technology. Experienced in building automated data pipelines and scalable analytics solutions using SQL, Python, R, and cloud platforms. Proficient in version control with GitHub and adept at leveraging CI/CD pipelines to enhance deployment efficiency. Highly adaptable, eager to contribute to cloud platform management (AWS, Azure, GCP, Cloudflare), DevOps practices, and identity management solutions like Okta to improve IT infrastructure, security, and decision-making.
 
 # Experience
 
-## R10 hostal chain (Freelance), Data Strategy Owner
+## R10 hostal chain, Data Strategy Owner
 
 - Jan 2025 – present
-- Built data infrastructure from scratch, creating automated, scalable pipelines (Python, pandas) for data collection, transformation, and validation, as well as dashboards (PowerBI, Tableau) for real-time analytics and data visualization.
-- Optimized room distribution (R, Optimization Models) boosting occupancy by 20% and revenue by 15% compared to the previous year.
-- Developed interactive dashboard reports to communicate business insights effectively to internal stakeholders, supporting decision making and campaign optimization.
+- Built scalable, automated cloud-based data pipelines (Python, pandas, cloud platforms) and real-time dashboards (Power BI), enhancing decision-making capabilities
+- Implemented process documentation using Confluence to improve knowledge sharing of data and infrastructure workflows
+- Optimized room distribution (R, Optimization Models), boosting occupancy by 20% and revenue by 15% compared to the previous year
+- Collaborated on improving IT service management processes using Jira Service Management, reducing incident response times
 
-## Break Time, Family Care and Travel
+## Family Care and Travel, Break Time
 
 - Jan 2023 – Dec 2024
-- Supported a family member during illness, developing empathy, responsibility and resilience.
-- Volunteered in international programs, sharpening leadership, adaptability, and communication skills as an event organizer and receptionist.
+- Supported a family member during illness, developing empathy, responsibility and resilience
+- Volunteered in international programs, sharpening leadership, adaptability and communication skills as an event organizer and receptionist
 
 ## Scopely, Data Analyst
 
 - Sept 2018 – Dec 2022
-- Conducted advanced segmentation analysis (Python, R, Classification models, scikit-learn) on large datasets to identify trends and insights, refining marketing strategies which increased user retention by 11% and ARPU by 7%.
-- Developed and maintained automated Power BI dashboards (DAX), reducing reporting time by 30% and enabling real-time decision-making through effective dashboard development and data visualization.
-- Optimized game difficulty balancing in Frozen Free Fall (R and optimization models) decreasing churn by 3% and increasing active users by 2% per month.
-- Improved user engagement in Scrabble Go by reducing multiplayer turn intervals by 20%, resulting in a 12% increase in average gameplay time.
-- Collaborated with product and marketing stakeholders, leading weekly performance meetings, providing data-driven recommendations that drove €1.5M in annual revenue growth.
-- Supported campaign performance analysis and contributed to marketing benchmark development and optimization via data analysis.
+- Conducted advanced segmentation analysis (Python, R, scikit-learn) to refine marketing strategies, achieving 11% increase in user retention and 7% boost in ARPU
+- Developed and maintained automated dashboards (Power BI, DAX) via CI/CD pipelines and GitHub version control to accelerate reporting processes by 30%
+- Contributed to cloud migration projects leveraging AWS and GCP-based analytics environments, improving scalability and cost-efficiency
+- Collaborated with cross-functional teams using Jira Service Management to track data requests and incident responses
+- Enhanced documentation of analytics workflows using Confluence for streamlined knowledge transfer
+- Optimized game balancing (R, optimization models), reducing churn by 3% and increasing active users by 2% monthly
+- Led stakeholder meetings resulting in €1.5M annual revenue growth via data-informed game optimization
 
 ## Genera Games, Data Engineer – Data Scientist
 
 - May 2017 – Sept 2018
-- Developed LTV models (R, Machine Learning, TensorFlow, SQL queries) to optimize ad spend allocation and marketing ROI by 18%.
-- Automated data extraction, manipulation, and transformation pipelines (Python, numpy, pandas, SQL), reducing ETL execution time by 70% and operational costs by €150K annually.
-- Implemented rigorous data validation protocols, improving data quality by over 25%, and ensuring accuracy for analysis and reporting.
-- Contributed to monetization strategy optimization (R, Tidyverse, ggplot), increasing IAP revenue by 10% through data-driven pricing adjustments.
-- Worked with large datasets using cloud-based analytics platforms including Apache Spark and Databricks for streamlining analytics workflows.
+- Developed an LTV model (R, Machine Learning, TensorFlow, SQL) improving marketing ROI by 18%
+- Automated cloud-based data pipelines (Python, SQL, pandas) with CI/CD principles, reducing ETL time by 70% and saving €150K annually
+- Maintained version control via GitHub and automated deployments using GitHub Actions and CI/CD pipelines
+- Implemented data quality assurance and security controls aligned with identity management policies
+- Facilitated documentation processes on Confluence and improved incident response handling via Jira Service Management
 
 ## RedBorder, Data Analyst Internship
 
 - Feb 2016 – July 2016
-- Implemented automated large-scale data pipelines using Apache Spark and Scala, reducing malware classification time by 30%.
-- Conducted exploratory data analysis (EDA) on 10M+ cybersecurity events, improving threat detection models with advanced data manipulation and transformation techniques.
+- Implemented data pipelines using Apache Spark and Scala deployed on cloud platforms (AWS, GCP), reducing malware classification time by 30%
+- Conducted analysis of cybersecurity events, enhancing threat detection through scalable cloud solutions
 
 # Education
 
@@ -56,13 +58,13 @@ Proactive Data Analyst with strong expertise in Python (pandas, NumPy), SQL quer
 
 - 2016 - 2017
 
-## Universidad de Sevilla, BSc in Telecommunication Engineering
+## Universidad de Sevilla, Telecommunication Engineering
 
 - 2010 - 2016
 
 # Skills
 
-- Skills: SQL Queries, Python Scripting, R, Excel (MS Excel), Power BI, Tableau, Automation, Data Manipulation, Data Analysis, Data Visualization, Data Collection, Communication, Cloud-based Analytics Platforms, Media Measurement Analytics, Leadership, Adaptability
+- Skills: SQL, Python, R, Excel, Power BI, GitHub, Cloud Platforms, DevOps, Identity Management, IT Incident Response, Documentation, Leadership, Effective Communication, Adaptability
 # Projects
 
 ## MostInDemandSkills Platform

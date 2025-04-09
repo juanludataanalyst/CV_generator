@@ -1,4 +1,5 @@
 import streamlit as st
+from pipeline import run_pipeline
 
 st.title("CV Adapter - ATS Optimizer")
 
@@ -11,8 +12,12 @@ if st.button("Generate ATS-optimized CV") and uploaded_file and job_url:
         with open("uploaded_cv.pdf", "wb") as f:
             f.write(uploaded_file.getbuffer())
 
-        # Placeholder: Here the pipeline will be called
-        pdf_bytes = b"PDF content here"
+        # Run the pipeline
+        run_pipeline("uploaded_cv.pdf", job_url)
+
+        # Read the final PDF generated
+        with open("final_cv.pdf", "rb") as f:
+            pdf_bytes = f.read()
 
     st.success("Done! Download your adapted CV below.")
     st.download_button("Download adapted CV", data=pdf_bytes, file_name="Adapted_CV.pdf", mime="application/pdf")

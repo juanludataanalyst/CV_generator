@@ -1,192 +1,136 @@
 cv:
-  name: Tim Jefferies
-  email: Tim.Jefferies@gmail.com
-  phone: +44 7931314133
+  name: Juan Luis Pérez
+  email: juanludataanalyst@gmail.com
+  phone: '+34608027426'
   location: ''
-  website: https://linkedin.com/in/timjefferies
-  social_networks: []
+  website: https://www.linkedin.com/in/juanludataanalyst
+  social_networks:
+  - network: GitHub
+    username: juanludataanalyst
   sections:
     Summary:
-    - An accomplished and adaptable DevOps and Solutions Architect with extensive
-      expertise in multi-cloud platforms (AWS, Azure, GCP, Cloudflare), system architecture,
-      and infrastructure management. Proven track record in building, delivering,
-      and maintaining robust business and technology solutions across internet hosting,
-      finance, charitable organizations, retail, and RPA. Experienced in configuring
-      and managing CI/CD pipelines using tools such as GitHub Actions, Jenkins, and
-      Azure DevOps, with a focus on automation, security, and scalability. Skilled
-      in identity and access management solutions including Okta, and adept at incident
-      response via Jira Service Management. Possesses strong communication skills,
-      bridging technical and non-technical stakeholders, and excels at translating
-      complex concepts into actionable strategies aligned with enterprise standards.
-      Committed to continuous improvement and documentation of DevOps and infrastructure
-      processes within collaborative platforms like Confluence.
+    - Data-driven problem solver thriving at the intersection of business, data engineering,
+      and technology. Experienced in building automated data pipelines and scalable
+      analytics solutions using SQL, Python, R, and cloud platforms. Proficient in
+      version control with GitHub and adept at leveraging CI/CD pipelines to enhance
+      deployment efficiency. Highly adaptable, eager to contribute to cloud platform
+      management (AWS, Azure, GCP, Cloudflare), DevOps practices, and identity management
+      solutions like Okta to improve IT infrastructure, security, and decision-making.
     Experience:
-    - company: Blue Prism (SSNC)
-      position: DevOps Engineer
-      start_date: 2021-10
+    - company: R10 hostal chain
+      position: Data Strategy Owner
+      start_date: 2025-01
       end_date: present
       location: ''
-      summary: DevOps Engineer for QA team, supporting Blue Prism RPA Automation SaaS
-        with Azure CI/CD pipelines. Managed infrastructure automation and contributed
-        to cloud platform improvements, with exposure to multi-cloud environments
-        including Azure and AWS.
+      summary: Leading data strategy, infrastructure, and analytics initiatives to
+        drive revenue and operational efficiency through cloud-enabled solutions.
       highlights:
-      - Re-designed Azure pipelines that build custom pre-baked Windows images for
-        QA testing, resolving reliability issues and improving failover handling using
-        Ansible.
-      - Built automated testing environments using jinja2 templates to dynamically
-        create Ansible playbooks, drastically reducing test setup times by automating
-        image builds based on Testrail configurations.
-      - Migrated from colocated servers to Azure pipelines, redesigning QA infrastructure
-        with Testrail, Terraform, and Ansible via CI/CD pipelines, resulting in a
-        modern, resilient, and efficient QA process.
-      - Collaborated on integrating GitHub repositories for code management and explored
-        GitHub Actions for pipeline automation.
-      - Contributed to infrastructure documentation within Confluence, improving knowledge
-        sharing and process transparency.
-    - company: Slater & Gordon Ltd
-      position: Solutions Architect
-      start_date: 2022-08
-      end_date: 2024-07
+      - Built scalable, automated cloud-based data pipelines (Python, pandas, cloud
+        platforms) and real-time dashboards (Power BI), enhancing decision-making
+        capabilities
+      - Implemented process documentation using Confluence to improve knowledge sharing
+        of data and infrastructure workflows
+      - Optimized room distribution (R, Optimization Models), boosting occupancy by
+        20% and revenue by 15% compared to the previous year
+      - Collaborated on improving IT service management processes using Jira Service
+        Management, reducing incident response times
+    - company: Family Care and Travel
+      position: Break Time
+      start_date: 2023-01
+      end_date: 2024-12
       location: ''
-      summary: Led consolidation and migration of bare metal servers into cloud platforms,
-        including AWS and Azure, following multiple company acquisitions. Focused
-        on infrastructure management, cloud architecture, and secure access solutions.
+      summary: ''
       highlights:
-      - Mapped current infrastructure using Visio and proposed new CI/CD models to
-        migrate bare metal infrastructure into the cloud, including cost analysis
-        and technology research.
-      - Built initial pipelines and environment, creating scalable Ansible/Terraform
-        template library for multi-cloud deployments.
-      - Authored policy documents to define Git workflows, DevOps workflows, and documented
-        new processes.
-      - Implemented identity management enhancements leveraging Okta for secure access
-        control.
-      - Utilized Jira Service Management to track IT incidents and requests, ensuring
-        minimal downtime.
-      - Documented infrastructure and DevOps procedures extensively in Confluence.
-    - company: Lishi International
-      position: System Architect and DevOps
-      start_date: 2014-06
-      end_date: 2020-09
+      - Supported a family member during illness, developing empathy, responsibility
+        and resilience
+      - Volunteered in international programs, sharpening leadership, adaptability
+        and communication skills as an event organizer and receptionist
+    - company: Scopely
+      position: Data Analyst
+      start_date: 2018-09
+      end_date: 2022-12
       location: ''
-      summary: Managed online operations for a British charity hosted on AWS and Cloudflare,
-        redeveloped web presence, and transitioned offline processes to the cloud.
-        Oversaw infrastructure management and security.
+      summary: Delivered data-driven insights and developed solutions integrated with
+        cloud and DevOps tools to optimize business performance.
       highlights:
-      - Designed and implemented online operations using Amazon EC2, SES, S3, VPC,
-        Elastic IP, ELB, Snapshots, and volume management.
-      - Built bespoke server configurations with LEMP, NGINX, MySQL, Redis, OPCache,
-        EXIM via Ansible.
-      - Implemented encrypted differential backups using Rclone and Duplicity to S3,
-        Dropbox, SSH.
-      - Established server failover and risk management procedures.
-      - Automated software upgrades with Bash, Python, WP-CLI, and Wraith.
-      - Configured Discourse, Docker, YAML.
-      - Developed custom PHP plugins and theme components for WordPress.
-      - Created websites delivered via S3 Buckets.
-      - Developed a subscription payment solution using WooCommerce, LearnPress, integrated
-        with Cloudflare.
-      - Built a CRM by two-way syncing WordPress and Airtable.
-    - company: Skvare
-      position: DevOps
-      start_date: 2017-07
-      end_date: 2017-11
+      - Conducted advanced segmentation analysis (Python, R, scikit-learn) to refine
+        marketing strategies, achieving 11% increase in user retention and 7% boost
+        in ARPU
+      - Developed and maintained automated dashboards (Power BI, DAX) via CI/CD pipelines
+        and GitHub version control to accelerate reporting processes by 30%
+      - Contributed to cloud migration projects leveraging AWS and GCP-based analytics
+        environments, improving scalability and cost-efficiency
+      - Collaborated with cross-functional teams using Jira Service Management to
+        track data requests and incident responses
+      - Enhanced documentation of analytics workflows using Confluence for streamlined
+        knowledge transfer
+      - Optimized game balancing (R, optimization models), reducing churn by 3% and
+        increasing active users by 2% monthly
+      - Led stakeholder meetings resulting in €1.5M annual revenue growth via data-informed
+        game optimization
+    - company: Genera Games
+      position: Data Engineer – Data Scientist
+      start_date: 2017-05
+      end_date: 2018-09
       location: ''
-      summary: Sys admin, architecture review, and management of core server infrastructure
-        running Linux, LEMP stack, and Drupal. Supported CI/CD pipeline integration
-        and cloud platform optimizations.
+      summary: Designed and automated scalable data solutions incorporating CI/CD,
+        cloud services, and DevOps best practices.
       highlights:
-      - Performed performance testing and server optimization using JMeter and ApacheBench.
-      - Resolved bugs related to Drupal, NGINX cache, OPCache, Memcached, and MariaDB.
-      - Built multi-server Master/Slave MySQL clusters for clients.
-      - Managed server configurations via BitBucket Git branches.
-      - Overhauled and documented operational processes.
-      - Created staging, production, and test pipelines synchronized with Jenkins
-        and GitHub.
-      - Configured and managed load balancers.
-    - company: Yorkshire Electrical Supplies Limited
-      position: Consultant
-      start_date: 2014-05
-      end_date: 2015-12
+      - Developed an LTV model (R, Machine Learning, TensorFlow, SQL) improving marketing
+        ROI by 18%
+      - Automated cloud-based data pipelines (Python, SQL, pandas) with CI/CD principles,
+        reducing ETL time by 70% and saving €150K annually
+      - Maintained version control via GitHub and automated deployments using GitHub
+        Actions and CI/CD pipelines
+      - Implemented data quality assurance and security controls aligned with identity
+        management policies
+      - Facilitated documentation processes on Confluence and improved incident response
+        handling via Jira Service Management
+    - company: RedBorder
+      position: Data Analyst Internship
+      start_date: 2016-02
+      end_date: 2016-07
       location: ''
-      summary: Freelance consultancy for a local electrical supply store, supporting
-        infrastructure upgrades and cloud adoption.
+      summary: Supported large-scale cybersecurity analytics employing cloud technologies
+        and scalable compute frameworks.
       highlights:
-      - Repaired outdated LedgerSMB accounts system and set up a virtualized system
-        with automated VMware backups.
-      - Managed PostgreSQL scripting and administration.
-      - Migrated accounts system to Inuit QuickBooks Pro.
-      - Redesigned website using Magento e-commerce integrated with Cloudflare.
-    - company: Mint Wireless Limited
-      position: System Administrator
-      start_date: 2013-08
-      end_date: 2014-03
+      - Implemented data pipelines using Apache Spark and Scala deployed on cloud
+        platforms (AWS, GCP), reducing malware classification time by 30%
+      - Conducted analysis of cybersecurity events, enhancing threat detection through
+        scalable cloud solutions
+    Education:
+    - institution: Universidad Pablo de Olavide
+      area: Big Data and Business Analytics
+      degree: PG
+      start_date: '2016'
+      end_date: '2017'
+      date: 2016 - 2017
       location: ''
-      summary: Worked under operations and infrastructure manager, building solutions
-        for a new network payment gateway. Managed identity and access controls, server
-        infrastructure, and security compliance.
-      highlights:
-      - Installed and configured HSM hardware and security keys within data centers.
-      - Managed Windows 2008/2013 and various Linux server installations.
-      - Administered Windows server patch updates.
-      - Configured servers for PCI compliance and documentation.
-      - Set up load balancing with HAProxy.
-      - Implemented two-factor authentication (Duo Security/Windows Azure), with exposure
-        to identity management solutions.
-      - Developed automated backup solutions using Bash and Batch scripting.
-    - company: Webfusion/123-Reg/Pipex
-      position: Hosting Support
-      start_date: 2008-07
-      end_date: 2013-01
+      summary: ''
+      highlights: []
+    - institution: Universidad de Sevilla
+      area: Telecommunication Engineering
+      degree: ''
+      start_date: '2010'
+      end_date: '2016'
+      date: 2010 - 2016
       location: ''
-      summary: Customer support role focused on dedicated hosting and server administration
-        across multiple cloud and on-premise platforms.
-      highlights:
-      - Installed dedicated rack servers, virtualization, and system administration.
-      - Used ticketing system to meet SLA targets.
-      - Performed migrations, backend tuning, and automation scripting.
-      - Documented processes.
-      - Supported premium dedicated server customers.
-      - Provided backend support for over 6000 dedicated web servers running multiple
-        OSes.
-      - Configured and maintained Qmail/Exim, MailEnable, IIS, MySQL, Apache/PHP,
-        SSH/RDP.
-      - Repaired databases, tuned MySQL and Apache performance.
-      - Utilized package managers (apt, yum, pacman) and source builds.
-      - Extensive Unix CLI, cron jobs, Bash/Python scripting.
-      - Officially Parallels Plesk trained.
-      - Used Nagios and Cacti for monitoring.
-    - company: Teamtalk Media
-      position: 1st Line Support
-      start_date: 2005-08
-      end_date: 2006-08
-      location: ''
-      summary: First point of contact for staff in office environment, supporting
-        IT incidents and requests management.
-      highlights:
-      - Installed and supported Windows NT4, 95, 98, Me, 2000, XP, 2000 Server, 2003
-        Server, Linux, Office 97, 2000, Office XP.
-      - Used Microsoft Exchange 5.5, Exchange 2000/2003, NetMeeting, RDP, GoverLAN,
-        TightVNC.
-      - Administered DNS server, roaming profiles, Outlook.
-      - Diagnosed network issues via command line.
-      - Repaired desktop PCs, server hardware, and maintained office equipment.
+      summary: ''
+      highlights: []
     Skills:
     - label: Skills
-      details: Solution & Enterprise Architecture, Web design, integration & testing,
-        PCI Compliance, Agile Methodology (SCRUM, Kanban), Technical Analysis, Evaluation
-        & Assurance, Server performance testing & optimization, MS Visio, Draw.io,
-        Miro, Jira, Jira Service Management, Confluence, Trello, MS Sharepoint, Slack,
-        Asana, Airtable, Jmeter, ApacheBench, Nagios, Virtualbox, VMware, Azure /
-        AWS VM, Linux, Apache, NGINX, MySQL, Redis, Memcached, Varnish, Opcache, Windows
-        Server, Redhat, CentOS, Debian, Ubuntu, FreeBSD, HSM Hardware, Data centre
-        installations, AWS EC2, AWS SES, VPC, AWS Landing Zone, Sendgrid, Cloud Platforms
-        (AWS, Azure, GCP, Cloudflare), Python, PHP, HTML / CSS, Javascript, Exim,
-        Dovecot, Postfix, Qmail, Ansible, Jenkins, GitHub, GitHub Actions, Docker,
-        Terraform, Packer, CI/CD Pipelines, Kubernetes, Plesk, Cpanel, Webmin, DirectAdmin,
-        NoSQL (MongoDB), PostgreSQL, Drupal, Magento, Wordpress, Identity Management,
-        Okta, MFA, Infrastructure Management & Automation
+      details: SQL, Python, R, Excel, Power BI, GitHub, Cloud Platforms, DevOps, Identity
+        Management, IT Incident Response, Documentation, Leadership, Effective Communication,
+        Adaptability
+    Projects:
+    - name: MostInDemandSkills Platform
+      summary: Analyzing over 100+ daily job postings from 5 platforms to assess skills
+        demand by role and country in data science and tech (Python, Streamlit, APIs,
+        n8n). Developed CI/CD pipeline using GitHub Actions and cloud deployment (AWS,
+        GCP). Working on recommendation system leveraging LLM (Langchain). Analyzed
+        7000+ job postings to date, enhancing platform scalability and reliability
+        with DevOps practices.
+      url: https://mostindemandskills.streamlit.app/
 design:
   theme: classic
   page:

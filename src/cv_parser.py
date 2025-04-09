@@ -5,11 +5,11 @@ from dotenv import load_dotenv
 from typing import Dict, Any
 
 from pydantic_ai import Agent
-from models import JsonResume
+from src.models import JsonResume
 
 load_dotenv()
 
-async def parse_to_json_resume_async(text: str, agent: Agent) -> Dict:
+def parse_to_json_resume_sync(text: str, agent: Agent) -> Dict:
     """
     Parses CV text into JSON Resume format using an LLM via OpenRouter with pydantic-ai.
 
@@ -44,7 +44,8 @@ CV Text:
 Return the result as a JSON object. Use full URLs (e.g., "https://github.com/username") and set fields to null if no data is present instead of empty strings.
 """
 
-    result = await agent.run(prompt)
+    from pipeline import run_llm
+    result = run_llm(agent, prompt)
     print("LLM response (cv_parser):")
     print(result.data)
     json_str = result.data
@@ -117,9 +118,9 @@ Return the result as a JSON object. Use full URLs (e.g., "https://github.com/use
 
 def parse_to_json_resume(text: str, agent: Agent) -> Dict:
     """
-    Synchronous wrapper for async LLM parsing.
+    Synchronous LLM parsing.
     """
-    return asyncio.run(parse_to_json_resume_async(text, agent))
+    return parse_to_json_resume_sync(text, agent)
 
 
 if __name__ == "__main__":

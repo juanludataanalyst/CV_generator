@@ -65,7 +65,6 @@ def extract_description_with_llm(plain_text: str, agent: Agent) -> str:
     """
     Uses an LLM agent to extract only the job description from the filtered plain text.
     """
-    import asyncio
     prompt = f"""
 Extract only the main job description from the following text. Ignore menus, footers, ads, or irrelevant content.
 
@@ -77,7 +76,8 @@ Return only the job description without any additional comments:
 {plain_text}
 \"\"\"
 """
-    result = asyncio.run(agent.run(prompt))
+    from pipeline import run_llm
+    result = run_llm(agent, prompt)
     print("LLM response (job_scraper):")
     print(result.data)
     return result.data.strip()
