@@ -263,7 +263,7 @@ Respond ONLY with the updated CV as a valid JSON object.
     print("CV optimization process completed.")
 
     final_score = final_match['score']
-    return adapted_cv, initial_match, final_match, initial_score, final_score
+    return updated_cv, initial_match, final_match, initial_score, final_score
 
 # Ejemplo de uso
 if __name__ == "__main__":

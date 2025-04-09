@@ -74,7 +74,7 @@ def main():
 
     # Step 4: Adapt the CV to the job description using ATS optimization
     try:
-        adapted_cv = adapt_cv_to_job(json_cv, job_description, agent)
+        adapted_cv, initial_match, final_match, initial_score, final_score = adapt_cv_to_job(json_cv, job_description, agent)
     except Exception as e:
         print(f"Error adapting CV to the job description: {e}")
         return
