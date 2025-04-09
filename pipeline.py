@@ -16,7 +16,7 @@ def run_llm(agent, prompt):
     return asyncio.run(agent.run(prompt))
 
 def get_model():
-    api_key = st.secrets("OPENROUTER_API_KEY")
+    api_key = st.secrets["OPENROUTER_API_KEY"]
     base_url = "https://openrouter.ai/api/v1"
     model_name = "openrouter/quasar-alpha"
     provider = OpenAIProvider(base_url=base_url, api_key=api_key)
