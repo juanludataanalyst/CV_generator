@@ -9,3 +9,4 @@ pydantic_ai
 openai
 python-dateutil
 PyYAML
+email-validator

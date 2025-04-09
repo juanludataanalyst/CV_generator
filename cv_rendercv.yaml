@@ -9,96 +9,96 @@ cv:
     username: juanludataanalyst
   sections:
     Summary:
-    - Data-driven problem solver with strong technical expertise, passionate about
-      bridging the gap between analytics, infrastructure management, and cloud platforms
-      such as AWS, Azure, and GCP. Experienced in designing automated pipelines, CI/CD
-      implementation, and infrastructure optimization to enhance business decision-making.
-      Adept at documentation with tools like Confluence and responding efficiently
-      to IT incidents via systems like Jira Service Management. Enthusiastic about
-      leveraging cloud technologies, identity management solutions like Okta, and
-      DevOps best practices to improve operational efficiency and security.
+    - Data-driven problem solver passionate about leveraging technology to drive business
+      value. With a strong background in data engineering, analytics, and automation
+      (SQL, Python, R, Power BI), and hands-on experience building scalable pipelines,
+      I am expanding my expertise in cloud platforms (AWS, Azure, GCP), DevOps practices,
+      CI/CD pipelines, and security infrastructure including identity management with
+      Okta. Adept at optimizing internal systems, managing IT requests, and documenting
+      processes using tools like Confluence to bridge gaps between teams and technology.
     Experience:
-    - company: R10 hostal chain
-      position: Data Strategy Owner (Freelance)
+    - company: R10 hostal chain @ Freelance
+      position: Data Strategy Owner
       start_date: 2025-01
       end_date: present
       location: ''
-      summary: Built automated, scalable data infrastructure and pipelines (Python,
-        pandas) integrated with cloud platforms (AWS, Azure) to enable real-time analytics.
-        Maintained and documented infrastructure and processes in Confluence, facilitating
-        knowledge sharing. Collaborated to establish CI/CD pipelines and streamlined
-        deployment workflows using GitHub and GitHub Actions.
+      summary: ''
       highlights:
+      - Built data infrastructure from scratch, creating automated, scalable pipelines
+        (Python, pandas), optimizing data quality, and leveraging cloud platforms
+        for deployment.
+      - Created and managed interactive dashboards (PowerBI) for real-time analytics,
+        improving operational decision-making.
       - Optimized room distribution (R, Optimization Models) boosting occupancy by
-        20% and revenue by 15% compared to the previous year
-      - Contributed to infrastructure management and cloud resource organization,
-        promoting security best practices including identity access management across
-        cloud providers
-    - company: Break Time
-      position: Family Care and Travel
+        20% and revenue by 15% compared to the previous year.
+      - Worked on improving internal management systems by integrating with cloud
+        services (AWS, Azure, GCP) for more scalable solutions.
+      - Documented key data and infrastructure processes within knowledge management
+        systems such as Confluence, enhancing collaboration.
+    - company: Family Care and Travel
+      position: Break Time
       start_date: 2023-01
       end_date: 2024-12
       location: ''
-      summary: Supported a family member during illness, developing empathy, responsibility
-        and resilience. Continued to upskill on cloud technologies (AWS, GCP, Azure),
-        infrastructure management concepts, CI/CD pipelines, and identity management
-        tools like Okta.
+      summary: ''
       highlights:
+      - Supported a family member during illness, developing empathy, responsibility
+        and resilience.
       - Volunteered in international programs, sharpening leadership, adaptability
-        and communication skills as an event organizer and receptionist
+        and communication skills as an event organizer and receptionist.
     - company: Scopely
       position: Data Analyst
       start_date: 2018-09
       end_date: 2022-12
       location: ''
-      summary: Conducted in-depth data analysis and maintained dashboards (Power BI,
-        DAX), improving marketing and operational decisions. Collaborated with engineering
-        teams to optimize game features and supported improvements to internal tooling.
-        Coordinated on automated data pipelines using CI/CD practices and facilitated
-        request management through Jira Service Management.
+      summary: ''
       highlights:
+      - Conducted advanced segmentation analysis (Python, R, Classification models,
+        scikit-learn) to refine marketing strategies, achieving an 11% increase in
+        user retention and 7% boost in ARPU.
       - Developed and maintained Power BI dashboards (DAX), reducing reporting time
-        by 30% and enabling real-time decision-making
+        by 30% and enabling real-time decision-making.
       - Optimized game difficulty balancing in Frozen Free Fall (R and optimization
-        models), decreasing churn by 3% and increasing active users by 2% per month
+        models), decreasing churn by 3% and increasing active users by 2% per month.
       - Improved user engagement in Scrabble Go by reducing multiplayer turn intervals
-        by 20%, resulting in a 12% increase in average gameplay time
+        by 20%, resulting in a 12% increase in average gameplay time.
       - Collaborated with stakeholders, leading weekly performance meetings to drive
         +€1.5M in annual revenue growth through data-driven game optimization and
-        effective communication
-      - Supported internal management systems and documented processes, integrating
-        insights across Confluence and improving transparency
+        effective communication.
+      - Supported internal management systems improvement, utilizing cloud platforms
+        (AWS) for data storage and sharing, and documenting processes via Confluence.
     - company: Genera Games
       position: Data Engineer – Data Scientist
       start_date: 2017-05
       end_date: 2018-09
       location: ''
-      summary: Developed predictive models (R, TensorFlow, SQL) and automated scalable
-        ETL data pipelines (Python, SQL), leveraging cloud platforms for data storage
-        and compute (GCP, Azure). Implemented CI/CD pipelines for maintaining code
-        quality, alongside infrastructure documentation. Strengthened infrastructure
-        management by enhancing data quality and operational workflows.
+      summary: ''
       highlights:
-      - Automated data pipelines (Python, numpy, pandas, SQL), reducing ETL execution
-        time by 70% and cutting operational cost by €150K annually
-      - Implemented data quality assurance protocols, reducing report errors and ensuring
-        data quality (Python, pandas, matplotlib, CI/CD), with over 25% improvement
+      - Developed an LTV model (R, Machine Learning, TensorFlow, SQL) that improved
+        marketing ROI by 18% through optimized ad spend allocation.
+      - Automated data pipelines (Python, numpy, pandas, SQL) reducing ETL execution
+        time by 70% and cutting operational cost by €150K annually.
+      - Implemented data quality assurance protocols, reducing report errors and improving
+        data quality (Python, pandas, matplotlib).
       - Contributed to optimizing in-game monetization strategies (R, Tidyverse, ggplot),
-        increasing IAP revenue by 10% through data-driven price adjustments
-      - Assisted in integrating data flows with cloud infrastructure management, including
-        security considerations and access controls
+        increasing IAP revenue by 10%.
+      - Maintained CI/CD pipelines (Jenkins, Git) for data product deployments, gaining
+        familiarity with DevOps concepts and workflow automation.
+      - Explored integration with cloud services (AWS, Azure) and tools such as GitHub
+        and Confluence for improved workflow documentation and collaboration.
     - company: RedBorder
       position: Data Analyst Intern
       start_date: 2016-02
       end_date: 2016-07
       location: ''
-      summary: Implemented scalable big data pipelines with Apache Spark and Scala,
-        focusing on cybersecurity analytics and reducing malware classification time.
-        Contributed to automated data workflows and learned key concepts of cloud
-        platforms and infrastructure for data operations.
+      summary: ''
       highlights:
+      - Implemented large-scale data pipelines using Apache Spark and Scala, reducing
+        malware classification time by 30%.
       - Conducted EDA on 10M+ cybersecurity events, improving machine learning-based
-        threat detection accuracy
+        threat detection accuracy.
+      - Gained exposure to security infrastructure and identity management concepts
+        within cybersecurity data analysis environments.
     Education:
     - institution: Universidad Pablo de Olavide
       area: Big Data and Business Analytics
@@ -111,7 +111,7 @@ cv:
       highlights: []
     - institution: Universidad de Sevilla
       area: Telecommunication Engineering
-      degree: BSc
+      degree: Under
       start_date: '2010'
       end_date: '2016'
       date: 2010 - 2016
@@ -120,17 +120,12 @@ cv:
       highlights: []
     Skills:
     - label: Skills
-      details: Cloud Platforms (AWS, Azure, GCP, Cloudflare), CI/CD Pipelines, SQL,
-        Python, R, Power BI, Statistical Methods, Identity Management, Incident &
-        Request Management, Documentation Tools, Leadership, Effective Communication,
-        Adaptability, Excel
+      details: SQL, Python, R, Power BI, Excel, DevOps, Cloud Platforms, Security
+        Infrastructure, Incident Response, Documentation, Git & GitHub, Leadership,
+        Effective Communication, Adaptability
     Projects:
     - name: MostInDemandSkills Platform
-      summary: Analyzing over 100 daily job postings from multiple platforms to assess
-        skills demand in data science, cloud, and tech (Python, Streamlit, APIs, n8n).
-        Developed features integrating cloud platforms, exploring deployment automation
-        (CI/CD) utilizing GitHub Actions. Documented workflows and pipeline automation
-        using Confluence.
+      summary: ''
       url: https://mostindemandskills.streamlit.app/
 design:
   theme: classic
