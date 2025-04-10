@@ -4,7 +4,8 @@ import json
 import glob
 import shutil
 import subprocess
-from pipeline import run_pipeline
+from utils.utils import extract_cv_text, parse_to_json_resume_sync, scrape_job_description, adapt_cv_to_job,extract_description_data,calculate_ats_score
+
 
 st.title("CV Adapter - ATS Optimizer")
 
@@ -44,7 +45,36 @@ if (st.button("Generate ATS-optimized CV")
     with st.spinner("Processing..."):
         log("Starting pipeline...")
         try:
-            results = run_pipeline(st.session_state["uploaded_cv_path"], job_url=job_url, job_text=None, log_callback=log)
+            job_description =  scrape_job_description(job_url)
+            st.success("Job description scraped successfully.")
+            print(type(job_description))
+            extracted_text = extract_cv_text(st.session_state["uploaded_cv_path"]) 
+            st.success("CV text extracted successfully.") 
+            parsed_cv = parse_to_json_resume_sync(extracted_text)
+            st.success("CV parsed successfully.")
+            
+            job_description_data = extract_description_data(job_description)
+            st.success("Job description parsed successfully.")
+
+            print(job_description_data)
+            print(parsed_cv)
+            ats_result = calculate_ats_score(parsed_cv, job_description_data)
+            st.success("ATS score calculated successfully.")
+            st.success(ats_result)
+            print(ats_result)    
+           
+
+
+            #updated_cv, initial_match, final_match, initial_score, final_score = adapt_cv_to_job(parsed_cv, job_description)
+            #st.success("New CV adapted successfully.")
+            #print(update_cv)
+            #total_experience = calculate_total_experience(parsed_cv)
+            #print(total_experience)
+            #st.success("Total experience calculated successfully.")
+            
+
+            
+          # results =  run_pipeline(st.session_state["uploaded_cv_path"], job_url=job_url, job_text=None, log_callback=log)
             if "error" in results and results["error"] == "scraping_failed":
                 st.session_state["scraping_failed"] = True
                 log("Scraping failed. Please provide the job description manually.")

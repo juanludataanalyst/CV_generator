@@ -7,12 +7,8 @@ from typing import Dict
 from dateutil import parser
 from datetime import datetime
 
-from pydantic_ai import Agent
 
-load_dotenv()
-
-
-def extract_structured_data(text: str, agent: Agent, is_job: bool = True) -> Dict:
+def extract_structured_data(text: str, is_job: bool = True) -> Dict:
     """
     Extracts skills, experience, and keywords from a job description or CV using an LLM.
     """
@@ -47,7 +43,7 @@ Return the result as a JSON object with keys: "skills", "keywords".
 Respond ONLY with the JSON object.
 """
     from pipeline import run_llm
-    result = run_llm(agent, prompt)
+    result = run_llm( prompt)
     print("LLM response (job_to_cv_parser):")
     print(result.data)
     if not result.data.strip():
@@ -180,7 +176,7 @@ def calculate_ats_score(job_data: Dict, resume_data: Dict, resume_text: str, cv_
         'job_years': job_years
     }
 
-def adapt_cv_to_job(cv_json: dict, job_description: str, agent: Agent) -> dict:
+def adapt_cv_to_job(cv_json: dict, job_description: str) -> dict:
     """
     Adapts a CV JSON to a job description, optimizing it to the maximum ethically achievable level.
     Shows real-time logs to the user.
@@ -189,9 +185,9 @@ def adapt_cv_to_job(cv_json: dict, job_description: str, agent: Agent) -> dict:
     cv_text = json.dumps(cv_json, indent=2)
 
     # Extract structured data from job description
-    job_data = extract_structured_data(job_description, agent, is_job=True)
+    job_data = extract_structured_data(job_description,  is_job=True)
     print("Analyzing initial CV compatibility with the job description...")
-    resume_data = extract_structured_data(cv_text, agent, is_job=False)
+    resume_data = extract_structured_data(cv_text,  is_job=False)
 
     # Calculate initial ATS score
     initial_match = calculate_ats_score(job_data, resume_data, cv_text, cv_json)
@@ -242,7 +238,7 @@ Return the updated CV as a JSON object.
 Respond ONLY with the updated CV as a valid JSON object.
 """
         from pipeline import run_llm
-        result = run_llm(agent, prompt)
+        result = run_llm( prompt)
         updated_cv = json.loads(result.data)
     else:
         print("\nInitial ATS score is already sufficiently high (>=75%). No optimization needed.")
@@ -251,7 +247,7 @@ Respond ONLY with the updated CV as a valid JSON object.
     # Recalculate final ATS score
     print("Calculating final ATS score of the optimized CV...")
     updated_cv_text = json.dumps(updated_cv, indent=2)
-    updated_resume_data = extract_structured_data(updated_cv_text, agent, is_job=False)
+    updated_resume_data = extract_structured_data(updated_cv_text, is_job=False)
     final_match = calculate_ats_score(job_data, updated_resume_data, updated_cv_text, updated_cv)
     updated_cv["ats_match_score"] = final_match["score"]
 

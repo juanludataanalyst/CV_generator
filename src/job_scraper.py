@@ -1,6 +1,5 @@
 import requests
 from bs4 import BeautifulSoup, Comment
-from pydantic_ai import Agent
 
 
 def get_filtered_content(url: str) -> str:
@@ -62,7 +61,7 @@ def get_filtered_content(url: str) -> str:
         return f"Error extracting content: {str(e)}"
 
 
-def extract_description_with_llm(plain_text: str, agent: Agent) -> str:
+def extract_description_with_llm(plain_text: str) -> str:
     """
     Uses an LLM agent to extract only the job description from the filtered plain text.
     """
@@ -78,13 +77,13 @@ Return only the job description without any additional comments:
 \"\"\"
 """
     from pipeline import run_llm
-    result = run_llm(agent, prompt)
+    result = run_llm( prompt)
     print("LLM response (job_scraper):")
     print(result.data)
     return result.data.strip()
 
 
-def scrape_job_description(url: str, agent: Agent, log_callback=None) -> str:
+def scrape_job_description(url: str, log_callback=None) -> str:
     """
     Extracts the job description from a job posting URL using HTML filtering and an LLM agent.
     """
@@ -106,5 +105,5 @@ def scrape_job_description(url: str, agent: Agent, log_callback=None) -> str:
     print("Filtered content preview:")
     print(filtered_content[:1000])  # primeros 1000 caracteres
 
-    description = extract_description_with_llm(filtered_content, agent)
+    description = extract_description_with_llm(filtered_content)
     return description

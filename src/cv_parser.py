@@ -3,13 +3,11 @@ import json
 import asyncio
 from dotenv import load_dotenv
 from typing import Dict, Any
-
-from pydantic_ai import Agent
 from src.models import JsonResume
+from pipeline import run_llm
 
-load_dotenv()
 
-def parse_to_json_resume_sync(text: str, agent: Agent) -> Dict:
+def parse_to_json_resume_sync(text: str) -> Dict:
     """
     Parses CV text into JSON Resume format using an LLM via OpenRouter with pydantic-ai.
 
@@ -19,6 +17,8 @@ def parse_to_json_resume_sync(text: str, agent: Agent) -> Dict:
     Returns:
         Dict: JSON Resume formatted data.
     """
+   
+   
     prompt = f"""
 You are an expert in CV parsing.
 
@@ -44,8 +44,8 @@ CV Text:
 Return the result as a JSON object. Use full URLs (e.g., "https://github.com/username") and set fields to null if no data is present instead of empty strings.
 """
 
-    from pipeline import run_llm
-    result = run_llm(agent, prompt)
+  
+    result = run_llm( prompt)
     print("LLM response (cv_parser):")
     print(result.data)
     json_str = result.data
@@ -116,22 +116,4 @@ Return the result as a JSON object. Use full URLs (e.g., "https://github.com/use
     return validated_cv.model_dump(mode="json")
 
 
-def parse_to_json_resume(text: str, agent: Agent) -> Dict:
-    """
-    Synchronous LLM parsing.
-    """
-    return parse_to_json_resume_sync(text, agent)
 
-
-if __name__ == "__main__":
-    from cv_extraction import extract_cv_text
-
-    text = extract_cv_text("Resume.pdf")
-    json_cv = parse_to_json_resume(text)
-
-    # Save to JSON file in root directory
-    output_path = "../parsed_resume.json"
-    with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(json_cv, f, indent=2, ensure_ascii=False)
-
-    print(f"Saved parsed JSON Resume to {output_path}")

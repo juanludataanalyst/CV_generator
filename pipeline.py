@@ -3,24 +3,27 @@ from src.cv_parser import parse_to_json_resume
 from src.job_scraper import scrape_job_description
 from src.job_to_cv_parser import adapt_cv_to_job
 from src.json_to_rendercv_yaml import convert
-from pydantic_ai import Agent
-from pydantic_ai.providers.openai import OpenAIProvider
-from pydantic_ai.models.openai import OpenAIModel
 import subprocess
 import json
 import os
-import asyncio
 import streamlit as st
 
-def run_llm(agent, prompt):
-    return asyncio.run(agent.run(prompt))
 
-def get_model():
-    api_key = st.secrets["OPENROUTER_API_KEY"]
-    base_url = "https://openrouter.ai/api/v1"
-    model_name = "openrouter/quasar-alpha"
-    provider = OpenAIProvider(base_url=base_url, api_key=api_key)
-    return OpenAIModel(model_name, provider=provider)
+# Configuración del cliente OpenAI para OpenRouter
+client = openai.OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=st.secrets["OPENROUTER_API_KEY"]
+)
+
+def run_llm(prompt):
+    response = client.chat.completions.create(
+        model="openrouter/quasar-alpha",
+        messages=[
+            {"role": "system", "content": "You are an expert assistant."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+    return response.choices[0].message.content
 
 def run_pipeline(pdf_path: str, job_url: str = None, job_text: str = None, log_callback=None):
     def log(msg):
@@ -32,27 +35,25 @@ def run_pipeline(pdf_path: str, job_url: str = None, job_text: str = None, log_c
     log("Extracting text from PDF...")
     cv_text = extract_cv_text(pdf_path)
 
-    agent = Agent(get_model())
-
     log("Parsing CV to JSON Resume...")
-    json_cv = parse_to_json_resume(cv_text, agent)
+    json_cv = parse_to_json_resume(cv_text)
 
     if job_text:
         log("Using manual job description provided by user.")
     else:
         log("Scraping job description...")
-        job_text = scrape_job_description(job_url, agent, log_callback=log)
+        job_text = scrape_job_description(job_url, None, log_callback=log)
         if job_text.startswith("Error"):
             return {"error": "scraping_failed"}
 
-    return _run_pipeline_core(cv_text, job_text, agent, log)
+    return _run_pipeline_core(cv_text, job_text, None, log)
 
-def _run_pipeline_core(cv_text, job_text, agent, log):
+def _run_pipeline_core(cv_text, job_text, _, log):
     log("Adapting CV to job description...")
     adapted_cv, initial_match, final_match, initial_score, final_score = adapt_cv_to_job(
-        parse_to_json_resume(cv_text, agent),
+        parse_to_json_resume(cv_text, None),
         job_text,
-        agent
+        None
     )
 
     log("Saving adapted CV JSON...")
@@ -94,3 +95,4 @@ def _run_pipeline_core(cv_text, job_text, agent, log):
         "initial_match": initial_match,
         "final_match": final_match
     }
+
