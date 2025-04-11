@@ -374,6 +374,64 @@ def parse_to_json_resume_sync(text: str) -> Dict:
 
     raise ValueError("Failed to parse CV text after all retries")
 
+import json
+
+def match_with_llm(cv_items: list, job_items: list, item_type: str) -> dict:
+    """
+    Uses an LLM to match skills, keywords, or languages between CV and job offer.
+    
+    Args:
+        cv_items (list): List of items from the CV (skills, keywords, or languages).
+        job_items (list): List of items from the job offer (skills, keywords, or languages).
+        item_type (str): Type of items ('skills', 'keywords', or 'languages').
+    
+    Returns:
+        dict: JSON with matches and missing items.
+    """
+    prompt = (
+        f"You are an expert in job skills analysis. I have two lists of {item_type}:\n\n"
+        f"{item_type.capitalize()} from CV: {cv_items}\n"
+        f"{item_type.capitalize()} from job offer: {job_items}\n\n"
+        "Your task is:\n"
+        "1. Identify which {item_type} from the CV match those from the job offer, considering synonyms, context, and equivalences (e.g., Power BI can match with data visualization tools (Tableau, Looker, Power BI, etc.)).\n"
+        "2. List the {item_type} from the job offer that are missing from the CV.\n\n"
+        "Rules:\n"
+        "- Be flexible with language: ignore minor formatting or wording differences.\n"
+        "- Do not invent items that are not explicitly in the lists.\n"
+        "- Use only the provided lists, do not assume additional information.\n\n"
+        "- NOT include languages if there is more skills\n\n" 
+        "Return the result as a JSON object with two keys: \"matches\" and \"missing\", like this:\n"
+        "- \"matches\": a list of matching items\n"
+        "- \"missing\": a list of items from the job offer not found in the CV\n\n"
+        "Example output:\n"
+        "```json\n"
+        "{\"matches\": [\"SQL\", \"Python\"], \"missing\": [\"Tableau\"]}\n"
+
+        "```"
+    )
+
+    # Llamada al LLM (ajusta run_llm según tu API o implementación)
+    result = run_llm(prompt)
+    
+    # Extraer JSON de la respuesta
+    try:
+        if '```json' in result:
+            json_str = result.split('```json')[1].split('```')[0].strip()
+        else:
+            json_str = result.strip()
+        match_data = json.loads(json_str)
+        return match_data
+    except (json.JSONDecodeError, IndexError) as e:
+        print(f'Error parsing LLM response for {item_type}: {e}')
+        print('Raw LLM output:', result)
+        return {
+            'matches': [],
+            'missing': job_items
+        }
+
+
+
+
 def calculate_total_experience(work_history: list) -> float:
     """Calcula los años totales de experiencia laboral desde el historial de trabajo."""
     total_months = 0
@@ -419,7 +477,7 @@ def normalize_text(text: str) -> str:
     text = re.sub(r'[\s$$      $$,.;:-]+', '', text)
     return text
 
-def calculate_ats_score(cv_data: dict, job_data: dict, cv_work_history: list = None) -> dict:
+def calculate_ats_score_old(cv_data: dict, job_data: dict, cv_work_history: list = None) -> dict:
     """
     Calcula el puntaje ATS comparando CV y oferta laboral de forma robusta.
     - Normaliza texto para ignorar espacios, mayúsculas y signos.

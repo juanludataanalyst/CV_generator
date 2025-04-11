@@ -10,7 +10,8 @@ from utils.utils import (
     scrape_job_description,
     adapt_cv_to_job,
     extract_job_description_data,
-    calculate_ats_score
+    match_with_llm,
+    calculate_ats_score_old
 )
 
 st.title("CV Adapter - ATS Optimizer")
@@ -81,8 +82,31 @@ if (st.button("Generate ATS-optimized CV")
             st.success("CV data extracted successfully.")
 
 
+            # Probar el matcheo con LLM e imprimir resultados
+            skills_match = match_with_llm(cv_data.get('skills', []), job_data.get('skills', []), 'skills')
+
+            # Imprimir resultados en la interfaz de Streamlit y en consola
+            st.subheader("Skills Match")
+            st.json(skills_match)
+            print("Skills Match:", json.dumps(skills_match, indent=2))
+
+
+            keywords_match = match_with_llm(cv_data.get('keywords', []), job_data.get('keywords', []), 'keywords')
+
+
+            st.subheader("Keywords Match")
+            st.json(keywords_match)
+            print("Keywords Match:", json.dumps(keywords_match, indent=2))
+
+
+            languages_match = match_with_llm(cv_data.get('languages', []), job_data.get('languages', []), 'languages')
+                    
+            st.subheader("Languages Match")
+            st.json(languages_match)
+            print("Languages Match:", json.dumps(languages_match, indent=2))
+
             # Calcular el puntaje ATS usando el CV parseado y los datos de la oferta
-            ats_result = calculate_ats_score(cv_data, job_data)
+            ats_result = calculate_ats_score_old(cv_data, job_data)
             st.success("ATS score calculated successfully.")
             
             # UI mejorada
@@ -165,7 +189,7 @@ if st.session_state.get("continue_with_manual") and st.session_state.get("manual
             cv_data = extract_job_description_data(extracted_text, is_job=False)
             st.success("CV data extracted successfully.")
 
-            ats_result = calculate_ats_score(cv_data, job_data)
+            ats_result = calculate_ats_score_old(cv_data, job_data)
             st.success("ATS score calculated successfully.")
 
             # UI mejorada para modo manual
