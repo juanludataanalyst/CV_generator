@@ -84,8 +84,49 @@ if (st.button("Generate ATS-optimized CV")
             # Calcular el puntaje ATS usando el CV parseado y los datos de la oferta
             ats_result = calculate_ats_score(cv_data, job_data)
             st.success("ATS score calculated successfully.")
-            st.json(ats_result)  # Mostrar el resultado en la interfaz
-            print(ats_result)
+            
+            # UI mejorada
+            st.subheader("Resultados del análisis ATS")
+            st.metric("Puntaje ATS", f"{ats_result['score']}%", delta=None)
+
+            # Pestañas para organizar la información
+            tab1, tab2, tab3 = st.tabs(["Oferta laboral", "Tu CV", "Análisis ATS"])
+
+            with tab1:
+                st.write("**Habilidades requeridas:**")
+                st.write(", ".join(job_data.get("skills", [])))
+                st.write("**Palabras clave:**")
+                st.write(", ".join(job_data.get("keywords", [])))
+                st.write("**Experiencia mínima:**")
+                st.write(f"{job_data.get('experience', 0)} años")
+                st.write("**Idiomas:**")
+                st.write(", ".join(job_data.get("languages", [])))
+
+            with tab2:
+                st.write("**Habilidades en tu CV:**")
+                st.write(", ".join(cv_data.get("skills", [])))
+                st.write("**Palabras clave:**")
+                st.write(", ".join(cv_data.get("keywords", [])))
+                st.write("**Experiencia estimada:**")
+                st.write(f"{ats_result['resume_years']:.2f} años")
+                st.write("**Idiomas:**")
+                st.write(", ".join(cv_data.get("languages", [])))
+
+            with tab3:
+                st.write("**Coincidencias de habilidades:**")
+                matched_skills = [s for s in job_data["skills"] if s.lower() in [sk.lower() for sk in cv_data["skills"]]]
+                st.write(f"{ats_result['skill_matches']} de {ats_result['total_skills']}")
+                st.write(", ".join(matched_skills))
+                st.write("**Habilidades faltantes:**")
+                st.write(", ".join(ats_result["missing_skills"]) if ats_result["missing_skills"] else "Ninguna")
+                st.write("**Coincidencias de palabras clave:**")
+                matched_keywords = [k for k in job_data["keywords"] if k.lower() in [kw.lower() for kw in cv_data["keywords"]]]
+                st.write(f"{ats_result['keyword_matches']} de {ats_result['total_keywords']}")
+                st.write(", ".join(matched_keywords))
+                st.write("**Palabras clave faltantes:**")
+                st.write(", ".join(ats_result["missing_keywords"]) if ats_result["missing_keywords"] else "Ninguna")
+                st.write("**Diferencia de experiencia:**")
+                st.write(f"{ats_result['experience_gap']:.2f} años" if ats_result['experience_gap'] > 0 else "Cumples o superas la experiencia requerida")
 
         except Exception as e:
             log(f"Error: {e}")
@@ -112,9 +153,62 @@ if st.session_state.get("continue_with_manual") and st.session_state.get("manual
                 f.write(json.dumps(job_data, ensure_ascii=False))
 
             extracted_text = extract_cv_text(st.session_state["uploaded_cv_path"])
+            st.success("CV text extracted successfully.")
+            with open("file_outputs/extracted_cv_text.txt", 'w', encoding='utf-8') as f:
+                f.write(extracted_text)
+
             parsed_cv = parse_to_json_resume_sync(extracted_text)
-            ats_result = calculate_ats_score(parsed_cv, job_data)
+            st.success("CV parsed successfully.")
+            with open("file_outputs/resume.json", 'w', encoding='utf-8') as f:
+                f.write(json.dumps(parsed_cv, ensure_ascii=False))
+
+            cv_data = extract_job_description_data(extracted_text, is_job=False)
+            st.success("CV data extracted successfully.")
+
+            ats_result = calculate_ats_score(cv_data, job_data)
             st.success("ATS score calculated successfully.")
-            st.json(ats_result)
+
+            # UI mejorada para modo manual
+            st.subheader("Resultados del análisis ATS")
+            st.metric("Puntaje ATS", f"{ats_result['score']}%", delta=None)
+
+            tab1, tab2, tab3 = st.tabs(["Oferta laboral", "Tu CV", "Análisis ATS"])
+
+            with tab1:
+                st.write("**Habilidades requeridas:**")
+                st.write(", ".join(job_data.get("skills", [])))
+                st.write("**Palabras clave:**")
+                st.write(", ".join(job_data.get("keywords", [])))
+                st.write("**Experiencia mínima:**")
+                st.write(f"{job_data.get('experience', 0)} años")
+                st.write("**Idiomas:**")
+                st.write(", ".join(job_data.get("languages", [])))
+
+            with tab2:
+                st.write("**Habilidades en tu CV:**")
+                st.write(", ".join(cv_data.get("skills", [])))
+                st.write("**Palabras clave:**")
+                st.write(", ".join(cv_data.get("keywords", [])))
+                st.write("**Experiencia estimada:**")
+                st.write(f"{ats_result['resume_years']:.2f} años")
+                st.write("**Idiomas:**")
+                st.write(", ".join(cv_data.get("languages", [])))
+
+            with tab3:
+                st.write("**Coincidencias de habilidades:**")
+                matched_skills = [s for s in job_data["skills"] if s.lower() in [sk.lower() for sk in cv_data["skills"]]]
+                st.write(f"{ats_result['skill_matches']} de {ats_result['total_skills']}")
+                st.write(", ".join(matched_skills))
+                st.write("**Habilidades faltantes:**")
+                st.write(", ".join(ats_result["missing_skills"]) if ats_result["missing_skills"] else "Ninguna")
+                st.write("**Coincidencias de palabras clave:**")
+                matched_keywords = [k for k in job_data["keywords"] if k.lower() in [kw.lower() for kw in cv_data["keywords"]]]
+                st.write(f"{ats_result['keyword_matches']} de {ats_result['total_keywords']}")
+                st.write(", ".join(matched_keywords))
+                st.write("**Palabras clave faltantes:**")
+                st.write(", ".join(ats_result["missing_keywords"]) if ats_result["missing_keywords"] else "Ninguna")
+                st.write("**Diferencia de experiencia:**")
+                st.write(f"{ats_result['experience_gap']:.2f} años" if ats_result['experience_gap'] > 0 else "Cumples o superas la experiencia requerida")
+
         except Exception as e:
             st.error(f"Error processing manual job description: {e}")
