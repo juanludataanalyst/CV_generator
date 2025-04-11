@@ -7,6 +7,7 @@ import os
 from src.models import JsonResume
 import re
 import time
+from typing import Dict
 
 import requests
 from bs4 import BeautifulSoup, Comment
@@ -271,148 +272,107 @@ def extract_job_description_data(text: str, is_job: bool = True) -> Dict:
         print("Structured data extracted successfully.")
         return parsed
 
+
+import json
+import time
+
+
+
 def parse_to_json_resume_sync(text: str) -> Dict:
     """
     Parses CV text into JSON Resume format using an LLM via OpenRouter with pydantic-ai.
     """
     prompt = f"""
-        You are an expert in CV parsing.
+    You are an expert in CV parsing.
 
-        Take the following extracted CV text, which may have mixed sections (e.g., Profile and Experience blended due to layout issues), and structure it into the JSON Resume standard format.
+    Take the following extracted CV text, which may have mixed sections (e.g., Profile and Experience blended due to layout issues), and structure it into the JSON Resume standard format.
 
-        Separate clearly the "Profile" (summary) from "Professional Experience" (work history with dates and descriptions) and other sections like Education, Skills, Languages, and Projects.
+    Separate clearly the "Profile" (summary) from "Professional Experience" (work history with dates and descriptions) and other sections like Education, Skills, Languages, and Projects.
 
-        Preserve the original content without adding or modifying information beyond structuring.
+    Preserve the original content without adding or modifying information beyond structuring.
 
-        Here is the pydantic model for reference:
+    Here is the JSON Resume schema for reference:
+    - basics: {{"name": "string", "label": "string", "email": "string", "phone": "string", "url": "string|null", "summary": "string|null", "location": {{"address": "string|null", "postalCode": "string|null", "city": "string|null", "countryCode": "string|null", "region": "string|null"}}|null, "profiles": [{{"network": "string", "username": "string", "url": "string|null"}}]}}
+    - work: [{{"company": "string", "position": "string", "website": "string|null", "startDate": "string|null", "endDate": "string|null", "summary": "string|null", "highlights": ["string"]}}]
+    - education: [{{"institution": "string", "area": "string|null", "studyType": "string|null", "startDate": "string|null", "endDate": "string|null", "score": "string|null", "courses": ["string"]}}]
+    - skills: [{{"name": "string", "level": "string|null", "keywords": ["string"]}}]
+    - languages: [{{"language": "string", "fluency": "string|null"}}]
+    - projects: [{{"name": "string", "description": "string|null", "highlights": ["string"], "keywords": ["string"], "startDate": "string|null", "endDate": "string|null", "url": "string|null", "roles": ["string"], "entity": "string|null", "type": "string|null"}}]
 
-            class Location(BaseModel):
-                address: Optional[str] = None
-                postalCode: Optional[str] = None
-                city: Optional[str] = None
-                countryCode: Optional[str] = None
-                region: Optional[str] = None
+    Important rules:
+    1. For URL fields (url, website), always use full URLs starting with "http://" or "https://". If a URL is relative, missing, or invalid, set the field to null.
+    2. For the location field inside basics, if any location sub-field (address, postalCode, city, countryCode, region) is missing or empty, set the entire location field to null. Do not use empty strings for any location sub-fields.
+    3. If any field is missing or cannot be extracted from the provided text, set that field to null. Do not use empty strings.
+    4. Return the result as a valid JSON object wrapped in ```json ``` markers.
 
-            class Profile(BaseModel):
-                network: Optional[str] = None
-                username: Optional[str] = None
-                url: Optional[HttpUrl] = None
-
-            class Basics(BaseModel):
-                name: str
-                label: Optional[str] = None
-                email: Optional[EmailStr] = None
-                phone: Optional[str] = None
-                url: Optional[HttpUrl] = None
-                summary: Optional[str] = None
-                location: Optional[Location] = None
-                profiles: Optional[List[Profile]] = []
-
-            class Work(BaseModel):
-                company: str
-                position: str
-                website: Optional[HttpUrl] = None
-                startDate: Optional[str] = None
-                endDate: Optional[str] = None
-                summary: Optional[str] = None
-                highlights: Optional[List[str]] = []
-
-            class Education(BaseModel):
-                institution: str
-                area: Optional[str] = None
-                studyType: Optional[str] = None
-                startDate: Optional[str] = None
-                endDate: Optional[str] = None
-                score: Optional[str] = None
-                courses: Optional[List[str]] = []
-
-            class Skill(BaseModel):
-                name: str
-                level: Optional[str] = None
-                keywords: Optional[List[str]] = []
-
-            class Language(BaseModel):
-                language: str
-                fluency: Optional[str] = None
-
-            class Project(BaseModel):
-                name: str
-                description: Optional[str] = None
-                highlights: Optional[List[str]] = []
-                keywords: Optional[List[str]] = []
-                startDate: Optional[str] = None
-                endDate: Optional[str] = None
-                url: Optional[HttpUrl] = None
-                roles: Optional[List[str]] = []
-                entity: Optional[str] = None
-                type: Optional[str] = None
-
-            class JsonResume(BaseModel):
-                basics: Basics
-                work: List[Work] = []
-                education: List[Education] = []
-                skills: List[Skill] = []
-                languages: List[Language] = []
-                projects: List[Project] = []
-
-        Here is the JSON Resume schema for reference:
-        - basics: {{\"name\": ..., \"label\": ..., \"email\": ..., \"phone\": ..., \"url\": ..., \"summary\": ..., \"location\": {{\"address\": ..., \"postalCode\": ..., \"city\": ..., \"countryCode\": ..., \"region\": ...}}, \"profiles\": [{{\"network\": ..., \"username\": ..., \"url\": ...}}]}}
-        - work: [{{\"company\": ..., \"position\": ..., \"website\": ..., \"startDate\": ..., \"endDate\": ..., \"summary\": ..., \"highlights\": [...]}}]
-        - education: [{{\"institution\": ..., \"area\": ..., \"studyType\": ..., \"startDate\": ..., \"endDate\": ..., \"score\": ..., \"courses\": [...]}}]
-        - skills: [{{\"name\": ..., \"level\": ..., \"keywords\": [...]}}]
-        - languages: [{{\"language\": ..., \"fluency\": ...}}]
-        - projects: [{{\"name\": ..., \"description\": ..., \"highlights\": [...], \"keywords\": [...], \"startDate\": ..., \"endDate\": ..., \"url\": ..., \"roles\": [...], \"entity\": ..., \"type\": ...}}]
-
-        Important rules:
-        1. For URL fields (url, website), always use full URLs starting with \"http://\" or \"https://\". If a URL is relative or missing, set the field to null.
-        2. For the location field inside basics, if any location sub-field is missing or empty, set the entire location field to null. Do not use empty strings for any location sub-fields.
-        3. If any field is missing or cannot be extracted from the provided text, set that field to null. Do not use empty strings.
-        4. Return the result as a valid JSON object.
-
-        CV Text:
-        \"\"\"
-        {text}
-        \"\"\"
-
-        Return the result as a JSON object.
-        """
-            
-
-    attempt = 0
+    CV Text:
+    \"\"\"
+    {text}
+    \"\"\"
+    
+    Return the result as a JSON object wrapped in ```json ``` markers.
+    """
 
     max_retries = 3
     for attempt in range(max_retries):
-        result = run_llm(prompt)
-        print("LLM response (cv_parser):")
-        print(result)
-        open("file_outputs/job_standar_llm_output.txt", 'w', encoding='utf-8').write(result)
-
-        if not result or not result.strip():
-            print(f"LLM returned empty response. Retry {attempt+1}/{max_retries}...")
-            time.sleep(60)
-            continue
-
-        if "```json" in result:
-            json_str = result.split("```json")[1].split("```")[0].strip()
-        elif "```" in result:
-            json_str = result.split("```")[1].split("```")[0].strip()
-        else:
-            json_str = result.strip()
-
         try:
+            # Llamada al LLM
+            result = run_llm(prompt)
+            print("LLM response (cv_parser):")
+            print(result)
+            with open("file_outputs/job_standar_llm_output.txt", 'w', encoding='utf-8') as f:
+                f.write(result)
+
+            # Verificar si la respuesta está vacía
+            if not result or not result.strip():
+                print(f"LLM returned empty response. Retry {attempt+1}/{max_retries}...")
+                time.sleep(3)
+                continue
+
+            # Extraer el JSON de la respuesta
+            if "```json" in result:
+                json_str = result.split("```json")[1].split("```")[0].strip()
+            else:
+                json_str = result.strip()  # Asumimos que es JSON puro si no hay marcadores
+
+            # Parsear el JSON
             json_cv = json.loads(json_str)
-            print(f"Parsed JSON before preprocessing: {json_cv['basics']['location']}")
-            break  # Success
-        except json.JSONDecodeError:
-            print("Failed to parse LLM output as JSON:")
-            print(json_str)
+            print(f"Parsed JSON before preprocessing: {json_cv}")
+
+            # Validación básica para asegurar que sigue el formato JSON Resume
+            if not isinstance(json_cv, dict) or "basics" not in json_cv:
+                raise ValueError("Parsed JSON does not follow JSON Resume format")
+
+            # Ajustar campos según las reglas
+            if "basics" in json_cv and "location" in json_cv["basics"]:
+                location = json_cv["basics"]["location"]
+                # Solo intentamos ajustar si location no es None
+                if location is not None:
+                    if not any(location.get(field) for field in ["address", "postalCode", "city", "countryCode", "region"]):
+                        json_cv["basics"]["location"] = None
+
+            return json_cv  # Éxito, devolvemos el JSON
+
+        except json.JSONDecodeError as e:
+            print(f"Failed to parse LLM output as JSON: {e}")
+            print("Raw LLM output:")
+            print(result)
             if attempt < max_retries - 1:
                 print(f"Retrying LLM call ({attempt+1}/{max_retries})...")
                 time.sleep(3)
                 continue
             else:
                 raise ValueError("Failed to parse LLM output as JSON after retries")
+        except Exception as e:
+            print(f"Unexpected error during parsing: {e}")
+            if attempt < max_retries - 1:
+                print(f"Retrying LLM call ({attempt+1}/{max_retries})...")
+                time.sleep(3)
+                continue
+            else:
+                raise ValueError(f"Failed to process CV text after retries: {e}")
 
+    raise ValueError("Failed to parse CV text after all retries")
 
 def calculate_total_experience(work_history: list) -> float:
     """Calcula los años totales de experiencia laboral desde el historial de trabajo."""
