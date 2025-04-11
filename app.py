@@ -45,13 +45,18 @@ if (st.button("Generate ATS-optimized CV")
     with st.spinner("Processing..."):
         log("Starting pipeline...")
         try:
+            os.makedirs("file_outputs", exist_ok=True)
             job_description =  scrape_job_description(job_url)
             st.success("Job description scraped successfully.")
-            print(type(job_description))
+            open("file_outputs/job_description.txt", 'w', encoding='utf-8').write( job_description) 
             extracted_text = extract_cv_text(st.session_state["uploaded_cv_path"]) 
+            open("file_outputs/extracted_cv_text.txt", 'w', encoding='utf-8').write( extracted_text)
             st.success("CV text extracted successfully.") 
             parsed_cv = parse_to_json_resume_sync(extracted_text)
             st.success("CV parsed successfully.")
+            open("file_outputs/resume.json", 'w', encoding='utf-8').write(json.dumps(parsed_cv, ensure_ascii=False))
+
+
             
             job_description_data = extract_description_data(job_description)
             st.success("Job description parsed successfully.")

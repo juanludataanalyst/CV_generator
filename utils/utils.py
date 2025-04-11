@@ -4,7 +4,9 @@ import streamlit as st
 import json
 from typing import Dict
 import os
-from src.models import JsonResume   
+from src.models import JsonResume
+
+import time
 
 import requests
 from bs4 import BeautifulSoup, Comment
@@ -12,17 +14,9 @@ from bs4 import BeautifulSoup, Comment
 from dateutil import parser
 from datetime import datetime
 
-
-
 def extract_cv_text(pdf_path: str) -> str:
     """
     Extracts text from a PDF CV file using pdfminer.six.
-
-    Args:
-        pdf_path (str): Path to the PDF file.
-
-    Returns:
-        str: Extracted plain text from the CV.
     """
     try:
         text = extract_text(pdf_path)
@@ -30,116 +24,210 @@ def extract_cv_text(pdf_path: str) -> str:
             archivo.writelines(text)
         return text
     except Exception as e:
-        # Reason: Extraction might fail on corrupt or encrypted PDFs
         print(f"Error extracting text from {pdf_path}: {e}")
         return ""
 
-# Configuración del cliente OpenAI para OpenRouter
 client = openai.OpenAI(
     base_url="https://openrouter.ai/api/v1",
     api_key=st.secrets["OPENROUTER_API_KEY"]
 )
 
-def run_llm(prompt):
-    response = client.chat.completions.create(
-        model="openrouter/quasar-alpha",
-        messages=[
-            {"role": "system", "content": "You are an expert assistant."},
-            {"role": "user", "content": prompt}
-        ]
-    )
-    return response.choices[0].message.content
+def run_llm(prompt, temperature=0.1):
+    try:
+        response = client.chat.completions.create(
+            model="google/gemini-2.0-flash-lite-001",
+            messages=[
+                {"role": "system", "content": "You are an expert assistant."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=temperature,
+        )
+        if not response.choices or len(response.choices) == 0:
+            print("LLM returned empty choices")
+            return None
+        return response.choices[0].message.content
+    except Exception as e:
+        print(f"Error in LLM call: {e}")
+        return None
 
-## Parse CV to JSON Resume
+
 def parse_to_json_resume_sync(text: str) -> Dict:
     """
     Parses CV text into JSON Resume format using an LLM via OpenRouter with pydantic-ai.
-
-    Args:
-        text (str): Extracted text from the CV.
-
-    Returns:
-        Dict: JSON Resume formatted data.
     """
-   
-   
     prompt = f"""
-    You are an expert in CV parsing.
+        You are an expert in CV parsing.
 
-    Take the following extracted CV text, which may have mixed sections (e.g., Profile and Experience blended due to layout issues), and structure it into the JSON Resume standard format.
+        Take the following extracted CV text, which may have mixed sections (e.g., Profile and Experience blended due to layout issues), and structure it into the JSON Resume standard format.
 
-    Separate clearly the "Profile" (summary) from "Professional Experience" (work history with dates and descriptions) and other sections like Education, Skills, Languages, and Projects.
+        Separate clearly the "Profile" (summary) from "Professional Experience" (work history with dates and descriptions) and other sections like Education, Skills, Languages, and Projects.
 
-    Preserve the original content without adding or modifying information beyond structuring.
+        Preserve the original content without adding or modifying information beyond structuring.
 
-    Here is the JSON Resume schema for reference:
-    - basics: {{name, label, email, phone, url, summary, profiles: [{{network, username, url}}]}}
-    - work: [{{company, position, website, startDate, endDate, summary, highlights}}]
-    - education: [{{institution, area, studyType, startDate, endDate, score, courses}}]
-    - skills: [{{name, level, keywords}}]
-    - languages: [{{language, fluency}}]
-    - projects: [{{name, description, highlights, keywords, startDate, endDate, url, roles, entity, type}}]
+        Here is the pydantic model for reference:
 
-    CV Text:
-    \"\"\"
-    {text}
-    \"\"\"
+            class Location(BaseModel):
+                address: Optional[str] = None
+                postalCode: Optional[str] = None
+                city: Optional[str] = None
+                countryCode: Optional[str] = None
+                region: Optional[str] = None
 
-    Return the result as a JSON object. Use full URLs (e.g., "https://github.com/username") and set fields to null if no data is present instead of empty strings.
-    """
+            class Profile(BaseModel):
+                network: Optional[str] = None
+                username: Optional[str] = None
+                url: Optional[HttpUrl] = None
 
-  
-    result = run_llm(prompt)
-    print("LLM response (cv_parser):")
-    print(result)
+            class Basics(BaseModel):
+                name: str
+                label: Optional[str] = None
+                email: Optional[EmailStr] = None
+                phone: Optional[str] = None
+                url: Optional[HttpUrl] = None
+                summary: Optional[str] = None
+                location: Optional[Location] = None
+                profiles: Optional[List[Profile]] = []
 
-    # Si la respuesta contiene triple backticks, extraer solo el JSON dentro
-    if "```json" in result:
-        json_str = result.split("```json")[1].split("```")[0].strip()
-    elif "```" in result:
-        json_str = result.split("```")[1].split("```")[0].strip()
-    else:
-        json_str = result.strip()
+            class Work(BaseModel):
+                company: str
+                position: str
+                website: Optional[HttpUrl] = None
+                startDate: Optional[str] = None
+                endDate: Optional[str] = None
+                summary: Optional[str] = None
+                highlights: Optional[List[str]] = []
 
-    # Ocultar salida cruda del LLM
-    try:
-        json_cv = json.loads(json_str)
-    except json.JSONDecodeError:
-        print("Failed to parse LLM output as JSON:")
-        print(json_str)
-        raise ValueError("Failed to parse LLM output as JSON")
+            class Education(BaseModel):
+                institution: str
+                area: Optional[str] = None
+                studyType: Optional[str] = None
+                startDate: Optional[str] = None
+                endDate: Optional[str] = None
+                score: Optional[str] = None
+                courses: Optional[List[str]] = []
+
+            class Skill(BaseModel):
+                name: str
+                level: Optional[str] = None
+                keywords: Optional[List[str]] = []
+
+            class Language(BaseModel):
+                language: str
+                fluency: Optional[str] = None
+
+            class Project(BaseModel):
+                name: str
+                description: Optional[str] = None
+                highlights: Optional[List[str]] = []
+                keywords: Optional[List[str]] = []
+                startDate: Optional[str] = None
+                endDate: Optional[str] = None
+                url: Optional[HttpUrl] = None
+                roles: Optional[List[str]] = []
+                entity: Optional[str] = None
+                type: Optional[str] = None
+
+            class JsonResume(BaseModel):
+                basics: Basics
+                work: List[Work] = []
+                education: List[Education] = []
+                skills: List[Skill] = []
+                languages: List[Language] = []
+                projects: List[Project] = []
+
+        Here is the JSON Resume schema for reference:
+        - basics: {{\"name\": ..., \"label\": ..., \"email\": ..., \"phone\": ..., \"url\": ..., \"summary\": ..., \"location\": {{\"address\": ..., \"postalCode\": ..., \"city\": ..., \"countryCode\": ..., \"region\": ...}}, \"profiles\": [{{\"network\": ..., \"username\": ..., \"url\": ...}}]}}
+        - work: [{{\"company\": ..., \"position\": ..., \"website\": ..., \"startDate\": ..., \"endDate\": ..., \"summary\": ..., \"highlights\": [...]}}]
+        - education: [{{\"institution\": ..., \"area\": ..., \"studyType\": ..., \"startDate\": ..., \"endDate\": ..., \"score\": ..., \"courses\": [...]}}]
+        - skills: [{{\"name\": ..., \"level\": ..., \"keywords\": [...]}}]
+        - languages: [{{\"language\": ..., \"fluency\": ...}}]
+        - projects: [{{\"name\": ..., \"description\": ..., \"highlights\": [...], \"keywords\": [...], \"startDate\": ..., \"endDate\": ..., \"url\": ..., \"roles\": [...], \"entity\": ..., \"type\": ...}}]
+
+        Important rules:
+        1. For URL fields (url, website), always use full URLs starting with \"http://\" or \"https://\". If a URL is relative or missing, set the field to null.
+        2. For the location field inside basics, if any location sub-field is missing or empty, set the entire location field to null. Do not use empty strings for any location sub-fields.
+        3. If any field is missing or cannot be extracted from the provided text, set that field to null. Do not use empty strings.
+        4. Return the result as a valid JSON object.
+
+        CV Text:
+        \"\"\"
+        {text}
+        \"\"\"
+
+        Return the result as a JSON object.
+        """
+            
+
+    attempt = 0
+
+    max_retries = 3
+    for attempt in range(max_retries):
+        result = run_llm(prompt)
+        print("LLM response (cv_parser):")
+        print(result)
+        open("file_outputs/job_standar_llm_output.txt", 'w', encoding='utf-8').write(result)
+
+        if not result or not result.strip():
+            print(f"LLM returned empty response. Retry {attempt+1}/{max_retries}...")
+            time.sleep(60)
+            continue
+
+        if "```json" in result:
+            json_str = result.split("```json")[1].split("```")[0].strip()
+        elif "```" in result:
+            json_str = result.split("```")[1].split("```")[0].strip()
+        else:
+            json_str = result.strip()
+
+        try:
+            json_cv = json.loads(json_str)
+            print(f"Parsed JSON before preprocessing: {json_cv['basics']['location']}")
+            break  # Success
+        except json.JSONDecodeError:
+            print("Failed to parse LLM output as JSON:")
+            print(json_str)
+            if attempt < max_retries - 1:
+                print(f"Retrying LLM call ({attempt+1}/{max_retries})...")
+                time.sleep(3)
+                continue
+            else:
+                raise ValueError("Failed to parse LLM output as JSON after retries")
+
+      
 
     def preprocess_json(data):
-        """
-        Recursively clean JSON:
-        - Convert empty string URLs to None
-        - Convert relative URLs to absolute URLs
-        """
-        if isinstance(data, dict):
-            new_data = {}
-            for k, v in data.items():
-                if isinstance(v, str):
-                    if k in ("url", "website") and (v.strip() == "" or v.strip() is None):
-                        new_data[k] = None
-                    elif k in ("url", "website") and not v.startswith("http"):
-                        new_data[k] = "https://" + v.lstrip("/")
-                    else:
-                        new_data[k] = v
-                elif isinstance(v, (dict, list)):
-                    new_data[k] = preprocess_json(v)
+     if isinstance(data, dict):
+        new_data = {}
+        if "basics" in data:
+            new_data["basics"] = {}
+        for k, v in data.items():
+            if isinstance(v, str):
+                if k in ("url", "website") and (v.strip() == "" or v.strip() is None):
+                    new_data[k] = None
+                elif k in ("url", "website") and not v.startswith("http") and v is not None:
+                    new_data[k] = "https://" + v.lstrip("/")
                 else:
                     new_data[k] = v
-            return new_data
-        elif isinstance(data, list):
-            return [preprocess_json(item) for item in data]
-        else:
-            return data
+            elif isinstance(v, (dict, list)):
+                new_data[k] = preprocess_json(v)
+            elif k == "location" and "basics" in data:
+                print(f"Location antes: {v}") #debug
+                if v == "" or (isinstance(v, dict) and not any(v.values())):
+                    new_data["basics"]["location"] = None
+                    print("Location despues: None") #debug
+                else:
+                    new_data["basics"]["location"] = v
+                    print(f"Location despues: {v}") #debug
+            else:
+                new_data[k] = v
+        return new_data
+     elif isinstance(data, list):
+        return [preprocess_json(item) for item in data]
+     else:
+        return data
 
     json_cv = preprocess_json(json_cv)
 
-    # Reemplazar None o "" en campos string opcionales por ""
-    # En campos URL por None
-    # En campos lista por []
     def replace_null_strings(data):
         list_fields = {"profiles", "highlights", "courses", "keywords", "roles"}
         if isinstance(data, dict):
@@ -152,6 +240,8 @@ def parse_to_json_resume_sync(text: str) -> Dict:
                         data[k] = []
                     elif isinstance(v, (dict, list)):
                         replace_null_strings(v)
+                elif k == "location":  # No modificar location si es None
+                    continue
                 elif v is None:
                     data[k] = ""
                 elif isinstance(v, (dict, list)):
@@ -166,9 +256,7 @@ def parse_to_json_resume_sync(text: str) -> Dict:
     validated_cv = JsonResume(**json_cv)
     return validated_cv.model_dump(mode="json")
 
-
 def scrape_job_description(url: str) -> str:
-
     """
     Extracts the job description from a job posting URL using HTML filtering and an LLM agent.
     """
@@ -181,15 +269,12 @@ def scrape_job_description(url: str) -> str:
 
         soup = BeautifulSoup(response.text, "html.parser")
 
-        # Remove irrelevant tags
         for tag in soup(["script", "style", "header", "footer", "nav", "aside", "form", "iframe"]):
             tag.decompose()
 
-        # Remove HTML comments
         for comment in soup.find_all(string=lambda text: isinstance(text, Comment)):
             comment.extract()
 
-        # Heuristic: find the main content block by keywords
         candidates = []
         keywords = ["description", "job", "responsibilities", "details", "requirements", "posting", "vacancy", "position", "role", "summary", "body", "content"]
 
@@ -206,7 +291,6 @@ def scrape_job_description(url: str) -> str:
                 score += 1
             candidates.append((score, len(text), tag))
 
-        # Sort by score and length
         candidates.sort(reverse=True)
 
         if candidates:
@@ -226,10 +310,9 @@ def scrape_job_description(url: str) -> str:
         except Exception as e:
             print(f"Error saving job_description.txt: {e}")
 
-        print("Filtered content preview:")
-        print(plain_text[:1000])  # primeros 1000 caracteres
+        #print("Filtered content preview:")
+        #print(plain_text[:1000])
 
-        # LLM extraction
         prompt = f"""
         Extract only the main job description from the following text. Ignore menus, footers, ads, or irrelevant content.
 
@@ -241,73 +324,22 @@ def scrape_job_description(url: str) -> str:
         {plain_text}
         \"\"\"
         """
-        result = run_llm(prompt)
-        print("LLM response (job_scraper):")
-        print(result)
+
+        max_retries = 3
+        for attempt in range(max_retries):
+          result = run_llm(prompt)
+          print("LLM response (job_scraper):")
+          print(result)
+          open("file_outputs/job_description_llm_output.txt", 'w', encoding='utf-8').write(result)
+
+        if not result or not result.strip():
+            print(f"LLM returned empty response. Retry {attempt+1}/{max_retries}...")
+            time.sleep(60)
+        
         return result.strip()
 
     except requests.RequestException as e:
         return f"Error extracting content: {str(e)}"
-
-
-
-
-
-        """
-        Extracts skills, experience, and keywords from a job description or CV using an LLM.
-        """
-        print("Extracting structured data from " + ("job description" if is_job else "CV") + "...")
-        if is_job:
-            prompt = f"""
-        Extract the following information from this job description:
-        1. A list of ALL required skills (e.g., "Python", "Machine Learning").
-        2. The minimum years of experience required (as a number, e.g., 3). If not specified, return 0.
-        3. The 10 most important keywords or phrases that should appear in a resume to match this job (e.g., "data analysis", "cloud computing").
-
-        Text:
-        \"\"\"
-        {text}
-        \"\"\"
-
-        Return the result as a JSON object with keys: "skills", "experience", "keywords".
-        Respond ONLY with the JSON object.
-        """
-        else:
-            prompt = f"""
-        Extract the following information from this CV:
-        1. A list of ALL mentioned skills.
-        2. The 10 most important keywords or phrases representing the candidate's experience.
-
-        Text:
-        \"\"\"
-        {text}
-        \"\"\"
-
-        Return the result as a JSON object with keys: "skills", "keywords".
-        Respond ONLY with the JSON object.
-        """
-        result = run_llm(prompt)
-        print("LLM response (job_to_cv_parser):")
-        print(result)
-
-        # Si la respuesta contiene triple backticks, extraer solo el JSON dentro
-        if "```json" in result:
-            json_str = result.split("```json")[1].split("```")[0].strip()
-        elif "```" in result:
-            json_str = result.split("```")[1].split("```")[0].strip()
-        else:
-            json_str = result.strip()
-
-        if not json_str:
-            raise ValueError("LLM returned an empty response in extract_structured_data.")
-        try:
-            parsed = json.loads(json_str)
-        except json.JSONDecodeError:
-            print("Error: LLM response is not valid JSON:")
-            print(json_str)
-            raise
-        print("Structured data extracted successfully.")
-        return parsed
 
 def extract_description_data(text: str, is_job: bool = True) -> Dict:
         """
@@ -343,7 +375,21 @@ def extract_description_data(text: str, is_job: bool = True) -> Dict:
         Return the result as a JSON object with keys: "skills", "keywords".
         Respond ONLY with the JSON object.
         """
-        result = run_llm(prompt)
+        
+        max_retries = 3
+        for attempt in range(max_retries):
+          result = run_llm(prompt)
+          print("LLM response (cv_parser):")
+          print(result)
+          open("file_outputs/job_description_llm_output.txt", 'w', encoding='utf-8').write(result)
+
+        if not result or not result.strip():
+            print(f"LLM returned empty response. Retry {attempt+1}/{max_retries}...")
+            time.sleep(60)
+            
+
+        
+
         print("LLM response (job_to_cv_parser):")
         print(result)
 
@@ -364,46 +410,6 @@ def extract_description_data(text: str, is_job: bool = True) -> Dict:
             raise
         print("Structured data extracted successfully.")
         return parsed
-
-
-def calculate_total_experience(cv_json: dict) -> int:
-        """
-        Calculates total years of experience from the 'work' section of the CV JSON.
-        """
-        work_entries = cv_json.get("work", [])
-        if not work_entries:
-            return 0
-
-        earliest_start = None
-        latest_end = None
-
-        for entry in work_entries:
-            start_str = entry.get("startDate")
-            end_str = entry.get("endDate", "")  # If endDate is empty, it's a current job
-
-            if start_str:
-                try:
-                    start_date = parser.parse(start_str)
-                    if earliest_start is None or start_date < earliest_start:
-                        earliest_start = start_date
-                except:
-                    continue
-
-            if end_str:
-                try:
-                    end_date = parser.parse(end_str)
-                    if latest_end is None or end_date > latest_end:
-                        latest_end = end_date
-                except:
-                    continue
-            else:
-                # Current job, use today's date
-                latest_end = datetime.now()
-
-        if earliest_start and latest_end:
-            total_years = (latest_end - earliest_start).days / 365.25
-            return int(total_years)
-        return 0
 
 def calculate_ats_score(parsed_cv: dict, job_data: dict) -> dict:
     """
@@ -487,47 +493,6 @@ def calculate_ats_score(parsed_cv: dict, job_data: dict) -> dict:
         'resume_years': resume_years,
         'job_years': job_years
     }
-   
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
