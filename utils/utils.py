@@ -5,7 +5,7 @@ import json
 from typing import Dict
 import os
 from src.models import JsonResume
-
+import re
 import time
 
 import requests
@@ -14,18 +14,6 @@ from bs4 import BeautifulSoup, Comment
 from dateutil import parser
 from datetime import datetime
 
-def extract_cv_text(pdf_path: str) -> str:
-    """
-    Extracts text from a PDF CV file using pdfminer.six.
-    """
-    try:
-        text = extract_text(pdf_path)
-        with open("prueba", 'w', encoding='utf-8') as archivo:
-            archivo.writelines(text)
-        return text
-    except Exception as e:
-        print(f"Error extracting text from {pdf_path}: {e}")
-        return ""
 
 client = openai.OpenAI(
     base_url="https://openrouter.ai/api/v1",
@@ -50,6 +38,238 @@ def run_llm(prompt, temperature=0.1):
         print(f"Error in LLM call: {e}")
         return None
 
+    
+
+    def preprocess_json(data):
+     if isinstance(data, dict):
+        new_data = {}
+        if "basics" in data:
+            new_data["basics"] = {}
+        for k, v in data.items():
+            if isinstance(v, str):
+                if k in ("url", "website") and (v.strip() == "" or v.strip() is None):
+                    new_data[k] = None
+                elif k in ("url", "website") and not v.startswith("http") and v is not None:
+                    new_data[k] = "https://" + v.lstrip("/")
+                else:
+                    new_data[k] = v
+            elif isinstance(v, (dict, list)):
+                new_data[k] = preprocess_json(v)
+            elif k == "location" and "basics" in data:
+                print(f"Location antes: {v}") #debug
+                if v == "" or (isinstance(v, dict) and not any(v.values())):
+                    new_data["basics"]["location"] = None
+                    print("Location despues: None") #debug
+                else:
+                    new_data["basics"]["location"] = v
+                    print(f"Location despues: {v}") #debug
+            else:
+                new_data[k] = v
+        return new_data
+     elif isinstance(data, list):
+        return [preprocess_json(item) for item in data]
+     else:
+        return data
+
+    json_cv = preprocess_json(json_cv)
+
+    def replace_null_strings(data):
+        list_fields = {"profiles", "highlights", "courses", "keywords", "roles"}
+        if isinstance(data, dict):
+            for k, v in data.items():
+                if k in ("url", "website"):
+                    if v is None or v == "":
+                        data[k] = None
+                elif k in list_fields:
+                    if v is None or v == "":
+                        data[k] = []
+                    elif isinstance(v, (dict, list)):
+                        replace_null_strings(v)
+                elif k == "location":  # No modificar location si es None
+                    continue
+                elif v is None:
+                    data[k] = ""
+                elif isinstance(v, (dict, list)):
+                    replace_null_strings(v)
+        elif isinstance(data, list):
+            for item in data:
+                replace_null_strings(item)
+        return data
+
+    json_cv = replace_null_strings(json_cv)
+
+    validated_cv = JsonResume(**json_cv)
+    return validated_cv.model_dump(mode="json")
+
+def scrape_job_description(url: str) -> str:
+    """
+    Extracts all text from a job posting URL and uses an LLM agent to clean and extract the job description.
+    """
+    try:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        }
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+
+        # Parsear el HTML con BeautifulSoup
+        soup = BeautifulSoup(response.text, "html.parser")
+
+        # Eliminar etiquetas no deseadas
+        for tag in soup(["script", "style", "header", "footer", "nav", "aside", "form", "iframe"]):
+            tag.decompose()
+
+        # Eliminar comentarios HTML
+        for comment in soup.find_all(string=lambda text: isinstance(text, Comment)):
+            comment.extract()
+
+        # Extraer todo el texto visible del body (sin filtrar por candidatos)
+        if soup.body:
+            content = soup.body
+        else:
+            content = soup  # Si no hay body, tomar todo el soup
+
+        plain_text = content.get_text(separator="\n", strip=True)
+
+        print(f"[DEBUG] Full content length: {len(plain_text)}")
+        print(f"[DEBUG] Full content starts with: {plain_text[:100]}")
+
+        # Guardar el texto completo en un archivo
+        try:
+            with open("job_description_full.txt", "w", encoding="utf-8") as f:
+                f.write(plain_text)
+            print("Saved job_description_full.txt successfully.")
+        except Exception as e:
+            print(f"Error saving job_description_full.txt: {e}")
+
+        # Prompt para el LLM
+        prompt = f"""
+        Extract the job description from the following text. Ignore menus, footers, ads, and any irrelevant content.
+
+        If this is not a job posting, respond with exactly: "ERROR: Not a job posting".
+
+        Return the job description with all relevant information about the role included (Skills, job title, company name, location, etc.) without any additional comments:
+
+        \"\"\"
+        {plain_text}
+        \"\"\"
+        """
+
+        # Ejecutar el LLM con reintentos
+        max_retries = 3
+        for attempt in range(max_retries):
+            result = run_llm(prompt)  # Asumo que run_llm está definido en otro lugar
+            print("LLM response (job_scraper):")
+            print(result)
+            with open("file_outputs/job_description_llm_output.txt", "w", encoding="utf-8") as f:
+                f.write(result)
+
+            if not result or not result.strip():
+                print(f"LLM returned empty response. Retry {attempt+1}/{max_retries}...")
+                time.sleep(60)
+            else:
+                break  # Salir del bucle si hay resultado válido
+
+        return result.strip() if result else "ERROR: LLM failed to return a valid response"
+
+    except requests.RequestException as e:
+        return f"Error extracting content: {str(e)}"
+
+def extract_cv_text(pdf_path: str) -> str:
+    """
+    Extracts text from a PDF CV file using pdfminer.six.
+    """
+    try:
+        text = extract_text(pdf_path)
+        with open("description.txt", 'w', encoding='utf-8') as archivo:
+            archivo.writelines(text)
+        return text
+    except Exception as e:
+        print(f"Error extracting text from {pdf_path}: {e}")
+        return ""
+
+def extract_job_description_data(text: str, is_job: bool = True) -> Dict:
+        """
+        Extracts skills, experience, keywords and language from a job description using an LLM.
+        """
+        print("Extracting structured data from " + ("job description" if is_job else "CV") + "...")
+        if is_job:
+            prompt = f"""
+        Extract the following information from this job description and return it as a JSON object:
+        1. A list of ALL required skills (e.g., "Python", "Machine Learning").
+        2. The minimum years of experience required (as a number, e.g., 3). If not specified, return 0.
+        3. The most important keywords or phrases that should appear in a resume to match this job (e.g., "data analysis", "cloud computing","python").
+
+        Text:
+        \"\"\"
+        {text}
+        \"\"\"
+
+        Return the result as a JSON object with keys: "skills", "experience", "keywords" and "languages"
+        Respond ONLY with the JSON object.
+        """
+        else:
+            prompt = f"""
+          Extract the following information from this CV and return it as a JSON object:
+        1. A list of ALL skills (e.g., "Python", "Machine Learning").
+        2. The most important keywords or phrases that should appear in a resume to match this job (e.g., "data analysis", "cloud computing","python").
+
+        Text:
+        \"\"\"
+        {text}
+        \"\"\"
+
+        Return the result as a JSON object with keys: "skills", "experience", "keywords" and "languages"
+        Respond ONLY with the JSON object.
+
+
+        Text:
+        \"\"\"
+        {text}
+        \"\"\"
+
+        Return the result as a JSON object with keys: "skills", "keywords".
+        Respond ONLY with the JSON object.
+        """
+        
+        max_retries = 3
+        for attempt in range(max_retries):
+          result = run_llm(prompt)
+          print("LLM response (cv_parser):")
+          print(result)
+
+          if is_job:
+             open("file_outputs/job_summary_llm_output.txt", 'w', encoding='utf-8').write(result)
+          else:
+             open("file_outputs/cv_summary_llm_output.txt", 'w', encoding='utf-8').write(result)
+
+        if not result or not result.strip():
+            print(f"LLM returned empty response. Retry {attempt+1}/{max_retries}...")
+            time.sleep(60)
+            
+
+        
+
+        print("LLM response (job_to_cv_parser):")
+        print(result)
+
+        if "```json" in result:
+            json_str = result.split("```json")[1].split("```")[0].strip()
+        elif "```" in result:
+            json_str = result.split("```")[1].split("```")[0].strip()
+        else:
+            json_str = result.strip()
+
+        if not json_str:
+            raise ValueError("LLM returned an empty response in extract_structured_data.")
+        try:
+            parsed = json.loads(json_str)
+        except json.JSONDecodeError:
+            print("Error: LLM response is not valid JSON:")
+            print(json_str)
+            raise
+        print("Structured data extracted successfully.")
+        return parsed
 
 def parse_to_json_resume_sync(text: str) -> Dict:
     """
@@ -193,306 +413,150 @@ def parse_to_json_resume_sync(text: str) -> Dict:
             else:
                 raise ValueError("Failed to parse LLM output as JSON after retries")
 
-      
 
-    def preprocess_json(data):
-     if isinstance(data, dict):
-        new_data = {}
-        if "basics" in data:
-            new_data["basics"] = {}
-        for k, v in data.items():
-            if isinstance(v, str):
-                if k in ("url", "website") and (v.strip() == "" or v.strip() is None):
-                    new_data[k] = None
-                elif k in ("url", "website") and not v.startswith("http") and v is not None:
-                    new_data[k] = "https://" + v.lstrip("/")
-                else:
-                    new_data[k] = v
-            elif isinstance(v, (dict, list)):
-                new_data[k] = preprocess_json(v)
-            elif k == "location" and "basics" in data:
-                print(f"Location antes: {v}") #debug
-                if v == "" or (isinstance(v, dict) and not any(v.values())):
-                    new_data["basics"]["location"] = None
-                    print("Location despues: None") #debug
-                else:
-                    new_data["basics"]["location"] = v
-                    print(f"Location despues: {v}") #debug
-            else:
-                new_data[k] = v
-        return new_data
-     elif isinstance(data, list):
-        return [preprocess_json(item) for item in data]
-     else:
-        return data
+def calculate_total_experience(work_history: list) -> float:
+    """Calcula los años totales de experiencia laboral desde el historial de trabajo."""
+    total_months = 0
+    current_year = datetime.now().year
+    current_month = datetime.now().month
 
-    json_cv = preprocess_json(json_cv)
+    for job in work_history:
+        start_date = job.get("startDate", "")
+        end_date = job.get("endDate", "present")
 
-    def replace_null_strings(data):
-        list_fields = {"profiles", "highlights", "courses", "keywords", "roles"}
-        if isinstance(data, dict):
-            for k, v in data.items():
-                if k in ("url", "website"):
-                    if v is None or v == "":
-                        data[k] = None
-                elif k in list_fields:
-                    if v is None or v == "":
-                        data[k] = []
-                    elif isinstance(v, (dict, list)):
-                        replace_null_strings(v)
-                elif k == "location":  # No modificar location si es None
-                    continue
-                elif v is None:
-                    data[k] = ""
-                elif isinstance(v, (dict, list)):
-                    replace_null_strings(v)
-        elif isinstance(data, list):
-            for item in data:
-                replace_null_strings(item)
-        return data
+        if not start_date:
+            continue
 
-    json_cv = replace_null_strings(json_cv)
+        try:
+            start_month, start_year = start_date.split()
+            start_month = {"Ene": 1, "Feb": 2, "Mar": 3, "Abr": 4, "May": 5, "Jun": 6,
+                           "Jul": 7, "Ago": 8, "Sept": 9, "Oct": 10, "Nov": 11, "Dic": 12}[start_month]
+            start_year = int(start_year)
+        except (ValueError, KeyError):
+            continue
 
-    validated_cv = JsonResume(**json_cv)
-    return validated_cv.model_dump(mode="json")
-
-def scrape_job_description(url: str) -> str:
-    """
-    Extracts the job description from a job posting URL using HTML filtering and an LLM agent.
-    """
-    try:
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-        }
-        response = requests.get(url, headers=headers, timeout=10)
-        response.raise_for_status()
-
-        soup = BeautifulSoup(response.text, "html.parser")
-
-        for tag in soup(["script", "style", "header", "footer", "nav", "aside", "form", "iframe"]):
-            tag.decompose()
-
-        for comment in soup.find_all(string=lambda text: isinstance(text, Comment)):
-            comment.extract()
-
-        candidates = []
-        keywords = ["description", "job", "responsibilities", "details", "requirements", "posting", "vacancy", "position", "role", "summary", "body", "content"]
-
-        for tag in soup.find_all(["main", "article", "section", "div"]):
-            text = tag.get_text(separator=" ", strip=True)
-            if not text or len(text.split()) < 30:
+        if end_date.lower() == "present":
+            end_month, end_year = current_month, current_year
+        else:
+            try:
+                end_month, end_year = end_date.split()
+                end_month = {"Ene": 1, "Feb": 2, "Mar": 3, "Abr": 4, "May": 5, "Jun": 6,
+                             "Jul": 7, "Ago": 8, "Sept": 9, "Oct": 10, "Nov": 11, "Dic": 12}[end_month]
+                end_year = int(end_year)
+            except (ValueError, KeyError):
                 continue
-            score = 0
-            attrs = (tag.get("class", []) or []) + [tag.get("id", "")]
-            attrs_text = " ".join(attrs).lower()
-            if any(k in attrs_text for k in keywords):
-                score += 2
-            if any(k in text.lower() for k in keywords):
-                score += 1
-            candidates.append((score, len(text), tag))
 
-        candidates.sort(reverse=True)
+        months = (end_year - start_year) * 12 + (end_month - start_month)
+        if months > 0:
+            total_months += months
 
-        if candidates:
-            content = candidates[0][2]
-        else:
-            content = soup.body
+    return total_months / 12
 
-        plain_text = content.get_text(separator="\n", strip=True)
+def normalize_text(text: str) -> str:
+    """Normaliza texto eliminando espacios, mayúsculas y caracteres especiales."""
+    # Convertir a minúsculas y eliminar espacios y signos de puntuación
+    text = text.lower()
+    text = re.sub(r'[\s$$      $$,.;:-]+', '', text)
+    return text
 
-        print(f"[DEBUG] Filtered content length: {len(plain_text)}")
-        print(f"[DEBUG] Filtered content starts with: {plain_text[:100]}")
-
-        try:
-            with open("job_description.txt", "w", encoding="utf-8") as f:
-                f.write(plain_text)
-            print("Saved job_description.txt successfully.")
-        except Exception as e:
-            print(f"Error saving job_description.txt: {e}")
-
-        #print("Filtered content preview:")
-        #print(plain_text[:1000])
-
-        prompt = f"""
-        Extract only the main job description from the following text. Ignore menus, footers, ads, or irrelevant content.
-
-        If this is not a job posting, respond with exactly: "ERROR: Not a job posting".
-
-        Return only the job description without any additional comments:
-
-        \"\"\"
-        {plain_text}
-        \"\"\"
-        """
-
-        max_retries = 3
-        for attempt in range(max_retries):
-          result = run_llm(prompt)
-          print("LLM response (job_scraper):")
-          print(result)
-          open("file_outputs/job_description_llm_output.txt", 'w', encoding='utf-8').write(result)
-
-        if not result or not result.strip():
-            print(f"LLM returned empty response. Retry {attempt+1}/{max_retries}...")
-            time.sleep(60)
-        
-        return result.strip()
-
-    except requests.RequestException as e:
-        return f"Error extracting content: {str(e)}"
-
-def extract_description_data(text: str, is_job: bool = True) -> Dict:
-        """
-        Extracts skills, experience, and keywords from a job description or CV using an LLM.
-        """
-        print("Extracting structured data from " + ("job description" if is_job else "CV") + "...")
-        if is_job:
-            prompt = f"""
-        Extract the following information from this job description:
-        1. A list of ALL required skills (e.g., "Python", "Machine Learning").
-        2. The minimum years of experience required (as a number, e.g., 3). If not specified, return 0.
-        3. The 10 most important keywords or phrases that should appear in a resume to match this job (e.g., "data analysis", "cloud computing").
-
-        Text:
-        \"\"\"
-        {text}
-        \"\"\"
-
-        Return the result as a JSON object with keys: "skills", "experience", "keywords".
-        Respond ONLY with the JSON object.
-        """
-        else:
-            prompt = f"""
-        Extract the following information from this CV:
-        1. A list of ALL mentioned skills.
-        2. The 10 most important keywords or phrases representing the candidate's experience.
-
-        Text:
-        \"\"\"
-        {text}
-        \"\"\"
-
-        Return the result as a JSON object with keys: "skills", "keywords".
-        Respond ONLY with the JSON object.
-        """
-        
-        max_retries = 3
-        for attempt in range(max_retries):
-          result = run_llm(prompt)
-          print("LLM response (cv_parser):")
-          print(result)
-          open("file_outputs/job_description_llm_output.txt", 'w', encoding='utf-8').write(result)
-
-        if not result or not result.strip():
-            print(f"LLM returned empty response. Retry {attempt+1}/{max_retries}...")
-            time.sleep(60)
-            
-
-        
-
-        print("LLM response (job_to_cv_parser):")
-        print(result)
-
-        if "```json" in result:
-            json_str = result.split("```json")[1].split("```")[0].strip()
-        elif "```" in result:
-            json_str = result.split("```")[1].split("```")[0].strip()
-        else:
-            json_str = result.strip()
-
-        if not json_str:
-            raise ValueError("LLM returned an empty response in extract_structured_data.")
-        try:
-            parsed = json.loads(json_str)
-        except json.JSONDecodeError:
-            print("Error: LLM response is not valid JSON:")
-            print(json_str)
-            raise
-        print("Structured data extracted successfully.")
-        return parsed
-
-def calculate_ats_score(parsed_cv: dict, job_data: dict) -> dict:
+def calculate_ats_score(cv_data: dict, job_data: dict, cv_work_history: list = None) -> dict:
     """
-    Calculates ATS score comparing parsed CV and job description data.
+    Calcula el puntaje ATS comparando CV y oferta laboral de forma robusta.
+    - Normaliza texto para ignorar espacios, mayúsculas y signos.
+    - Incluye experiencia del CV aunque la oferta no la tenga.
+    - Diseñado para ser genérico y resistente a variaciones.
     """
+    # Normalizar habilidades, palabras clave e idiomas
+    cv_skills_raw = cv_data.get("skills", [])
+    cv_keywords_raw = cv_data.get("keywords", [])
+    cv_languages_raw = cv_data.get("languages", [])
+
+    job_skills_raw = job_data.get("skills", [])
+    job_keywords_raw = job_data.get("keywords", [])
+    job_languages_raw = job_data.get("languages", [])
+
+    # Normalizar listas completas
+    cv_skills = set(normalize_text(skill) for skill in cv_skills_raw)
+    cv_keywords = set(normalize_text(keyword) for keyword in cv_keywords_raw)
+    cv_languages = set(normalize_text(lang) for lang in cv_languages_raw)
+
+    job_skills = set(normalize_text(skill) for skill in job_skills_raw)
+    job_keywords = set(normalize_text(keyword) for keyword in job_keywords_raw)
+    job_languages = set(normalize_text(lang) for lang in job_languages_raw)
+
+    # Calcular coincidencias
+    skill_matches = len(cv_skills & job_skills)
+    keyword_matches = len(cv_keywords & job_keywords)
+    language_matches = len(cv_languages & job_languages)
+
+    # Calcular experiencia del CV si se proporciona work_history
+    resume_years = calculate_total_experience(cv_work_history) if cv_work_history else 0
+
+    # Calcular puntaje ATS
     score = 0
     max_score = 100
 
-    # Skills (40%)
-    job_skills = set(s.lower() for s in job_data.get('skills', []))
-
-    # CV skills
-    resume_skill_tokens = set()
-    resume_skills_lower = []
-    for skill in parsed_cv.get('skills', []):
-        if isinstance(skill, dict):
-            skill_name = skill.get('name', '').lower()
-        elif isinstance(skill, str):
-            skill_name = skill.lower()
-        else:
-            continue
-        resume_skills_lower.append(skill_name)
-        tokens = skill_name.replace('(', ' ').replace(')', ' ').replace(',', ' ').split()
-        resume_skill_tokens.update(tokens)
-
-    skill_matches = 0
-    for js in job_skills:
-        if ' ' in js:
-            if any(js in skill for skill in resume_skills_lower):
-                skill_matches += 1
-        else:
-            if js in resume_skill_tokens:
-                skill_matches += 1
-
+    # Skills (40%): Más peso porque es crítico
     skill_score = (skill_matches / max(len(job_skills), 1)) * 40 if job_skills else 40
     score += skill_score
 
-    # Experience (30%)
-    try:
-        job_years = int(job_data.get('experience', 0))
-    except:
-        job_years = 0
-    resume_years = 0  # Puedes usar tu función calculate_total_experience aquí
-    if job_years == 0:
-        exp_score = 30
-    elif resume_years >= job_years:
-        exp_score = 30
-    else:
-        exp_score = (resume_years / job_years) * 30
-    score += exp_score
-
     # Keywords (30%)
-    job_keywords = set(k.lower() for k in job_data.get('keywords', []))
-    resume_text_lower = json.dumps(parsed_cv).lower()
-    keyword_matches = sum(1 for k in job_keywords if k in resume_text_lower)
     keyword_score = (keyword_matches / max(len(job_keywords), 1)) * 30 if job_keywords else 30
     score += keyword_score
 
-    # Details
-    missing_skills = []
-    for js in job_skills:
-        if ' ' in js:
-            if not any(js in skill for skill in resume_skills_lower):
-                missing_skills.append(js)
-        else:
-            if js not in resume_skill_tokens:
-                missing_skills.append(js)
+    # Languages (10%)
+    language_score = (language_matches / max(len(job_languages), 1)) * 10 if job_languages else 10
+    score += language_score
 
-    missing_keywords = [k for k in job_keywords if k not in resume_text_lower]
-    exp_gap = max(job_years - resume_years, 0)
+    # Experience (20%): Solo basado en CV, con un máximo relativo
+    # Asumimos que 5 años es un "máximo razonable" para escalar si la oferta no lo especifica
+    exp_score = min(resume_years / 5, 1) * 20 if resume_years > 0 else 0
+    score += exp_score
+
+    # Detalles para retroalimentación
+    missing_skills = list(job_skills - cv_skills)
+    missing_keywords = list(job_keywords - cv_keywords)
+    missing_languages = list(job_languages - cv_languages)
 
     return {
-        'score': min(round(score, 2), max_score),
-        'missing_skills': missing_skills,
-        'missing_keywords': missing_keywords,
-        'experience_gap': exp_gap,
-        'skill_matches': skill_matches,
-        'total_skills': len(job_skills),
-        'keyword_matches': keyword_matches,
-        'total_keywords': len(job_keywords),
-        'resume_years': resume_years,
-        'job_years': job_years
+        "score": min(round(score, 2), max_score),
+        "missing_skills": missing_skills,
+        "missing_keywords": missing_keywords,
+        "missing_languages": missing_languages,
+        "skill_matches": skill_matches,
+        "total_skills": len(job_skills),
+        "keyword_matches": keyword_matches,
+        "total_keywords": len(job_keywords),
+        "language_matches": language_matches,
+        "total_languages": len(job_languages),
+        "resume_years": resume_years
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

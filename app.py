@@ -4,8 +4,14 @@ import json
 import glob
 import shutil
 import subprocess
-from utils.utils import extract_cv_text, parse_to_json_resume_sync, scrape_job_description, adapt_cv_to_job,extract_description_data,calculate_ats_score
-
+from utils.utils import (
+    extract_cv_text,
+    parse_to_json_resume_sync,
+    scrape_job_description,
+    adapt_cv_to_job,
+    extract_job_description_data,
+    calculate_ats_score
+)
 
 st.title("CV Adapter - ATS Optimizer")
 
@@ -46,49 +52,41 @@ if (st.button("Generate ATS-optimized CV")
         log("Starting pipeline...")
         try:
             os.makedirs("file_outputs", exist_ok=True)
-            job_description =  scrape_job_description(job_url)
+
+            # Extraer y guardar la descripción del trabajo
+            job_description = scrape_job_description(job_url)
             st.success("Job description scraped successfully.")
-            open("file_outputs/job_description.txt", 'w', encoding='utf-8').write( job_description) 
-            extracted_text = extract_cv_text(st.session_state["uploaded_cv_path"]) 
-            open("file_outputs/extracted_cv_text.txt", 'w', encoding='utf-8').write( extracted_text)
-            st.success("CV text extracted successfully.") 
+            with open("file_outputs/job_description.txt", 'w', encoding='utf-8') as f:
+                f.write(job_description)
+
+            # Extraer datos de la oferta laboral
+            job_data = extract_job_description_data(job_description, is_job=True)
+            st.success("Job description data extracted successfully.")
+            with open("file_outputs/job_description_data.json", 'w', encoding='utf-8') as f:
+                f.write(json.dumps(job_data, ensure_ascii=False))
+
+            # Extraer y guardar el texto del CV
+            extracted_text = extract_cv_text(st.session_state["uploaded_cv_path"])
+            with open("file_outputs/extracted_cv_text.txt", 'w', encoding='utf-8') as f:
+                f.write(extracted_text)
+            st.success("CV text extracted successfully.")
+
+            # Parsear el CV a JSON
             parsed_cv = parse_to_json_resume_sync(extracted_text)
             st.success("CV parsed successfully.")
-            open("file_outputs/resume.json", 'w', encoding='utf-8').write(json.dumps(parsed_cv, ensure_ascii=False))
+            with open("file_outputs/resume.json", 'w', encoding='utf-8') as f:
+                f.write(json.dumps(parsed_cv, ensure_ascii=False))
+
+            cv_data = extract_job_description_data(extracted_text, is_job=False)
+            st.success("CV data extracted successfully.")
 
 
-            
-            job_description_data = extract_description_data(job_description)
-            st.success("Job description parsed successfully.")
-
-            print(job_description_data)
-            print(parsed_cv)
-            ats_result = calculate_ats_score(parsed_cv, job_description_data)
+            # Calcular el puntaje ATS usando el CV parseado y los datos de la oferta
+            ats_result = calculate_ats_score(cv_data, job_data)
             st.success("ATS score calculated successfully.")
-            st.success(ats_result)
-            print(ats_result)    
-           
+            st.json(ats_result)  # Mostrar el resultado en la interfaz
+            print(ats_result)
 
-
-            #updated_cv, initial_match, final_match, initial_score, final_score = adapt_cv_to_job(parsed_cv, job_description)
-            #st.success("New CV adapted successfully.")
-            #print(update_cv)
-            #total_experience = calculate_total_experience(parsed_cv)
-            #print(total_experience)
-            #st.success("Total experience calculated successfully.")
-            
-
-            
-          # results =  run_pipeline(st.session_state["uploaded_cv_path"], job_url=job_url, job_text=None, log_callback=log)
-            if "error" in results and results["error"] == "scraping_failed":
-                st.session_state["scraping_failed"] = True
-                log("Scraping failed. Please provide the job description manually.")
-                st.error("Failed to scrape the job description from the URL.")
-            else:
-                with open("final_cv.pdf", "rb") as f:
-                    pdf_bytes = f.read()
-                st.success("Done! Download your adapted CV below.")
-                st.download_button("Download adapted CV", data=pdf_bytes, file_name="Adapted_CV.pdf", mime="application/pdf")
         except Exception as e:
             log(f"Error: {e}")
             st.error(f"An unexpected error occurred: {e}")
@@ -96,7 +94,6 @@ if (st.button("Generate ATS-optimized CV")
 # Manejo del fallo del scraping
 if st.session_state["scraping_failed"]:
     st.warning("Error scraping page. Please paste the job description manually below and click 'Continue'.")
-
     st.session_state["manual_job_text"] = st.text_area(
         "Paste the job description here:",
         value=st.session_state["manual_job_text"]
@@ -108,16 +105,16 @@ if st.session_state["scraping_failed"]:
 if st.session_state.get("continue_with_manual") and st.session_state.get("manual_job_text", "").strip():
     with st.spinner("Processing with manual job description..."):
         try:
-            from pipeline import run_pipeline
-            results = run_pipeline(
-                st.session_state["uploaded_cv_path"],
-                job_url=None,
-                job_text=st.session_state["manual_job_text"],
-                log_callback=log
-            )
-            with open("final_cv.pdf", "rb") as f:
-                pdf_bytes = f.read()
-            st.success("Done! Download your adapted CV below.")
-            st.download_button("Download adapted CV", data=pdf_bytes, file_name="Adapted_CV.pdf", mime="application/pdf")
+            job_description = st.session_state["manual_job_text"]
+            job_data = extract_job_description_data(job_description, is_job=True)
+            st.success("Job description data extracted successfully.")
+            with open("file_outputs/job_description_data.json", 'w', encoding='utf-8') as f:
+                f.write(json.dumps(job_data, ensure_ascii=False))
+
+            extracted_text = extract_cv_text(st.session_state["uploaded_cv_path"])
+            parsed_cv = parse_to_json_resume_sync(extracted_text)
+            ats_result = calculate_ats_score(parsed_cv, job_data)
+            st.success("ATS score calculated successfully.")
+            st.json(ats_result)
         except Exception as e:
             st.error(f"Error processing manual job description: {e}")
