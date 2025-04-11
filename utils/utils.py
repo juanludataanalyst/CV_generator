@@ -413,6 +413,8 @@ def match_with_llm(cv_items: list, job_items: list, item_type: str) -> dict:
     # Llamada al LLM (ajusta run_llm según tu API o implementación)
     result = run_llm(prompt)
     
+    print("LLM response (match_with_llm):",result)
+
     # Extraer JSON de la respuesta
     try:
         if '```json' in result:
