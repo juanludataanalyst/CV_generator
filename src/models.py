@@ -28,8 +28,8 @@ class Basics(BaseModel):
 
 
 class Work(BaseModel):
-    company: str
-    position: str
+    company: Optional[str] = None
+    position: Optional[str] = None
     website: Optional[HttpUrl] = None
     startDate: Optional[str] = None
     endDate: Optional[str] = None
