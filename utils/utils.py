@@ -15,6 +15,8 @@ from bs4 import BeautifulSoup, Comment
 from dateutil import parser
 from datetime import datetime
 
+import copy
+
 
 client = openai.OpenAI(
     base_url="https://openrouter.ai/api/v1",
@@ -272,12 +274,6 @@ def extract_job_description_data(text: str, is_job: bool = True) -> Dict:
         print("Structured data extracted successfully.")
         return parsed
 
-
-import json
-import time
-
-
-
 def parse_to_json_resume_sync(text: str) -> Dict:
     """
     Parses CV text into JSON Resume format using an LLM via OpenRouter with pydantic-ai.
@@ -374,8 +370,6 @@ def parse_to_json_resume_sync(text: str) -> Dict:
 
     raise ValueError("Failed to parse CV text after all retries")
 
-import json
-
 def match_with_llm(cv_items: list, job_items: list, item_type: str) -> dict:
     """
     Uses an LLM to match skills, keywords, or languages between CV and job offer.
@@ -431,7 +425,163 @@ def match_with_llm(cv_items: list, job_items: list, item_type: str) -> dict:
             'missing': job_items
         }
 
+def calculate_ats_score(skills_match: dict, keywords_match: dict, languages_match: dict, total_job_skills: int, total_job_keywords: int, total_job_languages: int) -> float:
+    """
+    Calculate the ATS score based on matches for skills, keywords, and languages.
 
+    - Keywords: 65% weight
+    - Skills: 35% weight
+    - Languages: Required condition (if any required language is missing, score is 0)
+
+    Args:
+        skills_match (dict): Dictionary with 'matches' and 'missing' for skills.
+        keywords_match (dict): Dictionary with 'matches' and 'missing' for keywords.
+        languages_match (dict): Dictionary with 'matches' and 'missing' for languages.
+        total_job_skills (int): Total number of skills required in the job offer.
+        total_job_keywords (int): Total number of keywords required in the job offer.
+        total_job_languages (int): Total number of languages required in the job offer.
+
+    Returns:
+        float: ATS score as a percentage (0-100).
+    """
+    # Check if any required language is missing
+    missing_languages = languages_match.get('missing', [])
+    if missing_languages:
+        return 0.0
+
+    # Count matches
+    skill_matches = len(skills_match.get('matches', []))
+    keyword_matches = len(keywords_match.get('matches', []))
+
+    # Calculate match percentages
+    skills_percentage = (skill_matches / total_job_skills) if total_job_skills > 0 else 0
+    keywords_percentage = (keyword_matches / total_job_keywords) if total_job_keywords > 0 else 0
+
+    # Apply weights: 65% keywords, 35% skills
+    score = (0.65 * keywords_percentage) + (0.35 * skills_percentage)
+
+    # Return score as percentage
+    return round(score * 100, 2)
+
+
+def adapt_cv_with_llm(original_cv: dict, job_data: dict, skills_match: dict, keywords_match: dict) -> dict:
+    """
+    Adapts the original CV to improve ATS score by incorporating matched and inferred skills/keywords.
+
+    Args:
+        original_cv (dict): Original CV in JSON Resume format.
+        job_data (dict): Job offer data with skills, keywords, and languages.
+        skills_match (dict): Dictionary with 'matches' and 'missing' for skills.
+        keywords_match (dict): Dictionary with 'matches' and 'missing' for keywords.
+
+    Returns:
+        dict: Adapted CV in JSON Resume format, validated with Pydantic.
+    """
+    # Depuración: Imprimir los argumentos para verificar su estructura
+    print("Debugging adapt_cv_with_llm inputs:")
+    print("original_cv:", json.dumps(original_cv, indent=2))
+    print("job_data:", json.dumps(job_data, indent=2))
+    print("skills_match:", json.dumps(skills_match, indent=2))
+    print("keywords_match:", json.dumps(keywords_match, indent=2))
+
+    # Validar que los argumentos tengan la estructura esperada
+    if not isinstance(original_cv, dict):
+        raise ValueError("original_cv must be a dictionary")
+    if not isinstance(job_data, dict):
+        raise ValueError("job_data must be a dictionary")
+    if not isinstance(skills_match, dict) or 'matches' not in skills_match or 'missing' not in skills_match:
+        raise ValueError("skills_match must be a dictionary with 'matches' and 'missing' keys")
+    if not isinstance(keywords_match, dict) or 'matches' not in keywords_match or 'missing' not in keywords_match:
+        raise ValueError("keywords_match must be a dictionary with 'matches' and 'missing' keys")
+
+    # Asegurarnos de que las listas contengan solo strings
+    job_skills = [str(item) for item in job_data.get('skills', [])]
+    job_keywords = [str(item) for item in job_data.get('keywords', [])]
+    job_languages = [str(item) for item in job_data.get('languages', [])]
+    matched_skills = [str(item) for item in skills_match.get('matches', [])]
+    missing_skills = [str(item) for item in skills_match.get('missing', [])]
+    matched_keywords = [str(item) for item in keywords_match.get('matches', [])]
+    missing_keywords = [str(item) for item in keywords_match.get('missing', [])]
+
+    # Construir el prompt con formateo seguro
+    prompt = f'''
+    You are an expert in CV optimization for ATS systems. I have an original CV and a job offer:
+
+    Original CV (JSON Resume format):
+    {json.dumps(original_cv, indent=2)}
+
+    Job Offer:
+    - Skills required: {json.dumps(job_skills)}
+    - Keywords: {json.dumps(job_keywords)}
+    - Languages: {json.dumps(job_languages)}
+
+    Matches:
+    - Skills matched: {json.dumps(matched_skills)}
+    - Keywords matched: {json.dumps(matched_keywords)}
+
+    Missing:
+    - Skills missing: {json.dumps(missing_skills)}
+    - Keywords missing: {json.dumps(missing_keywords)}
+
+    Your task is:
+    1. Adapt the CV to improve its ATS score by:
+    - Highlighting matched skills and keywords in the summary, work highlights, and skills section.
+    - Inferring skills or keywords from the CV that align with missing ones, if they can be reasonably derived (e.g., "Python" and "pandas" imply "data analysis").
+    - Reorganizing content to prioritize job-relevant information.
+    2. Do NOT invent skills, experiences, or qualifications not supported by the original CV.
+    3. Return the adapted CV in the same JSON Resume format, ensuring all fields are valid.
+
+    Rules:
+    - Be ethical: only include changes backed by the original CV.
+    - Prioritize clarity and relevance for ATS systems.
+    - Maintain the structure of the JSON Resume schema.
+    - If a skill or keyword cannot be inferred, do not include it.
+    - Use a low temperature (0.2) for consistency.
+
+    Example:
+    If the CV has "Python" and the job requires "data analysis", you might update:
+    - Summary: Add "Experienced in data analysis using Python."
+    - Skills: Add {{"name": "Data Analysis", "level": null, "keywords": []}}.
+    - Work highlights: Add "Performed data analysis with Python to support decisions."
+
+    Output:
+    Return the full adapted CV as a JSON object, enclosed in ```json``` markers.
+    ```json
+    {{"basics": {{"name": "Example", ...}}, ...}}
+    '''
+
+
+
+    print("Estamos dentro de la funcion:")
+    print(original_cv)
+    print(type(original_cv))
+    print(job_data)
+    print(type(job_data))
+    print(skills_match)
+    print(type(skills_match))
+    print(keywords_match)
+    print(type(keywords_match))
+   
+
+    # Llamada al LLM (ajusta según tu implementación)
+    result = run_llm(prompt)  # Asume run_llm está definido
+
+    try:
+        # Parsear la respuesta del LLM
+        if '```json' in result:
+            json_str = result.split('```json')[1].split('```')[0].strip()
+        else:
+            json_str = result.strip()
+        adapted_cv = json.loads(json_str)
+
+        # Validar con Pydantic
+        validated_cv = JsonResume(**adapted_cv)
+        return validated_cv.dict(exclude_unset=True)
+    except (json.JSONDecodeError, IndexError, ValueError) as e:
+        print(f"Error parsing LLM response for CV adaptation: {e}")
+        print("Raw LLM output:", result)
+        # Devolver el CV original como fallback
+        return original_cv
 
 
 def calculate_total_experience(work_history: list) -> float:

@@ -11,7 +11,9 @@ from utils.utils import (
     adapt_cv_to_job,
     extract_job_description_data,
     match_with_llm,
-    calculate_ats_score_old
+    calculate_ats_score_old,
+    calculate_ats_score,
+    adapt_cv_with_llm
 )
 
 st.title("CV Adapter - ATS Optimizer")
@@ -81,56 +83,84 @@ if (st.button("Generate ATS-optimized CV")
             cv_data = extract_job_description_data(extracted_text, is_job=False)
             st.success("CV data extracted successfully.")
 
+            keywords_match = match_with_llm(cv_data.get('keywords', []), job_data.get('keywords', []), 'keywords')
+
+            # Imprimir resultados de palabras clave en un formato bonito
+            st.subheader("Keywords Matching")
+            #st.write("**Palabras clave requeridas por la oferta:**")
+            st.write(", ".join(job_data.get('keywords', [])) )
+            #st.write("**Palabras clave en tu CV:**")
+            #st.write(", ".join(cv_data.get('keywords', [])))
+            st.write("**Matched Skills:**")
+            matched_keywords = keywords_match.get('matches', [])  # Usar 'matches' directamente
+            st.write(", ".join(matched_keywords) if matched_keywords else "Ninguna coincidencia")
+            st.write("**Missing Skills:**")
+            missing_keywords = keywords_match.get('missing', [])  # Usar 'missing' directamente
+            st.write(", ".join(missing_keywords) if missing_keywords else "Ninguna faltante")
+            st.write(f"**Total Keywords Matches:** {len(matched_keywords)} de {len(job_data.get('keywords', []))}")
+
+
+
+
+
+
+
 
             #Probar el matcheo con LLM e imprimir resultados
             # Probar el matcheo con LLM e imprimir resultados
             skills_match = match_with_llm(cv_data.get('skills', []), job_data.get('skills', []), 'skills')
 
             # Imprimir resultados de habilidades en un formato bonito
-            st.subheader("Coincidencias de habilidades")
-            st.write("**Habilidades requeridas por la oferta:**")
-            st.write(", ".join(job_data.get('skills', [])))
-            st.write("**Habilidades en tu CV:**")
-            st.write(", ".join(cv_data.get('skills', [])))
-            st.write("**Habilidades coincidentes:**")
+            st.subheader("Skills Matching")
+            st.write("**Matched Skills:**")
             matched_skills = skills_match.get('matches', [])  # Usar 'matches' directamente
             st.write(", ".join(matched_skills) if matched_skills else "Ninguna coincidencia")
-            st.write("**Habilidades faltantes:**")
+            st.write("**Missing Skills:**")
             missing_skills = skills_match.get('missing', [])  # Usar 'missing' directamente
             st.write(", ".join(missing_skills) if missing_skills else "Ninguna faltante")
-            st.write(f"**Total de coincidencias:** {len(matched_skills)} de {len(job_data.get('skills', []))}")
+            st.write(f"**Total Matchs:** {len(matched_skills)} de {len(job_data.get('skills', []))}")
 
-            keywords_match = match_with_llm(cv_data.get('keywords', []), job_data.get('keywords', []), 'keywords')
-
-            # Imprimir resultados de palabras clave en un formato bonito
-            st.subheader("Coincidencias de palabras clave")
-            st.write("**Palabras clave requeridas por la oferta:**")
-            st.write(", ".join(job_data.get('keywords', [])))
-            st.write("**Palabras clave en tu CV:**")
-            st.write(", ".join(cv_data.get('keywords', [])))
-            st.write("**Palabras clave coincidentes:**")
-            matched_keywords = keywords_match.get('matches', [])  # Usar 'matches' directamente
-            st.write(", ".join(matched_keywords) if matched_keywords else "Ninguna coincidencia")
-            st.write("**Palabras clave faltantes:**")
-            missing_keywords = keywords_match.get('missing', [])  # Usar 'missing' directamente
-            st.write(", ".join(missing_keywords) if missing_keywords else "Ninguna faltante")
-            st.write(f"**Total de coincidencias:** {len(matched_keywords)} de {len(job_data.get('keywords', []))}")
-
+           
             languages_match = match_with_llm(cv_data.get('languages', []), job_data.get('languages', []), 'languages')
 
             # Imprimir resultados de idiomas en un formato bonito
-            st.subheader("Coincidencias de idiomas")
-            st.write("**Idiomas requeridos por la oferta:**")
-            st.write(", ".join(job_data.get('languages', [])))
-            st.write("**Idiomas en tu CV:**")
-            st.write(", ".join(cv_data.get('languages', [])))
-            st.write("**Idiomas coincidentes:**")
+            st.subheader("Languges Matching")
+           # st.write("**Idiomas requeridos por la oferta:**")
+           # st.write(", ".join(job_data.get('languages', [])))
+           # st.write("**Idiomas en tu CV:**")
+           # st.write(", ".join(cv_data.get('languages', [])))
+            st.write("**Matching Languages:**")
             matched_languages = languages_match.get('matches', [])  # Usar 'matches' directamente
             st.write(", ".join(matched_languages) if matched_languages else "Ninguna coincidencia")
-            st.write("**Idiomas faltantes:**")
+            st.write("**MIssing Languages:**")
             missing_languages = languages_match.get('missing', [])  # Usar 'missing' directamente
             st.write(", ".join(missing_languages) if missing_languages else "Ninguna faltante")
-            st.write(f"**Total de coincidencias:** {len(matched_languages)} de {len(job_data.get('languages', []))}")
+            st.write(f"**Total Languages Matches:** {len(matched_languages)} de {len(job_data.get('languages', []))}")
+
+            st.success("ATS score calculated")
+
+            skills_job = job_data.get('skills', [])
+            keywords_job = job_data.get('keywords', [])
+            languages_job = job_data.get('languages', [])
+
+            skills_job_count = len(skills_job) if skills_job else 0
+            keywords_job_count = len(keywords_job) if keywords_job else 0
+            languages_job_count = len(languages_job) if languages_job else 0
+
+            score = calculate_ats_score(skills_match, keywords_match, languages_match, skills_job_count, keywords_job_count, languages_job_count)
+
+            st.write(f"**ATS Score:** {score}%")
+           
+
+            adapted_cv = adapt_cv_with_llm(parsed_cv, job_data, skills_match, keywords_match)
+
+            # Mostrar CV adaptado
+            st.subheader("CV Adaptado")
+            
+            st.json(adapted_cv)
+
+
+                
 
 
 
