@@ -636,7 +636,7 @@ Return the full adapted CV as a JSON object, enclosed in ```json``` markers.
    
 
     # Llamada al LLM (ajusta según tu implementación)
-    result = run_llm_cv_creation(prompt)  # Asume run_llm está definido
+    result = run_llm(prompt)  # Asume run_llm está definido
 
     try:
         # Parsear la respuesta del LLM

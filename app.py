@@ -76,17 +76,17 @@ if (st.button("Generate ATS-optimized CV")
 
             # Parsear el CV a JSON
             parsed_cv = parse_to_json_resume_sync(extracted_text)
-            st.success("CV parsed successfully.")
+            
             with open("file_outputs/resume.json", 'w', encoding='utf-8') as f:
                 f.write(json.dumps(parsed_cv, ensure_ascii=False))
 
             cv_data = extract_job_description_data(extracted_text, is_job=False)
-            st.success("CV data extracted successfully.")
+            st.success("Original CV standarized successfully.")
 
             keywords_match = match_with_llm(cv_data.get('keywords', []), job_data.get('keywords', []))
 
             # Imprimir resultados de palabras clave en un formato bonito
-            st.subheader("Keywords Analysis")
+            st.subheader("Starting Keywords Analysis ...")
             st.write("**Matched Keywords:**")
             matched_keywords = keywords_match.get('matches', [])
             st.write(", ".join(matched_keywords) if matched_keywords else "Ninguna coincidencia")
@@ -96,7 +96,7 @@ if (st.button("Generate ATS-optimized CV")
             st.write(f"**Total Keywords Matches:** {len(matched_keywords)} de {len(job_data.get('keywords', []))}")
 
           
-            st.success("ATS score calculated")
+            st.success("Calculating initial ATS scored ...")
 
             
             keywords_job = job_data.get('keywords', [])
@@ -110,10 +110,12 @@ if (st.button("Generate ATS-optimized CV")
 
             st.write(f"**ATS Score (Original CV):** {score}%")
 
+
+
             adapted_cv = adapt_cv_with_llm(parsed_cv, job_data,  keywords_match)
 
             # Mostrar CV adaptado
-            st.subheader("CV Adaptado")
+            st.subheader("Apadting CV to job description ethicatly ..") 
             st.json(adapted_cv)
             
             
@@ -125,7 +127,7 @@ if (st.button("Generate ATS-optimized CV")
 
 
             # Calcular ATS score para el CV adaptado
-            st.subheader("ATS Score del CV Adaptado")
+            st.subheader("ATS Score for new CV")
             
             
 
@@ -142,11 +144,11 @@ if (st.button("Generate ATS-optimized CV")
                 
             )
 
-            st.write("**Matched Keywords (Adapted CV):**", adapted_keywords_match.get('matches', []))
+            st.write("**Matched Keywords in New CV:**", adapted_keywords_match.get('matches', []))
 
             # Mostrar el nuevo score y detalles
-            st.write(f"**ATS Score (Adapted CV):** {adapted_score}%")
-            st.metric("Mejora en ATS Score", f"{adapted_score - score:.2f}%", delta_color="normal")
+            st.write(f"**ATS Score en new CV:** {adapted_score}%")
+            st.metric("Improvement in ATS score", f"{adapted_score - score:.2f} p.p", delta_color="normal")
             
    
 
@@ -158,12 +160,12 @@ if (st.button("Generate ATS-optimized CV")
             st.write(", ".join(adapted_missing_keywords) if adapted_missing_keywords else "Ninguna faltante")
             st.write(f"**Total Keywords Matches (Adapted CV):** {len(adapted_matched_keywords)} de {len(job_data.get('keywords', []))}")
 
-            
+                
             # Calcular el puntaje ATS usando el CV parseado y los datos de la oferta
             ats_result = calculate_ats_score_old(cv_data, job_data)
             st.success("ATS score calculated successfully.")
-            
-            # UI mejorada
+                
+                # UI mejorada
             st.subheader("Resultados del análisis ATS")
             st.metric("Puntaje ATS (Antiguo)", f"{ats_result['score']}%", delta=None)
 
