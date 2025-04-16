@@ -105,6 +105,26 @@ def run_llm(prompt, temperature=0.0):
     validated_cv = JsonResume(**json_cv)
     return validated_cv.model_dump(mode="json")
 
+def run_llm_cv_creation(prompt, temperature=0.9):
+    try:
+        response = client.chat.completions.create(
+            model="google/gemini-2.0-flash-lite-001",
+            messages=[
+                {"role": "system", "content": "You are an expert assistant."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=temperature,
+            top_p=1,
+            seed=42,
+        )
+        if not response.choices or len(response.choices) == 0:
+            print("LLM returned empty choices")
+            return None
+        return response.choices[0].message.content
+    except Exception as e:
+        print(f"Error in LLM call: {e}")
+        return None
+
 def scrape_job_description(url: str) -> str:
     """
     Extracts all text from a job posting URL and uses an LLM agent to clean and extract the job description.
@@ -487,8 +507,7 @@ def adapt_cv_with_llm(original_cv: dict, job_data: dict, keywords_match: dict) -
 
     Args:
         original_cv (dict): Original CV in JSON Resume format.
-        job_data (dict): Job offer data with skills, keywords, and languages.
-        
+                
         keywords_match (dict): Dictionary with 'matches' and 'missing' for keywords.
 
     Returns:
@@ -517,52 +536,93 @@ def adapt_cv_with_llm(original_cv: dict, job_data: dict, keywords_match: dict) -
     matched_keywords = [str(item) for item in keywords_match.get('matches', [])]
     missing_keywords = [str(item) for item in keywords_match.get('missing', [])]
 
-    # Construir el prompt con formateo seguro
-    prompt = f'''
-    You are an expert in CV optimization for ATS systems. I have an original CV and a job offer:
 
-    Original CV (JSON Resume format):
-    {json.dumps(original_cv, indent=2)}
+    prompt = f"""
+You are an expert in CV optimization for Applicant Tracking Systems (ATS). I have an original CV and a job offer:
 
-    Job Offer:
-   
-    - Keywords: {json.dumps(job_keywords)}
-    
+Original CV (JSON Resume format):
+{json.dumps(original_cv, indent=2)}
 
-    Matches:
-    
-    - Keywords matched: {json.dumps(matched_keywords)}
+Job Offer:
+- Keywords: {json.dumps(job_keywords)}
 
-    Missing:
-   
-    - Keywords missing: {json.dumps(missing_keywords)}
+Matches:
+- Keywords matched: {json.dumps(matched_keywords)}
 
-    Your task is:
-    1. Adapt the CV to improve its ATS score by:
-    - Highlighting matched  keywords in the summary, work highlights, and skills section.
-    - Inferring skills or keywords from the CV that align with missing ones, if they can be reasonably derived (e.g., "Python" and "pandas" imply "data analysis").
-    - Reorganizing content to prioritize job-relevant information.
-    2. Do NOT invent skills, experiences, or qualifications not supported by the original CV.
-    3. Return the adapted CV in the same JSON Resume format, ensuring all fields are valid.
+Missing:
+- Keywords missing: {json.dumps(missing_keywords)}
 
-    Rules:
-    - Be ethical: only include changes backed by the original CV.
-    - Prioritize clarity and relevance for ATS systems.
-    - Maintain the structure of the JSON Resume schema.
-    - If a skill or keyword cannot be inferred, do not include it.
-    - Use a low temperature (0.2) for consistency.
+Your task is:
+1. Adapt the CV to achieve at least 90% keyword matching for ATS by:
+    (a) Including all matched keywords in 'summary', 'work.experience[].highlights', and 'skills' to maximize density.
+    (b) Adding ALL missing keywords unless clearly unrelated to the job domain (e.g., exclude 'Firebase' for non-mobile roles), using this Chain of Thought:
+        - Step 1: List matched keywords and missing keywords.
+        - Step 2: Add every missing keyword to 'skills', assuming it fits the general job domain (e.g., 'Tableau', 'AWS' for data/tech roles).
+        - Step 3: Update 'summary' and 'work.highlights' to include all added keywords.
+        - Step 4: Verify only that keywords align broadly with the domain; include unless obviously irrelevant.
+    (c) Reorganizing content:
+        - List all keywords (matched and added) first in 'skills'.
+        - Rewrite 'summary' with 8-12 keywords.
+        - Update 'work.experience[].highlights' with 4-5 highlights per role using keywords.
+        - Repeat keywords across sections for ATS parsing.
+2. Return the adapted CV in JSON Resume format, ensuring schema compliance.
 
-    Example:
-    If the CV has "Python" and the job requires "data analysis", you might update:
-    - Summary: Add "Experienced in data analysis using Python."
-    - Skills: Add {{"name": "Data Analysis", "level": null, "keywords": []}}.
-    - Work highlights: Add "Performed data analysis with Python to support decisions."
+Rules:
+- Include ALL missing keywords to reach 90% coverage, assuming they fit the job domain.
+- Use exact job keywords for ATS matching.
+- Avoid vague terms (e.g., 'expert') unless in the offer.
+- Format 'skills' as {{"name": "Skill", "level": null, "keywords": []}}.
+- Use temperature=1.0, top-k=1, seed=42 for maximum keyword inclusion.
 
-    Output:
-    Return the full adapted CV as a JSON object, enclosed in ```json``` markers.
-    ```json
-    {{"basics": {{"name": "Example", ...}}, ...}}
-    '''
+Examples:
+1. Gaming Analyst:
+    - CV: {{"skills": [{{"name": "Python"}}, {{"name": "SQL"}}], "work": [{{"highlights": ["Wrote Python scripts."]}}], "summary": "Data analyst."}}
+    - Keywords: ["Python", "SQL", "Tableau", "machine learning", "teamwork", "data analysis", "game economy", "BigQuery", "A/B testing", "predictive analytics", "Google Analytics", "Looker", "AWS"]
+    - Matched: ["Python", "SQL"]
+    - Missing: ["Tableau", "machine learning", "teamwork", "data analysis", "game economy", "BigQuery", "A/B testing", "predictive analytics", "Google Analytics", "Looker", "AWS"]
+    - Adapted CV (partial):
+        ```json
+        {{
+          "summary": "Data analyst skilled in Python, SQL, Tableau, machine learning, A/B testing, predictive analytics, teamwork, game economy, BigQuery, Google Analytics, Looker, AWS.",
+          "skills": [{{"name": "Python"}}, {{"name": "SQL"}}, {{"name": "Tableau"}}, {{"name": "Machine Learning"}}, {{"name": "A/B Testing"}}, {{"name": "Predictive Analytics"}}, {{"name": "Teamwork"}}, {{"name": "Game Economy"}}, {{"name": "BigQuery"}}, {{"name": "Google Analytics"}}, {{"name": "Looker"}}, {{"name": "AWS"}}],
+          "work": [{{"highlights": ["Developed Python scripts for machine learning and A/B testing.", "Used Tableau, BigQuery, Looker for data analysis.", "Collaborated on game economy with Google Analytics.", "Leveraged AWS for predictive analytics.", "Applied teamwork in projects."]}}]
+        }}
+        ```
+        Reasoning: Added all missing keywords as they fit data/gaming domain.
+2. Finance Analyst:
+    - CV: {{"skills": [{{"name": "Excel"}}], "work": [{{"highlights": ["Analyzed financial data."]}}], "summary": "Finance professional."}}
+    - Keywords: ["Excel", "Power BI", "financial modeling", "communication", "strategic thinking", "data visualization", "Tableau", "predictive analytics", "AWS", "Looker"]
+    - Matched: ["Excel"]
+    - Missing: ["Power BI", "financial modeling", "communication", "strategic thinking", "data visualization", "Tableau", "predictive analytics", "AWS", "Looker"]
+    - Adapted CV (partial):
+        ```json
+        {{
+          "summary": "Finance professional skilled in Excel, Power BI, financial modeling, data visualization, Tableau, communication, strategic thinking, predictive analytics, Looker.",
+          "skills": [{{"name": "Excel"}}, {{"name": "Power BI"}}, {{"name": "Financial Modeling"}}, {{"name": "Data Visualization"}}, {{"name": "Tableau"}}, {{"name": "Communication"}}, {{"name": "Strategic Thinking"}}, {{"name": "Predictive Analytics"}}, {{"name": "Looker"}}],
+          "work": [{{"highlights": ["Performed financial modeling with Excel and Power BI.", "Created data visualizations with Tableau and Looker.", "Communicated strategic insights.", "Supported predictive analytics.", "Applied strategic thinking."]}}]
+        }}
+        ```
+        Reasoning: Added all missing keywords except 'AWS' (less relevant to finance).
+3. Healthcare Data:
+    - CV: {{"skills": [{{"name": "R"}}], "work": [{{"highlights": ["Conducted statistical analysis."]}}], "summary": "Data scientist."}}
+    - Keywords: ["R", "SQL", "machine learning", "predictive analytics", "teamwork", "statistical analysis", "BigQuery", "Tableau", "Google Analytics", "AWS"]
+    - Matched: ["R"]
+    - Missing: ["SQL", "machine learning", "predictive analytics", "teamwork", "statistical analysis", "BigQuery", "Tableau", "Google Analytics", "AWS"]
+    - Adapted CV (partial):
+        ```json
+        {{
+          "summary": "Data scientist proficient in R, SQL, statistical analysis, machine learning, predictive analytics, teamwork, BigQuery, Tableau, Google Analytics, AWS.",
+          "skills": [{{"name": "R"}}, {{"name": "SQL"}}, {{"name": "Statistical Analysis"}}, {{"name": "Machine Learning"}}, {{"name": "Predictive Analytics"}}, {{"name": "Teamwork"}}, {{"name": "BigQuery"}}, {{"name": "Tableau"}}, {{"name": "Google Analytics"}}, {{"name": "AWS"}}],
+          "work": [{{"highlights": ["Conducted statistical analysis with R and SQL.", "Built machine learning models with BigQuery.", "Used Tableau and Google Analytics for insights.", "Collaborated with teamwork.", "Deployed on AWS."]}}]
+        }}
+        ```
+        Reasoning: Added all missing keywords as they fit data science domain.
+
+Output:
+Return the full adapted CV as a JSON object, enclosed in ```json``` markers.
+```json
+{{"basics": {{"name": "Example", ...}}, ...}}
+    """
 
 
 
@@ -576,7 +636,7 @@ def adapt_cv_with_llm(original_cv: dict, job_data: dict, keywords_match: dict) -
    
 
     # Llamada al LLM (ajusta según tu implementación)
-    result = run_llm(prompt)  # Asume run_llm está definido
+    result = run_llm_cv_creation(prompt)  # Asume run_llm está definido
 
     try:
         # Parsear la respuesta del LLM

@@ -116,8 +116,11 @@ if (st.button("Generate ATS-optimized CV")
             st.subheader("CV Adaptado")
             st.json(adapted_cv)
             
+            
+
+
             #Extraer skills del nuevo CV adaptado
-            cv_adapted_data_text = extract_cv_text(adapted_cv)
+            cv_adapted_data_text = json.dumps(adapted_cv, indent=2) 
             cv_adapted_data = extract_job_description_data(cv_adapted_data_text, is_job=False)
 
 
@@ -139,7 +142,7 @@ if (st.button("Generate ATS-optimized CV")
                 
             )
 
-            st.write("**Matched Keywords (Adapted CV):**", adatapted_keywords_match.get('matches', []))
+            st.write("**Matched Keywords (Adapted CV):**", adapted_keywords_match.get('matches', []))
 
             # Mostrar el nuevo score y detalles
             st.write(f"**ATS Score (Adapted CV):** {adapted_score}%")
