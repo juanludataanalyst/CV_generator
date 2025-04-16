@@ -13,7 +13,9 @@ from utils.utils import (
     match_with_llm,
     calculate_ats_score_old,
     calculate_ats_score,
-    adapt_cv_with_llm
+    adapt_cv_with_llm,
+    convert_to_rendercv,
+    generate_rendercv_pdf
 )
 
 # Configuración de la página
@@ -109,7 +111,7 @@ if (st.button("🚀 Generate ATS-optimized CV", use_container_width=True)
                 f.write(json.dumps(parsed_cv, ensure_ascii=False))
 
 
-            st.write("Standarizing original CV ....")
+            st.write("Standarizing CV ....")
             cv_data = extract_job_description_data(extracted_text, is_job=False)
             st.success("Original CV standardized ")
 
@@ -223,6 +225,44 @@ if (st.button("🚀 Generate ATS-optimized CV", use_container_width=True)
                         st.markdown(badges, unsafe_allow_html=True)
                     else:
                         st.write("None")
+
+            st.write("Creating new CV...")
+
+
+            # Convert to RenderCV YAML
+            log("Converting to YAML for RenderCV...")
+            yaml_path = convert_to_rendercv(adapted_cv, output_dir="rendercv_output", theme="classic")
+            log(f"RenderCV YAML generated at: {yaml_path}")
+
+
+
+            pdf_path=generate_rendercv_pdf(yaml_path, output_dir="rendercv_output",final_pdf_name="adapted_cv.pdf")
+
+
+
+            log(f"PDF generated at: {pdf_path}")
+            st.success("CV generated successfully!")
+
+
+       # Descargar el archivo YAML
+            with open(yaml_path, "r", encoding="utf-8") as f:
+                yaml_content = f.read()  # Leer el contenido del archivo YAML
+                st.download_button(
+                    label="Download YAML file (for editing)",
+                    data=yaml_content,  # Usar el contenido leído
+                    file_name="cv.yaml",
+                    mime="text/yaml"
+                )
+
+        # Descargar el archivo PDF
+            with open(pdf_path, "rb") as f:  # Abrir en modo binario
+                pdf_content = f.read()  # Leer el contenido binario del PDF
+                st.download_button(
+                    label="Download new CV",
+                    data=pdf_content,  # Usar el contenido del PDF
+                    file_name="adapted_cv.pdf",  # Nombre adecuado para el PDF
+                    mime="application/pdf"  # MIME correcto para PDF
+                )
 
         except Exception as e:
             log(f"Error: {e}")

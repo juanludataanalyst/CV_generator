@@ -538,91 +538,91 @@ def adapt_cv_with_llm(original_cv: dict, job_data: dict, keywords_match: dict) -
 
 
     prompt = f"""
-You are an expert in CV optimization for Applicant Tracking Systems (ATS). I have an original CV and a job offer:
+    You are an expert in CV optimization for Applicant Tracking Systems (ATS). I have an original CV and a job offer:
 
-Original CV (JSON Resume format):
-{json.dumps(original_cv, indent=2)}
+    Original CV (JSON Resume format):
+    {json.dumps(original_cv, indent=2)}
 
-Job Offer:
-- Keywords: {json.dumps(job_keywords)}
+    Job Offer:
+    - Keywords: {json.dumps(job_keywords)}
 
-Matches:
-- Keywords matched: {json.dumps(matched_keywords)}
+    Matches:
+    - Keywords matched: {json.dumps(matched_keywords)}
 
-Missing:
-- Keywords missing: {json.dumps(missing_keywords)}
+    Missing:
+    - Keywords missing: {json.dumps(missing_keywords)}
 
-Your task is:
-1. Adapt the CV to achieve at least 90% keyword matching for ATS by:
-    (a) Including all matched keywords in 'summary', 'work.experience[].highlights', and 'skills' to maximize density.
-    (b) Adding ALL missing keywords unless clearly unrelated to the job domain (e.g., exclude 'Firebase' for non-mobile roles), using this Chain of Thought:
-        - Step 1: List matched keywords and missing keywords.
-        - Step 2: Add every missing keyword to 'skills', assuming it fits the general job domain (e.g., 'Tableau', 'AWS' for data/tech roles).
-        - Step 3: Update 'summary' and 'work.highlights' to include all added keywords.
-        - Step 4: Verify only that keywords align broadly with the domain; include unless obviously irrelevant.
-    (c) Reorganizing content:
-        - List all keywords (matched and added) first in 'skills'.
-        - Rewrite 'summary' with 8-12 keywords.
-        - Update 'work.experience[].highlights' with 4-5 highlights per role using keywords.
-        - Repeat keywords across sections for ATS parsing.
-2. Return the adapted CV in JSON Resume format, ensuring schema compliance.
+    Your task is:
+    1. Adapt the CV to achieve at least 90% keyword matching for ATS by:
+        (a) Including all matched keywords in 'summary', 'work.experience[].highlights', and 'skills' to maximize density.
+        (b) Adding ALL missing keywords unless clearly unrelated to the job domain (e.g., exclude 'Firebase' for non-mobile roles), using this Chain of Thought:
+            - Step 1: List matched keywords and missing keywords.
+            - Step 2: Add every missing keyword to 'skills', assuming it fits the general job domain (e.g., 'Tableau', 'AWS' for data/tech roles).
+            - Step 3: Update 'summary' and 'work.highlights' to include all added keywords.
+            - Step 4: Verify only that keywords align broadly with the domain; include unless obviously irrelevant.
+        (c) Reorganizing content:
+            - List all keywords (matched and added) first in 'skills'.
+            - Rewrite 'summary' with 8-12 keywords.
+            - Update 'work.experience[].highlights' with 4-5 highlights per role using keywords.
+            - Repeat keywords across sections for ATS parsing.
+    2. Return the adapted CV in JSON Resume format, ensuring schema compliance.
 
-Rules:
-- Include ALL missing keywords to reach 90% coverage, assuming they fit the job domain.
-- Use exact job keywords for ATS matching.
-- Avoid vague terms (e.g., 'expert') unless in the offer.
-- Format 'skills' as {{"name": "Skill", "level": null, "keywords": []}}.
-- Use temperature=1.0, top-k=1, seed=42 for maximum keyword inclusion.
+    Rules:
+    - Include ALL missing keywords to reach 90% coverage, assuming they fit the job domain.
+    - Use exact job keywords for ATS matching.
+    - Avoid vague terms (e.g., 'expert') unless in the offer.
+    - Format 'skills' as {{"name": "Skill", "level": null, "keywords": []}}.
+    - Use temperature=1.0, top-k=1, seed=42 for maximum keyword inclusion.
 
-Examples:
-1. Gaming Analyst:
-    - CV: {{"skills": [{{"name": "Python"}}, {{"name": "SQL"}}], "work": [{{"highlights": ["Wrote Python scripts."]}}], "summary": "Data analyst."}}
-    - Keywords: ["Python", "SQL", "Tableau", "machine learning", "teamwork", "data analysis", "game economy", "BigQuery", "A/B testing", "predictive analytics", "Google Analytics", "Looker", "AWS"]
-    - Matched: ["Python", "SQL"]
-    - Missing: ["Tableau", "machine learning", "teamwork", "data analysis", "game economy", "BigQuery", "A/B testing", "predictive analytics", "Google Analytics", "Looker", "AWS"]
-    - Adapted CV (partial):
-        ```json
-        {{
-          "summary": "Data analyst skilled in Python, SQL, Tableau, machine learning, A/B testing, predictive analytics, teamwork, game economy, BigQuery, Google Analytics, Looker, AWS.",
-          "skills": [{{"name": "Python"}}, {{"name": "SQL"}}, {{"name": "Tableau"}}, {{"name": "Machine Learning"}}, {{"name": "A/B Testing"}}, {{"name": "Predictive Analytics"}}, {{"name": "Teamwork"}}, {{"name": "Game Economy"}}, {{"name": "BigQuery"}}, {{"name": "Google Analytics"}}, {{"name": "Looker"}}, {{"name": "AWS"}}],
-          "work": [{{"highlights": ["Developed Python scripts for machine learning and A/B testing.", "Used Tableau, BigQuery, Looker for data analysis.", "Collaborated on game economy with Google Analytics.", "Leveraged AWS for predictive analytics.", "Applied teamwork in projects."]}}]
-        }}
-        ```
-        Reasoning: Added all missing keywords as they fit data/gaming domain.
-2. Finance Analyst:
-    - CV: {{"skills": [{{"name": "Excel"}}], "work": [{{"highlights": ["Analyzed financial data."]}}], "summary": "Finance professional."}}
-    - Keywords: ["Excel", "Power BI", "financial modeling", "communication", "strategic thinking", "data visualization", "Tableau", "predictive analytics", "AWS", "Looker"]
-    - Matched: ["Excel"]
-    - Missing: ["Power BI", "financial modeling", "communication", "strategic thinking", "data visualization", "Tableau", "predictive analytics", "AWS", "Looker"]
-    - Adapted CV (partial):
-        ```json
-        {{
-          "summary": "Finance professional skilled in Excel, Power BI, financial modeling, data visualization, Tableau, communication, strategic thinking, predictive analytics, Looker.",
-          "skills": [{{"name": "Excel"}}, {{"name": "Power BI"}}, {{"name": "Financial Modeling"}}, {{"name": "Data Visualization"}}, {{"name": "Tableau"}}, {{"name": "Communication"}}, {{"name": "Strategic Thinking"}}, {{"name": "Predictive Analytics"}}, {{"name": "Looker"}}],
-          "work": [{{"highlights": ["Performed financial modeling with Excel and Power BI.", "Created data visualizations with Tableau and Looker.", "Communicated strategic insights.", "Supported predictive analytics.", "Applied strategic thinking."]}}]
-        }}
-        ```
-        Reasoning: Added all missing keywords except 'AWS' (less relevant to finance).
-3. Healthcare Data:
-    - CV: {{"skills": [{{"name": "R"}}], "work": [{{"highlights": ["Conducted statistical analysis."]}}], "summary": "Data scientist."}}
-    - Keywords: ["R", "SQL", "machine learning", "predictive analytics", "teamwork", "statistical analysis", "BigQuery", "Tableau", "Google Analytics", "AWS"]
-    - Matched: ["R"]
-    - Missing: ["SQL", "machine learning", "predictive analytics", "teamwork", "statistical analysis", "BigQuery", "Tableau", "Google Analytics", "AWS"]
-    - Adapted CV (partial):
-        ```json
-        {{
-          "summary": "Data scientist proficient in R, SQL, statistical analysis, machine learning, predictive analytics, teamwork, BigQuery, Tableau, Google Analytics, AWS.",
-          "skills": [{{"name": "R"}}, {{"name": "SQL"}}, {{"name": "Statistical Analysis"}}, {{"name": "Machine Learning"}}, {{"name": "Predictive Analytics"}}, {{"name": "Teamwork"}}, {{"name": "BigQuery"}}, {{"name": "Tableau"}}, {{"name": "Google Analytics"}}, {{"name": "AWS"}}],
-          "work": [{{"highlights": ["Conducted statistical analysis with R and SQL.", "Built machine learning models with BigQuery.", "Used Tableau and Google Analytics for insights.", "Collaborated with teamwork.", "Deployed on AWS."]}}]
-        }}
-        ```
-        Reasoning: Added all missing keywords as they fit data science domain.
+    Examples:
+    1. Gaming Analyst:
+        - CV: {{"skills": [{{"name": "Python"}}, {{"name": "SQL"}}], "work": [{{"highlights": ["Wrote Python scripts."]}}], "summary": "Data analyst."}}
+        - Keywords: ["Python", "SQL", "Tableau", "machine learning", "teamwork", "data analysis", "game economy", "BigQuery", "A/B testing", "predictive analytics", "Google Analytics", "Looker", "AWS"]
+        - Matched: ["Python", "SQL"]
+        - Missing: ["Tableau", "machine learning", "teamwork", "data analysis", "game economy", "BigQuery", "A/B testing", "predictive analytics", "Google Analytics", "Looker", "AWS"]
+        - Adapted CV (partial):
+            ```json
+            {{
+            "summary": "Data analyst skilled in Python, SQL, Tableau, machine learning, A/B testing, predictive analytics, teamwork, game economy, BigQuery, Google Analytics, Looker, AWS.",
+            "skills": [{{"name": "Python"}}, {{"name": "SQL"}}, {{"name": "Tableau"}}, {{"name": "Machine Learning"}}, {{"name": "A/B Testing"}}, {{"name": "Predictive Analytics"}}, {{"name": "Teamwork"}}, {{"name": "Game Economy"}}, {{"name": "BigQuery"}}, {{"name": "Google Analytics"}}, {{"name": "Looker"}}, {{"name": "AWS"}}],
+            "work": [{{"highlights": ["Developed Python scripts for machine learning and A/B testing.", "Used Tableau, BigQuery, Looker for data analysis.", "Collaborated on game economy with Google Analytics.", "Leveraged AWS for predictive analytics.", "Applied teamwork in projects."]}}]
+            }}
+            ```
+            Reasoning: Added all missing keywords as they fit data/gaming domain.
+    2. Finance Analyst:
+        - CV: {{"skills": [{{"name": "Excel"}}], "work": [{{"highlights": ["Analyzed financial data."]}}], "summary": "Finance professional."}}
+        - Keywords: ["Excel", "Power BI", "financial modeling", "communication", "strategic thinking", "data visualization", "Tableau", "predictive analytics", "AWS", "Looker"]
+        - Matched: ["Excel"]
+        - Missing: ["Power BI", "financial modeling", "communication", "strategic thinking", "data visualization", "Tableau", "predictive analytics", "AWS", "Looker"]
+        - Adapted CV (partial):
+            ```json
+            {{
+            "summary": "Finance professional skilled in Excel, Power BI, financial modeling, data visualization, Tableau, communication, strategic thinking, predictive analytics, Looker.",
+            "skills": [{{"name": "Excel"}}, {{"name": "Power BI"}}, {{"name": "Financial Modeling"}}, {{"name": "Data Visualization"}}, {{"name": "Tableau"}}, {{"name": "Communication"}}, {{"name": "Strategic Thinking"}}, {{"name": "Predictive Analytics"}}, {{"name": "Looker"}}],
+            "work": [{{"highlights": ["Performed financial modeling with Excel and Power BI.", "Created data visualizations with Tableau and Looker.", "Communicated strategic insights.", "Supported predictive analytics.", "Applied strategic thinking."]}}]
+            }}
+            ```
+            Reasoning: Added all missing keywords except 'AWS' (less relevant to finance).
+    3. Healthcare Data:
+        - CV: {{"skills": [{{"name": "R"}}], "work": [{{"highlights": ["Conducted statistical analysis."]}}], "summary": "Data scientist."}}
+        - Keywords: ["R", "SQL", "machine learning", "predictive analytics", "teamwork", "statistical analysis", "BigQuery", "Tableau", "Google Analytics", "AWS"]
+        - Matched: ["R"]
+        - Missing: ["SQL", "machine learning", "predictive analytics", "teamwork", "statistical analysis", "BigQuery", "Tableau", "Google Analytics", "AWS"]
+        - Adapted CV (partial):
+            ```json
+            {{
+            "summary": "Data scientist proficient in R, SQL, statistical analysis, machine learning, predictive analytics, teamwork, BigQuery, Tableau, Google Analytics, AWS.",
+            "skills": [{{"name": "R"}}, {{"name": "SQL"}}, {{"name": "Statistical Analysis"}}, {{"name": "Machine Learning"}}, {{"name": "Predictive Analytics"}}, {{"name": "Teamwork"}}, {{"name": "BigQuery"}}, {{"name": "Tableau"}}, {{"name": "Google Analytics"}}, {{"name": "AWS"}}],
+            "work": [{{"highlights": ["Conducted statistical analysis with R and SQL.", "Built machine learning models with BigQuery.", "Used Tableau and Google Analytics for insights.", "Collaborated with teamwork.", "Deployed on AWS."]}}]
+            }}
+            ```
+            Reasoning: Added all missing keywords as they fit data science domain.
 
-Output:
-Return the full adapted CV as a JSON object, enclosed in ```json``` markers.
-```json
-{{"basics": {{"name": "Example", ...}}, ...}}
-    """
+    Output:
+    Return the full adapted CV as a JSON object, enclosed in ```json``` markers.
+    ```json
+    {{"basics": {{"name": "Example", ...}}, ...}}
+        """
 
 
 
@@ -654,6 +654,386 @@ Return the full adapted CV as a JSON object, enclosed in ```json``` markers.
         print("Raw LLM output:", result)
         # Devolver el CV original como fallback
         return original_cv
+
+
+import yaml
+import os
+from datetime import datetime
+
+import yaml
+import os
+from datetime import datetime
+import subprocess
+import glob
+import shutil
+
+def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", theme: str = "classic") -> str:
+    """
+    Converts a JSON Resume formatted CV to a RenderCV-compatible YAML file.
+
+    Args:
+        adapted_cv (dict): CV in JSON Resume format.
+        output_dir (str): Directory to save the RenderCV YAML file.
+        theme (str): RenderCV theme to use (e.g., 'classic', 'modern', 'engineering').
+
+    Returns:
+        str: Path to the generated YAML file.
+
+    Raises:
+        ValueError: If adapted_cv is not a dictionary.
+    """
+    if not isinstance(adapted_cv, dict):
+        raise ValueError("adapted_cv must be a dictionary in JSON Resume format")
+
+    # Initialize RenderCV YAML structure
+    rendercv_data = {
+        "cv": {
+            "name": "",
+            "sections": {}
+        },
+        "design": {
+            "theme": theme,
+            "page": {
+                "size": "us-letter",
+                "top_margin": "2cm",
+                "bottom_margin": "2cm",
+                "left_margin": "2cm",
+                "right_margin": "2cm",
+                "show_page_numbering": True,
+                "show_last_updated_date": True
+            },
+            "section_titles": {
+                "vertical_space_above": "1cm",
+                "vertical_space_below": "0.7cm"
+            },
+            "entries": {
+                "vertical_space_between_entries": "2.5em"
+            }
+        },
+        "locale": {
+            "language": "en"
+        },
+        "rendercv_settings": {
+            "date": datetime.now().strftime("%Y-%m-%d"),
+            "bold_keywords": []
+        }
+    }
+
+    # Map JSON Resume 'basics' to RenderCV 'cv'
+    basics = adapted_cv.get("basics", {})
+    cv = rendercv_data["cv"]
+    cv["name"] = basics.get("name", "Unknown")
+    cv["email"] = basics.get("email", "")
+    cv["phone"] = basics.get("phone", "")
+    location = basics.get("location")
+    cv["location"] = location.get("city", "") if isinstance(location, dict) else ""
+    # Only include website if non-empty and a valid string
+    website = basics.get("url")
+    if isinstance(website, str) and website.strip():
+        cv["website"] = website.strip()
+    profiles = basics.get("profiles", [])
+    if profiles:
+        cv["social_networks"] = [
+            {
+                "network": "LinkedIn" if p.get("network", "").lower() == "linkedin" else "GitHub" if p.get("network", "").lower() == "github" else p.get("network", "").capitalize(),
+                "username": p.get("username", "")
+            }
+            for p in profiles if p.get("network") and p.get("username")
+        ]
+
+    # Map JSON Resume sections to RenderCV sections
+    sections = cv["sections"]
+
+    # Summary (TextEntry)
+    if "basics" in adapted_cv and (summary := adapted_cv["basics"].get("summary")):
+        sections["Summary"] = [summary]
+
+    # Work Experience (ExperienceEntry)
+    work = adapted_cv.get("work", [])
+    if work:
+        sections["Experience"] = [
+            {
+                "company": job.get("company", ""),
+                "position": job.get("position", "") or "",
+                "location": job.get("location", "") or "",
+                "start_date": convert_date(job.get("startDate", "")),
+                "end_date": convert_date(job.get("endDate", "present"), is_end_date=True),
+                "summary": job.get("summary", "") or "",
+                "highlights": job.get("highlights", [])
+            }
+            for job in work if job.get("company")
+        ]
+
+    # Education (EducationEntry)
+    education = adapted_cv.get("education", [])
+    if education:
+        sections["Education"] = [
+            {
+                "institution": edu.get("institution", ""),
+                "area": edu.get("area", "") or "",
+                "degree": edu.get("studyType", "") or "",
+                "start_date": convert_date(edu.get("startDate", "")),
+                "end_date": convert_date(edu.get("endDate", "")),
+                "location": "",
+                "highlights": edu.get("courses", [])
+            }
+            for edu in education if edu.get("institution")
+        ]
+
+    # Skills (OneLineEntry)
+    skills = adapted_cv.get("skills", [])
+    if skills:
+        skill_list = [skill.get("name", "") for skill in skills if skill.get("name")]
+        if skill_list:
+            sections["Skills"] = [
+                {
+                    "label": "Skills",
+                    "details": ", ".join(skill_list)
+                }
+            ]
+
+    # Projects (TextEntry)
+    projects = adapted_cv.get("projects", [])
+    if projects:
+        sections["Projects"] = [
+            f"{proj.get('name', '')} ({proj.get('startDate', '')} - {proj.get('endDate', 'present')}): {proj.get('description', '')}\n" +
+            "\n".join(f"- {h}" for h in proj.get("highlights", []) if h)
+            for proj in projects if proj.get("name")
+        ]
+
+    # Languages (OneLineEntry)
+    languages = adapted_cv.get("languages", [])
+    if languages:
+        language_list = [
+            f"{lang.get('language', '')} ({lang.get('fluency', '')})" if lang.get("fluency") else lang.get("language", "")
+            for lang in languages if lang.get("language")
+        ]
+        if language_list:
+            sections["Languages"] = [
+                {
+                    "label": "Languages",
+                    "details": ", ".join(language_list)
+                }
+            ]
+
+    # Create output directory
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Write YAML file to disk
+    output_file = os.path.join(output_dir, "cv_rendercv.yaml")
+    with open(output_file, "w", encoding="utf-8") as f:
+        yaml.safe_dump(rendercv_data, f, allow_unicode=True, sort_keys=False)
+
+    return output_file
+
+def convert_date(date_str: str, is_end_date: bool = False) -> str:
+    """
+    Converts a JSON Resume date string to RenderCV-compatible format (YYYY-MM).
+
+    Args:
+        date_str (str): Date string (e.g., 'Ene 2025', '2025', 'present').
+        is_end_date (bool): If True, allows 'present' as a valid output.
+
+    Returns:
+        str: Formatted date (e.g., '2025-01') or 'present' for end dates.
+    """
+    if not date_str or (is_end_date and date_str.lower() == "present"):
+        return "present" if is_end_date else ""
+    
+    # Map Spanish/English month abbreviations to numbers
+    month_map = {
+        "ene": "01", "jan": "01",
+        "feb": "02",
+        "mar": "03",
+        "apr": "04", "abr": "04",
+        "may": "05",
+        "jun": "06",
+        "jul": "07",
+        "aug": "08", "ago": "08",
+        "sep": "09", "sept": "09",
+        "oct": "10",
+        "nov": "11",
+        "dec": "12", "dic": "12"
+    }
+
+    # Handle formats like 'Ene 2025', 'Sep 2018', or '2025'
+    parts = date_str.replace(",", "").split()
+    if len(parts) == 2:
+        month, year = parts
+        month_num = month_map.get(month.lower(), "01")
+        return f"{year}-{month_num}"
+    elif date_str.isdigit():
+        return date_str  # e.g., '2016'
+    return date_str  # Fallback to original if unparseable
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def generate_rendercv_pdf(yaml_path: str, output_dir: str = "rendercv_output", final_pdf_name: str = "final_cv.pdf") -> str:
+    """
+    Generates a PDF from a RenderCV YAML file using the RenderCV CLI.
+
+    Args:
+        yaml_path (str): Path to the RenderCV YAML file.
+        output_dir (str): Directory where RenderCV saves the PDF.
+        final_pdf_name (str): Name of the final PDF file to copy to.
+
+    Returns:
+        str: Path to the final PDF file.
+
+    Raises:
+        FileNotFoundError: If no PDF is generated or YAML file is missing.
+        subprocess.CalledProcessError: If RenderCV CLI fails.
+    """
+    # Ensure YAML file exists
+    if not os.path.exists(yaml_path):
+        raise FileNotFoundError(f"YAML file not found at: {yaml_path}")
+
+    # Run RenderCV CLI to generate PDF
+    try:
+        subprocess.run(
+            ["rendercv", "render", yaml_path],
+            check=True,
+            capture_output=True,
+            text=True
+        )
+    except subprocess.CalledProcessError as e:
+        st.error(f"RenderCV failed with exit code {e.returncode}")
+        st.write(f"STDOUT:\n{e.stdout}")
+        st.write(f"STDERR:\n{e.stderr}")
+        raise
+    except FileNotFoundError:
+        st.error("RenderCV CLI not found. Ensure 'rendercv' is installed and in your PATH.")
+        raise
+
+    # Find generated PDF
+    pdf_files = glob.glob(os.path.join(output_dir, "*.pdf"))
+    if not pdf_files:
+        st.error(f"No PDF generated in {output_dir}")
+        raise FileNotFoundError(f"No PDF generated in {output_dir}")
+    
+    # Get the most recent PDF
+    latest_pdf = max(pdf_files, key=os.path.getmtime)
+
+    # Copy to final_pdf_name
+    final_pdf_path = os.path.join(os.getcwd(), final_pdf_name)
+    shutil.copy(latest_pdf, final_pdf_path)
+
+    return final_pdf_path
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 def calculate_total_experience(work_history: list) -> float:
