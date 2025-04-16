@@ -51,6 +51,10 @@ if "continue_with_manual" not in st.session_state:
     st.session_state["continue_with_manual"] = False
 if "manual_job_text" not in st.session_state:
     st.session_state["manual_job_text"] = ""
+if "yaml_path" not in st.session_state:
+    st.session_state["yaml_path"] = None
+if "pdf_path" not in st.session_state:
+    st.session_state["pdf_path"] = None
 
 # Layout en columnas para la subida de archivos y URL
 col1, col2 = st.columns([1, 1])
@@ -109,7 +113,6 @@ if (st.button("🚀 Generate ATS-optimized CV", use_container_width=True)
             parsed_cv = parse_to_json_resume_sync(extracted_text)
             with open("file_outputs/resume.json", 'w', encoding='utf-8') as f:
                 f.write(json.dumps(parsed_cv, ensure_ascii=False))
-
 
             st.write("Standarizing CV ....")
             cv_data = extract_job_description_data(extracted_text, is_job=False)
@@ -228,42 +231,45 @@ if (st.button("🚀 Generate ATS-optimized CV", use_container_width=True)
 
             st.write("Creating new CV...")
 
-
             # Convert to RenderCV YAML
             log("Converting to YAML for RenderCV...")
             yaml_path = convert_to_rendercv(adapted_cv, output_dir="rendercv_output", theme="classic")
             log(f"RenderCV YAML generated at: {yaml_path}")
 
-
-
-            pdf_path=generate_rendercv_pdf(yaml_path, output_dir="rendercv_output",final_pdf_name="adapted_cv.pdf")
-
-
-
+            # Generate PDF
+            log("Generating PDF...")
+            pdf_path = generate_rendercv_pdf(yaml_path, output_dir="rendercv_output", final_pdf_name="adapted_cv.pdf")
             log(f"PDF generated at: {pdf_path}")
+
+            # Guardar los paths en session_state
+            st.session_state["yaml_path"] = yaml_path
+            st.session_state["pdf_path"] = pdf_path
+
             st.success("CV generated successfully!")
-
-
-       # Descargar el archivo YAML
-            with open(yaml_path, "r", encoding="utf-8") as f:
-                yaml_content = f.read()  # Leer el contenido del archivo YAML
-                st.download_button(
-                    label="Download YAML file (for editing)",
-                    data=yaml_content,  # Usar el contenido leído
-                    file_name="cv.yaml",
-                    mime="text/yaml"
-                )
-
-        # Descargar el archivo PDF
-            with open(pdf_path, "rb") as f:  # Abrir en modo binario
-                pdf_content = f.read()  # Leer el contenido binario del PDF
-                st.download_button(
-                    label="Download new CV",
-                    data=pdf_content,  # Usar el contenido del PDF
-                    file_name="adapted_cv.pdf",  # Nombre adecuado para el PDF
-                    mime="application/pdf"  # MIME correcto para PDF
-                )
 
         except Exception as e:
             log(f"Error: {e}")
             st.error(f"An unexpected error occurred: {e}")
+
+# Mostrar botones de descarga si los archivos existen
+if st.session_state.get("yaml_path") and os.path.exists(st.session_state["yaml_path"]):
+    with open(st.session_state["yaml_path"], "r", encoding="utf-8") as f:
+        yaml_content = f.read()
+        st.download_button(
+            label="Download YAML file (for editing)",
+            data=yaml_content,
+            file_name="cv.yaml",
+            mime="text/yaml",
+            key="download_yaml"
+        )
+
+if st.session_state.get("pdf_path") and os.path.exists(st.session_state["pdf_path"]):
+    with open(st.session_state["pdf_path"], "rb") as f:
+        pdf_content = f.read()
+        st.download_button(
+            label="Download new CV",
+            data=pdf_content,
+            file_name="adapted_cv.pdf",
+            mime="application/pdf",
+            key="download_pdf"
+        )
