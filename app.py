@@ -16,7 +16,29 @@ from utils.utils import (
     adapt_cv_with_llm
 )
 
-st.title("CV Adapter - ATS Optimizer")
+# Configuración de la página
+st.set_page_config(page_title="CV Adapter - ATS Optimizer", layout="centered")
+
+# Estilo personalizado
+st.markdown("""
+    <style>
+    .main { background-color: #f5f5f5; }
+    .stButton>button { background-color: #4CAF50; color: white; border-radius: 5px; }
+    .stTextInput>div>input { border-radius: 5px; }
+    .stFileUploader { border-radius: 5px; }
+    .stSpinner { color: #4CAF50; }
+    .stTabs [data-baseweb="tab"] { font-size: 16px; font-weight: bold; }
+    .metric-card { background-color: #ffffff; padding: 10px; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .reportview-container { max-width: 800px; margin: auto; }
+    .keyword-badge { display: inline-block; padding: 5px 10px; margin: 3px; border-radius: 12px; font-size: 14px; }
+    .matched { background-color: #4CAF50; color: white; }
+    .missing { background-color: #FF4D4F; color: white; }
+    </style>
+""", unsafe_allow_html=True)
+
+# Título principal
+st.title("📄 CV Adapter - ATS Optimizer")
+st.markdown("Optimize your CV to match job descriptions and improve your ATS score!")
 
 # Inicializar estados en session_state
 if "uploaded_cv_path" not in st.session_state:
@@ -28,16 +50,23 @@ if "continue_with_manual" not in st.session_state:
 if "manual_job_text" not in st.session_state:
     st.session_state["manual_job_text"] = ""
 
-# Subida del CV
-uploaded_file = st.file_uploader("Upload your CV (PDF)", type=["pdf"])
-if uploaded_file and not st.session_state["uploaded_cv_path"]:
-    with open("uploaded_cv.pdf", "wb") as f:
-        f.write(uploaded_file.getbuffer())
-    st.session_state["uploaded_cv_path"] = "uploaded_cv.pdf"
+# Layout en columnas para la subida de archivos y URL
+col1, col2 = st.columns([1, 1])
 
-# Input de la URL
-job_url = st.text_input("Paste the job description URL")
+with col1:
+    # Subida del CV
+    uploaded_file = st.file_uploader("📤 Upload your CV (PDF)", type=["pdf"])
+    if uploaded_file and not st.session_state["uploaded_cv_path"]:
+        with open("uploaded_cv.pdf", "wb") as f:
+            f.write(uploaded_file.getbuffer())
+        st.session_state["uploaded_cv_path"] = "uploaded_cv.pdf"
+        st.success("CV uploaded successfully!")
 
+with col2:
+    # Input de la URL
+    job_url = st.text_input("🔗 Paste the job description URL", placeholder="e.g., https://jobs.example.com/123")
+
+# Área de logs
 log_area = st.empty()
 logs = []
 
@@ -46,25 +75,25 @@ def log(msg):
     log_area.text("\n".join(logs[-20:]))
 
 # Botón para iniciar el proceso
-if (st.button("Generate ATS-optimized CV") 
+if (st.button("🚀 Generate ATS-optimized CV", use_container_width=True) 
     and st.session_state["uploaded_cv_path"] 
     and job_url 
     and not st.session_state["scraping_failed"] 
     and not st.session_state["continue_with_manual"]):
-    with st.spinner("Processing..."):
+    with st.spinner("Processing your CV..."):
         log("Starting pipeline...")
         try:
             os.makedirs("file_outputs", exist_ok=True)
 
             # Extraer y guardar la descripción del trabajo
             job_description = scrape_job_description(job_url)
-            st.success("Job description scraped successfully.")
+            st.success("Job description scraped")
             with open("file_outputs/job_description.txt", 'w', encoding='utf-8') as f:
                 f.write(job_description)
 
             # Extraer datos de la oferta laboral
             job_data = extract_job_description_data(job_description, is_job=True)
-            st.success("Job description data extracted successfully.")
+            st.success("Job description data extracted")
             with open("file_outputs/job_description_data.json", 'w', encoding='utf-8') as f:
                 f.write(json.dumps(job_data, ensure_ascii=False))
 
@@ -72,223 +101,129 @@ if (st.button("Generate ATS-optimized CV")
             extracted_text = extract_cv_text(st.session_state["uploaded_cv_path"])
             with open("file_outputs/extracted_cv_text.txt", 'w', encoding='utf-8') as f:
                 f.write(extracted_text)
-            st.success("CV text extracted successfully.")
+            st.success("CV text extracted.")
 
             # Parsear el CV a JSON
             parsed_cv = parse_to_json_resume_sync(extracted_text)
-            
             with open("file_outputs/resume.json", 'w', encoding='utf-8') as f:
                 f.write(json.dumps(parsed_cv, ensure_ascii=False))
 
+
+            st.write("Standarizing original CV ....")
             cv_data = extract_job_description_data(extracted_text, is_job=False)
-            st.success("Original CV standarized successfully.")
+            st.success("Original CV standardized ")
 
             keywords_match = match_with_llm(cv_data.get('keywords', []), job_data.get('keywords', []))
 
-            # Imprimir resultados de palabras clave en un formato bonito
-            st.subheader("Starting Keywords Analysis ...")
-            st.write("**Matched Keywords:**")
-            matched_keywords = keywords_match.get('matches', [])
-            st.write(", ".join(matched_keywords) if matched_keywords else "Ninguna coincidencia")
-            st.write("**Missing Keywords:**")
-            missing_keywords = keywords_match.get('missing', [])
-            st.write(", ".join(missing_keywords) if missing_keywords else "Ninguna faltante")
-            st.write(f"**Total Keywords Matches:** {len(matched_keywords)} de {len(job_data.get('keywords', []))}")
+            # Análisis de palabras clave
+            st.subheader("🔍 Keywords Analysis")
+            col_match, col_miss = st.columns(2)
+            with col_match:
+                st.markdown("**Matched Keywords**")
+                matched_keywords = keywords_match.get('matches', [])
+                if matched_keywords:
+                    badges = "".join([f"<span class='keyword-badge matched'>{kw}</span>" for kw in matched_keywords])
+                    st.markdown(badges, unsafe_allow_html=True)
+                else:
+                    st.write("No matches")
+            with col_miss:
+                st.markdown("**Missing Keywords**")
+                missing_keywords = keywords_match.get('missing', [])
+                if missing_keywords:
+                    badges = "".join([f"<span class='keyword-badge missing'>{kw}</span>" for kw in missing_keywords])
+                    st.markdown(badges, unsafe_allow_html=True)
+                else:
+                    st.write("None missing")
+            st.write(f"**Total Keyword Matches**: {len(matched_keywords)} of {len(job_data.get('keywords', []))}")
 
-          
-            st.success("Calculating initial ATS scored ...")
-
-            
+            # Calcular puntaje ATS inicial
+            st.subheader("📊 ATS Scores")
             keywords_job = job_data.get('keywords', [])
-            
-
-            
             keywords_job_count = len(keywords_job) if keywords_job else 0
-            
+            score = calculate_ats_score(keywords_match, keywords_job_count)
+            st.metric("ATS Score (Original CV)", f"{score}%")
 
-            score = calculate_ats_score( keywords_match, keywords_job_count)
-
-            st.write(f"**ATS Score (Original CV):** {score}%")
-
-
-
-            adapted_cv = adapt_cv_with_llm(parsed_cv, job_data,  keywords_match)
-
-            # Mostrar CV adaptado
-            st.subheader("Apadting CV to job description ethicatly ..") 
+            # Adaptar CV
+            adapted_cv = adapt_cv_with_llm(parsed_cv, job_data, keywords_match)
+            st.subheader("✨ Adapted CV")
             st.json(adapted_cv)
-            
-            
 
-
-            #Extraer skills del nuevo CV adaptado
-            cv_adapted_data_text = json.dumps(adapted_cv, indent=2) 
+            # Extraer datos del CV adaptado
+            cv_adapted_data_text = json.dumps(adapted_cv, indent=2)
             cv_adapted_data = extract_job_description_data(cv_adapted_data_text, is_job=False)
 
-
             # Calcular ATS score para el CV adaptado
-            st.subheader("ATS Score for new CV")
-            
-            
+            adapted_keywords_match = match_with_llm(cv_adapted_data.get('keywords', []), job_data.get('keywords', []))
+            adapted_score = calculate_ats_score(adapted_keywords_match, keywords_job_count)
 
-            # Comparar con la oferta laboral
-            adapted_keywords_match  = match_with_llm(cv_adapted_data.get('keywords', []), job_data.get('keywords', []))
+            col_new_match, col_new_miss = st.columns(2)
+            with col_new_match:
+                st.markdown("**Matched Keywords (Adapted CV)**")
+                adapted_matched_keywords = adapted_keywords_match.get('matches', [])
+                if adapted_matched_keywords:
+                    badges = "".join([f"<span class='keyword-badge matched'>{kw}</span>" for kw in adapted_matched_keywords])
+                    st.markdown(badges, unsafe_allow_html=True)
+                else:
+                    st.write("No matches")
+            with col_new_miss:
+                st.markdown("**Missing Keywords (Adapted CV)**")
+                adapted_missing_keywords = adapted_keywords_match.get('missing', [])
+                if adapted_missing_keywords:
+                    badges = "".join([f"<span class='keyword-badge missing'>{kw}</span>" for kw in adapted_missing_keywords])
+                    st.markdown(badges, unsafe_allow_html=True)
+                else:
+                    st.write("None missing")
+            st.write(f"**Total Keyword Matches (Adapted CV)**: {len(adapted_matched_keywords)} of {len(job_data.get('keywords', []))}")
 
-            # Calcular el nuevo ATS score
-            adapted_score = calculate_ats_score(
-                
-                adapted_keywords_match,
-                
-                
-                keywords_job_count
-                
-            )
+            # Mostrar puntajes ATS
+            st.metric("ATS Score (Adapted CV)", f"{adapted_score}%")
+            st.metric("Improvement in ATS Score", f"{adapted_score - score:.2f}%", delta_color="normal")
 
-            st.write("**Matched Keywords in New CV:**", adapted_keywords_match.get('matches', []))
-
-            # Mostrar el nuevo score y detalles
-            st.write(f"**ATS Score en new CV:** {adapted_score}%")
-            st.metric("Improvement in ATS score", f"{adapted_score - score:.2f} p.p", delta_color="normal")
-            
-   
-
-            st.write("**Matched Keywords (Adapted CV):**")
-            adapted_matched_keywords = adapted_keywords_match.get('matches', [])
-            st.write(", ".join(adapted_matched_keywords) if adapted_matched_keywords else "Ninguna coincidencia")
-            st.write("**Missing Keywords (Adapted CV):**")
-            adapted_missing_keywords = adapted_keywords_match.get('missing', [])
-            st.write(", ".join(adapted_missing_keywords) if adapted_missing_keywords else "Ninguna faltante")
-            st.write(f"**Total Keywords Matches (Adapted CV):** {len(adapted_matched_keywords)} de {len(job_data.get('keywords', []))}")
-
-                
-            # Calcular el puntaje ATS usando el CV parseado y los datos de la oferta
+            # Calcular puntaje ATS antiguo
             ats_result = calculate_ats_score_old(cv_data, job_data)
-            st.success("ATS score calculated successfully.")
-                
-                # UI mejorada
-            st.subheader("Resultados del análisis ATS")
-            st.metric("Puntaje ATS (Antiguo)", f"{ats_result['score']}%", delta=None)
+            st.success("ATS analysis completed successfully.")
 
-            # Pestañas para organizar la información
-            tab1, tab2, tab3 = st.tabs(["Oferta laboral", "Tu CV", "Análisis ATS"])
+            # Nueva interfaz con pestañas
+            st.subheader("📑 Detailed ATS Analysis")
+            tab1, tab2, tab3 = st.tabs(["Job Description", "Your CV", "ATS Insights"])
 
             with tab1:
-                st.write("**Habilidades requeridas:**")
-                st.write(", ".join(job_data.get("skills", [])))
-                st.write("**Palabras clave:**")
-                st.write(", ".join(job_data.get("keywords", [])))
-                st.write("**Experiencia mínima:**")
-                st.write(f"{job_data.get('experience', 0)} años")
-                st.write("**Idiomas:**")
-                st.write(", ".join(job_data.get("languages", [])))
+                st.markdown("### Job Description Keywords")
+                keywords = job_data.get("keywords", [])
+                if keywords:
+                    badges = "".join([f"<span class='keyword-badge matched'>{kw}</span>" for kw in keywords])
+                    st.markdown(badges, unsafe_allow_html=True)
+                else:
+                    st.write("No keywords specified")
 
             with tab2:
-                st.write("**Habilidades en tu CV:**")
-                st.write(", ".join(cv_data.get("skills", [])))
-                st.write("**Palabras clave:**")
-                st.write(", ".join(cv_data.get("keywords", [])))
-                st.write("**Experiencia estimada:**")
-                st.write(f"{ats_result['resume_years']:.2f} años")
-                st.write("**Idiomas:**")
-                st.write(", ".join(cv_data.get("languages", [])))
+                st.markdown("### Your CV Keywords")
+                keywords = cv_data.get("keywords", [])
+                if keywords:
+                    badges = "".join([f"<span class='keyword-badge matched'>{kw}</span>" for kw in keywords])
+                    st.markdown(badges, unsafe_allow_html=True)
+                else:
+                    st.write("No keywords detected")
 
             with tab3:
-                st.write("**Coincidencias de habilidades:**")
-                matched_skills = [s for s in job_data["skills"] if s.lower() in [sk.lower() for sk in cv_data["skills"]]]
-                st.write(f"{ats_result['skill_matches']} de {ats_result['total_skills']}")
-                st.write(", ".join(matched_skills))
-                st.write("**Habilidades faltantes:**")
-                st.write(", ".join(ats_result["missing_skills"]) if ats_result["missing_skills"] else "Ninguna")
-                st.write("**Coincidencias de palabras clave:**")
-                matched_keywords = [k for k in job_data["keywords"] if k.lower() in [kw.lower() for kw in cv_data["keywords"]]]
-                st.write(f"{ats_result['keyword_matches']} de {ats_result['total_keywords']}")
-                st.write(", ".join(matched_keywords))
-                st.write("**Palabras clave faltantes:**")
-                st.write(", ".join(ats_result["missing_keywords"]) if ats_result["missing_keywords"] else "Ninguna")
-                st.write("**Diferencia de experiencia:**")
-                st.write(f"{ats_result['experience_gap']:.2f} años" if ats_result['experience_gap'] > 0 else "Cumples o superas la experiencia requerida")
+                st.markdown("### ATS Keyword Insights")
+                col_keywords = st.columns(1)[0]
+                with col_keywords:
+                    st.markdown("**Keyword Matches**")
+                    matched_keywords = [k for k in job_data["keywords"] if k.lower() in [kw.lower() for kw in cv_data["keywords"]]]
+                    st.write(f"{ats_result['keyword_matches']} of {ats_result['total_keywords']}")
+                    if matched_keywords:
+                        badges = "".join([f"<span class='keyword-badge matched'>{kw}</span>" for kw in matched_keywords])
+                        st.markdown(badges, unsafe_allow_html=True)
+                    else:
+                        st.write("None")
+                    st.markdown("**Missing Keywords**")
+                    if ats_result["missing_keywords"]:
+                        badges = "".join([f"<span class='keyword-badge missing'>{kw}</span>" for kw in ats_result["missing_keywords"]])
+                        st.markdown(badges, unsafe_allow_html=True)
+                    else:
+                        st.write("None")
 
         except Exception as e:
             log(f"Error: {e}")
             st.error(f"An unexpected error occurred: {e}")
-
-# Manejo del fallo del scraping
-if st.session_state["scraping_failed"]:
-    st.warning("Error scraping page. Please paste the job description manually below and click 'Continue'.")
-    st.session_state["manual_job_text"] = st.text_area(
-        "Paste the job description here:",
-        value=st.session_state["manual_job_text"]
-    )
-
-    if st.button("Continue with pasted description") and st.session_state["manual_job_text"].strip():
-        st.session_state["continue_with_manual"] = True
-
-if st.session_state.get("continue_with_manual") and st.session_state.get("manual_job_text", "").strip():
-    with st.spinner("Processing with manual job description..."):
-        try:
-            job_description = st.session_state["manual_job_text"]
-            job_data = extract_job_description_data(job_description, is_job=True)
-            st.success("Job description data extracted successfully.")
-            with open("file_outputs/job_description_data.json", 'w', encoding='utf-8') as f:
-                f.write(json.dumps(job_data, ensure_ascii=False))
-
-            extracted_text = extract_cv_text(st.session_state["uploaded_cv_path"])
-            st.success("CV text extracted successfully.")
-            with open("file_outputs/extracted_cv_text.txt", 'w', encoding='utf-8') as f:
-                f.write(extracted_text)
-
-            parsed_cv = parse_to_json_resume_sync(extracted_text)
-            st.success("CV parsed successfully.")
-            with open("file_outputs/resume.json", 'w', encoding='utf-8') as f:
-                f.write(json.dumps(parsed_cv, ensure_ascii=False))
-
-            cv_data = extract_job_description_data(extracted_text, is_job=False)
-            st.success("CV data extracted successfully.")
-
-            ats_result = calculate_ats_score_old(cv_data, job_data)
-            st.success("ATS score calculated successfully.")
-
-            # UI mejorada para modo manual
-            st.subheader("Resultados del análisis ATS")
-            st.metric("Puntaje ATS", f"{ats_result['score']}%", delta=None)
-
-            tab1, tab2, tab3 = st.tabs(["Oferta laboral", "Tu CV", "Análisis ATS"])
-
-            with tab1:
-                st.write("**Habilidades requeridas:**")
-                st.write(", ".join(job_data.get("skills", [])))
-                st.write("**Palabras clave:**")
-                st.write(", ".join(job_data.get("keywords", [])))
-                st.write("**Experiencia mínima:**")
-                st.write(f"{job_data.get('experience', 0)} años")
-                st.write("**Idiomas:**")
-                st.write(", ".join(job_data.get("languages", [])))
-
-            with tab2:
-                st.write("**Habilidades en tu CV:**")
-                st.write(", ".join(cv_data.get("skills", [])))
-                st.write("**Palabras clave:**")
-                st.write(", ".join(cv_data.get("keywords", [])))
-                st.write("**Experiencia estimada:**")
-                st.write(f"{ats_result['resume_years']:.2f} años")
-                st.write("**Idiomas:**")
-                st.write(", ".join(cv_data.get("languages", [])))
-
-            with tab3:
-                st.write("**Coincidencias de habilidades:**")
-                matched_skills = [s for s in job_data["skills"] if s.lower() in [sk.lower() for sk in cv_data["skills"]]]
-                st.write(f"{ats_result['skill_matches']} de {ats_result['total_skills']}")
-                st.write(", ".join(matched_skills))
-                st.write("**Habilidades faltantes:**")
-                st.write(", ".join(ats_result["missing_skills"]) if ats_result["missing_skills"] else "Ninguna")
-                st.write("**Coincidencias de palabras clave:**")
-                matched_keywords = [k for k in job_data["keywords"] if k.lower() in [kw.lower() for kw in cv_data["keywords"]]]
-                st.write(f"{ats_result['keyword_matches']} de {ats_result['total_keywords']}")
-                st.write(", ".join(matched_keywords))
-                st.write("**Palabras clave faltantes:**")
-                st.write(", ".join(ats_result["missing_keywords"]) if ats_result["missing_keywords"] else "Ninguna")
-                st.write("**Diferencia de experiencia:**")
-                st.write(f"{ats_result['experience_gap']:.2f} años" if ats_result['experience_gap'] > 0 else "Cumples o superas la experiencia requerida")
-
-        except Exception as e:
-            st.error(f"Error processing manual job description: {e}")
