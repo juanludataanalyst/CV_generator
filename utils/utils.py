@@ -23,7 +23,7 @@ client = openai.OpenAI(
     api_key=st.secrets["OPENROUTER_API_KEY"]
 )
 
-def run_llm(prompt, temperature=0.1):
+def run_llm(prompt, temperature=0.0):
     try:
         response = client.chat.completions.create(
             model="google/gemini-2.0-flash-lite-001",
@@ -32,6 +32,7 @@ def run_llm(prompt, temperature=0.1):
                 {"role": "user", "content": prompt}
             ],
             temperature=temperature,
+            top_p=0.000001,
         )
         if not response.choices or len(response.choices) == 0:
             print("LLM returned empty choices")
@@ -192,87 +193,111 @@ def extract_cv_text(pdf_path: str) -> str:
         return ""
 
 def extract_job_description_data(text: str, is_job: bool = True) -> Dict:
-        """
-        Extracts skills, experience, keywords and language from a job description using an LLM.
-        """
-        print("Extracting structured data from " + ("job description" if is_job else "CV") + "...")
-        if is_job:
-            prompt = f"""
-        Extract the following information from this job description and return it as a JSON object:
-        1. A list of ALL required skills (e.g., "Python", "Machine Learning").
-        2. The minimum years of experience required (as a number, e.g., 3). If not specified, return 0.
-        3. The most important keywords or phrases that should appear in a resume to match this job (e.g., "data analysis", "cloud computing","python").
+    """
+    Extracts keywords from the provided job description or resume that are relevant for Applicant Tracking Systems (ATS).
+
+    Args:
+        text (str): The job description or resume text to extract keywords from.
+        is_job (bool, optional): Whether the text is a job description (True) or a resume (False). Defaults to True.
+
+    Returns:
+        Dict: A dictionary containing a list of extracted keywords under the key 'keywords'.
+    """
+    print("Extracting structured data from " + ("job description" if is_job else "CV") + "...")
+
+    # Prompt building
+    common_instructions = """
+        1. Include specific technical tools (e.g., 'Tableau', 'Google Analytics'), programming languages (e.g., 'Python', 'SQL'), or frameworks (e.g., 'TensorFlow', 'React').
+        2. Include soft skills (e.g., 'communication', 'teamwork', 'leadership').
+        3. Include techniques or methodologies (e.g., 'machine learning', 'A/B testing', 'scrum').
+        4. Include industry-specific terms or standards (e.g., 'game economy', 'GDPR', 'HIPAA'), but ONLY if they describe a concept, standard, or domain knowledge, not a metric.
+        5. EXCLUDE ALL business metrics (e.g., 'DAU', 'ARPU', 'LTV', 'churn rate', 'ROI', 'CTR', 'NPV', 'KPI', 'bounce rate', 'EBITDA').
+        6. For each potential keyword, follow this reasoning process:
+           (a) Identify the term in the text.
+           (b) Check if it matches known metrics (e.g., 'DAU', 'LTV', 'ROI', 'KPI'); if yes, exclude it and stop.
+           (c) Determine if it is a technical tool, language, framework, soft skill, technique, or industry term; if yes, proceed.
+           (d) Ensure it is not a vague term (e.g., 'data', 'business', 'analytics') unless part of a specific name (e.g., 'Google Analytics'); if vague, exclude it.
+           (e) If the term passes all checks, include it in the output.
+        7. Only extract explicit terms; do not infer or combine terms.
+    """
+
+    examples = """
+        8. Examples across industries:
+           - Text: 'Requires Python, SQL, Tableau, DAU, and teamwork in gaming.'
+             Output: {"keywords": ["Python", "SQL", "Tableau", "teamwork"]}
+           - Text: 'Must know Excel, Power BI, A/B testing, ROI, and communication in finance.'
+             Output: {"keywords": ["Excel", "Power BI", "A/B testing", "communication"]}
+           - Text: 'Needs Java, Docker, GDPR, DevOps, and leadership in tech.'
+             Output: {"keywords": ["Java", "Docker", "GDPR", "DevOps", "leadership"]}
+           - Text: 'Requires R, SQL, HIPAA, machine learning, and teamwork in healthcare.'
+             Output: {"keywords": ["R", "SQL", "HIPAA", "machine learning", "teamwork"]}
+           - Text: 'Must know Google Ads, SEO, CTR, and collaboration in marketing.'
+             Output: {"keywords": ["Google Ads", "SEO", "collaboration"]}
+           - Text: 'Needs C++, ROS, agile, and problem-solving in robotics.'
+             Output: {"keywords": ["C++", "ROS", "agile", "problem-solving"]}
+           - Text: 'Requires SAS, SPSS, predictive analytics, and adaptability in data science.'
+             Output: {"keywords": ["SAS", "SPSS", "predictive analytics", "adaptability"]}
+           - Text: 'Must know Salesforce, CRM, KPI, and negotiation in sales.'
+             Output: {"keywords": ["Salesforce", "CRM", "negotiation"]}
+           - Text: 'Needs AWS, Kubernetes, game economy, and teamwork in gaming.'
+             Output: {"keywords": ["AWS", "Kubernetes", "game economy", "teamwork"]}
+           - Text: 'Requires VBA, Tableau, NPV, and strategic thinking in consulting.'
+             Output: {"keywords": ["VBA", "Tableau", "strategic thinking"]}
+    """
+
+    prompt_type = "job description" if is_job else "Resume"
+    prompt = f"""
+        Extract keywords from the provided {prompt_type} that are relevant for Applicant Tracking Systems (ATS). 
+        Follow these rules:
+        {common_instructions}
+        {examples}
 
         Text:
         \"\"\"
         {text}
         \"\"\"
 
-        Return the result as a JSON object with keys: "skills", "experience", "keywords" and "languages"
-        Respond ONLY with the JSON object.
-        """
-        else:
-            prompt = f"""
-          Extract the following information from this CV and return it as a JSON object:
-        1. A list of ALL skills (e.g., "Python", "Machine Learning").
-        2. The most important keywords or phrases that should appear in a resume to match this job (e.g., "data analysis", "cloud computing","python").
+        Return ONLY a JSON object with the key 'keywords' containing a list of extracted keywords.
+    """
 
-        Text:
-        \"\"\"
-        {text}
-        \"\"\"
-
-        Return the result as a JSON object with keys: "skills", "experience", "keywords" and "languages"
-        Respond ONLY with the JSON object.
-
-
-        Text:
-        \"\"\"
-        {text}
-        \"\"\"
-
-        Return the result as a JSON object with keys: "skills", "keywords".
-        Respond ONLY with the JSON object.
-        """
-        
-        max_retries = 3
-        for attempt in range(max_retries):
-          result = run_llm(prompt)
-          print("LLM response (cv_parser):")
-          print(result)
-
-          if is_job:
-             open("file_outputs/job_summary_llm_output.txt", 'w', encoding='utf-8').write(result)
-          else:
-             open("file_outputs/cv_summary_llm_output.txt", 'w', encoding='utf-8').write(result)
-
-        if not result or not result.strip():
-            print(f"LLM returned empty response. Retry {attempt+1}/{max_retries}...")
-            time.sleep(60)
-            
-
-        
-
-        print("LLM response (job_to_cv_parser):")
+    # LLM call with retries
+    max_retries = 3
+    for attempt in range(max_retries):
+        result = run_llm(prompt)
+        print("LLM response (cv_parser):")
         print(result)
 
-        if "```json" in result:
-            json_str = result.split("```json")[1].split("```")[0].strip()
-        elif "```" in result:
-            json_str = result.split("```")[1].split("```")[0].strip()
-        else:
-            json_str = result.strip()
+        filename = "file_outputs/job_summary_llm_output.txt" if is_job else "file_outputs/cv_summary_llm_output.txt"
+        with open(filename, 'w', encoding='utf-8') as f:
+            f.write(result)
 
-        if not json_str:
-            raise ValueError("LLM returned an empty response in extract_structured_data.")
-        try:
-            parsed = json.loads(json_str)
-        except json.JSONDecodeError:
-            print("Error: LLM response is not valid JSON:")
-            print(json_str)
-            raise
-        print("Structured data extracted successfully.")
-        return parsed
+        if not result or not result.strip():
+            print(f"LLM returned empty response. Retry {attempt + 1}/{max_retries}...")
+            time.sleep(60)
+
+    print("LLM response (job_to_cv_parser):")
+    print(result)
+
+    # Extract JSON block
+    if "```json" in result:
+        json_str = result.split("```json")[1].split("```")[0].strip()
+    elif "```" in result:
+        json_str = result.split("```")[1].split("```")[0].strip()
+    else:
+        json_str = result.strip()
+
+    if not json_str:
+        raise ValueError("LLM returned an empty response in extract_structured_data.")
+
+    try:
+        parsed = json.loads(json_str)
+    except json.JSONDecodeError:
+        print("Error: LLM response is not valid JSON:")
+        print(json_str)
+        raise
+
+    print("Structured data extracted successfully.")
+    return parsed
 
 def parse_to_json_resume_sync(text: str) -> Dict:
     """
@@ -370,22 +395,22 @@ def parse_to_json_resume_sync(text: str) -> Dict:
 
     raise ValueError("Failed to parse CV text after all retries")
 
-def match_with_llm(cv_items: list, job_items: list, item_type: str) -> dict:
+def match_with_llm(cv_items: list, job_items: list) -> dict:
     """
-    Uses an LLM to match skills, keywords, or languages between CV and job offer.
+    Uses an LLM to match  keywords between CV and job offer.
     
     Args:
-        cv_items (list): List of items from the CV (skills, keywords, or languages).
-        job_items (list): List of items from the job offer (skills, keywords, or languages).
-        item_type (str): Type of items ('skills', 'keywords', or 'languages').
+        cv_items (list): List of items from the CV (keywords).
+        job_items (list): List of items from the job offer (keywords).
+        
     
     Returns:
         dict: JSON with matches and missing items.
     """
     prompt = (
-        f"You are an expert in job skills analysis. I have two lists of {item_type}:\n\n"
-        f"{item_type.capitalize()} from CV: {cv_items}\n"
-        f"{item_type.capitalize()} from job offer: {job_items}\n\n"
+        f"You are an expert in job keywordsanalysis. I have two lists of keywords :\n\n"
+        f" from CV: {cv_items}\n"
+        f" from job offer: {job_items}\n\n"
         "Your task is:\n"
         "1. Identify which {item_type} from the CV match those from the job offer, considering synonyms, context, and equivalences (e.g., Power BI can match with data visualization tools (Tableau, Looker, Power BI, etc.)).\n"
         "2. List the {item_type} from the job offer that are missing from the CV.\n\n"
@@ -425,53 +450,45 @@ def match_with_llm(cv_items: list, job_items: list, item_type: str) -> dict:
             'missing': job_items
         }
 
-def calculate_ats_score(skills_match: dict, keywords_match: dict, languages_match: dict, total_job_skills: int, total_job_keywords: int, total_job_languages: int) -> float:
+def calculate_ats_score( keywords_match: dict,total_job_keywords: int) -> float:
     """
-    Calculate the ATS score based on matches for skills, keywords, and languages.
+    Calculate the ATS score based on matches for  keywords
 
-    - Keywords: 65% weight
-    - Skills: 35% weight
-    - Languages: Required condition (if any required language is missing, score is 0)
+    - Keywords: 
+    
+    -
 
     Args:
-        skills_match (dict): Dictionary with 'matches' and 'missing' for skills.
         keywords_match (dict): Dictionary with 'matches' and 'missing' for keywords.
-        languages_match (dict): Dictionary with 'matches' and 'missing' for languages.
-        total_job_skills (int): Total number of skills required in the job offer.
+        
         total_job_keywords (int): Total number of keywords required in the job offer.
-        total_job_languages (int): Total number of languages required in the job offer.
+        
 
     Returns:
         float: ATS score as a percentage (0-100).
     """
-    # Check if any required language is missing
-    missing_languages = languages_match.get('missing', [])
-    if missing_languages:
-        return 0.0
-
-    # Count matches
-    skill_matches = len(skills_match.get('matches', []))
+   
     keyword_matches = len(keywords_match.get('matches', []))
 
     # Calculate match percentages
-    skills_percentage = (skill_matches / total_job_skills) if total_job_skills > 0 else 0
+    
     keywords_percentage = (keyword_matches / total_job_keywords) if total_job_keywords > 0 else 0
 
     # Apply weights: 65% keywords, 35% skills
-    score = (0.65 * keywords_percentage) + (0.35 * skills_percentage)
+    score =  keywords_percentage
 
     # Return score as percentage
     return round(score * 100, 2)
 
 
-def adapt_cv_with_llm(original_cv: dict, job_data: dict, skills_match: dict, keywords_match: dict) -> dict:
+def adapt_cv_with_llm(original_cv: dict, job_data: dict, keywords_match: dict) -> dict:
     """
     Adapts the original CV to improve ATS score by incorporating matched and inferred skills/keywords.
 
     Args:
         original_cv (dict): Original CV in JSON Resume format.
         job_data (dict): Job offer data with skills, keywords, and languages.
-        skills_match (dict): Dictionary with 'matches' and 'missing' for skills.
+        
         keywords_match (dict): Dictionary with 'matches' and 'missing' for keywords.
 
     Returns:
@@ -481,7 +498,7 @@ def adapt_cv_with_llm(original_cv: dict, job_data: dict, skills_match: dict, key
     print("Debugging adapt_cv_with_llm inputs:")
     print("original_cv:", json.dumps(original_cv, indent=2))
     print("job_data:", json.dumps(job_data, indent=2))
-    print("skills_match:", json.dumps(skills_match, indent=2))
+    
     print("keywords_match:", json.dumps(keywords_match, indent=2))
 
     # Validar que los argumentos tengan la estructura esperada
@@ -489,17 +506,14 @@ def adapt_cv_with_llm(original_cv: dict, job_data: dict, skills_match: dict, key
         raise ValueError("original_cv must be a dictionary")
     if not isinstance(job_data, dict):
         raise ValueError("job_data must be a dictionary")
-    if not isinstance(skills_match, dict) or 'matches' not in skills_match or 'missing' not in skills_match:
-        raise ValueError("skills_match must be a dictionary with 'matches' and 'missing' keys")
+  
     if not isinstance(keywords_match, dict) or 'matches' not in keywords_match or 'missing' not in keywords_match:
         raise ValueError("keywords_match must be a dictionary with 'matches' and 'missing' keys")
 
     # Asegurarnos de que las listas contengan solo strings
-    job_skills = [str(item) for item in job_data.get('skills', [])]
+  
     job_keywords = [str(item) for item in job_data.get('keywords', [])]
-    job_languages = [str(item) for item in job_data.get('languages', [])]
-    matched_skills = [str(item) for item in skills_match.get('matches', [])]
-    missing_skills = [str(item) for item in skills_match.get('missing', [])]
+    
     matched_keywords = [str(item) for item in keywords_match.get('matches', [])]
     missing_keywords = [str(item) for item in keywords_match.get('missing', [])]
 
@@ -511,21 +525,21 @@ def adapt_cv_with_llm(original_cv: dict, job_data: dict, skills_match: dict, key
     {json.dumps(original_cv, indent=2)}
 
     Job Offer:
-    - Skills required: {json.dumps(job_skills)}
+   
     - Keywords: {json.dumps(job_keywords)}
-    - Languages: {json.dumps(job_languages)}
+    
 
     Matches:
-    - Skills matched: {json.dumps(matched_skills)}
+    
     - Keywords matched: {json.dumps(matched_keywords)}
 
     Missing:
-    - Skills missing: {json.dumps(missing_skills)}
+   
     - Keywords missing: {json.dumps(missing_keywords)}
 
     Your task is:
     1. Adapt the CV to improve its ATS score by:
-    - Highlighting matched skills and keywords in the summary, work highlights, and skills section.
+    - Highlighting matched  keywords in the summary, work highlights, and skills section.
     - Inferring skills or keywords from the CV that align with missing ones, if they can be reasonably derived (e.g., "Python" and "pandas" imply "data analysis").
     - Reorganizing content to prioritize job-relevant information.
     2. Do NOT invent skills, experiences, or qualifications not supported by the original CV.
@@ -557,8 +571,6 @@ def adapt_cv_with_llm(original_cv: dict, job_data: dict, skills_match: dict, key
     print(type(original_cv))
     print(job_data)
     print(type(job_data))
-    print(skills_match)
-    print(type(skills_match))
     print(keywords_match)
     print(type(keywords_match))
    

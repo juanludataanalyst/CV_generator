@@ -83,11 +83,10 @@ if (st.button("Generate ATS-optimized CV")
             cv_data = extract_job_description_data(extracted_text, is_job=False)
             st.success("CV data extracted successfully.")
 
-            keywords_match = match_with_llm(cv_data.get('keywords', []), job_data.get('keywords', []), 'keywords')
+            keywords_match = match_with_llm(cv_data.get('keywords', []), job_data.get('keywords', []))
 
             # Imprimir resultados de palabras clave en un formato bonito
-            st.subheader("Keywords Matching")
-            st.write(", ".join(job_data.get('keywords', [])))
+            st.subheader("Keywords Analysis")
             st.write("**Matched Keywords:**")
             matched_keywords = keywords_match.get('matches', [])
             st.write(", ".join(matched_keywords) if matched_keywords else "Ninguna coincidencia")
@@ -96,90 +95,57 @@ if (st.button("Generate ATS-optimized CV")
             st.write(", ".join(missing_keywords) if missing_keywords else "Ninguna faltante")
             st.write(f"**Total Keywords Matches:** {len(matched_keywords)} de {len(job_data.get('keywords', []))}")
 
-            # Probar el matcheo con LLM e imprimir resultados
-            skills_match = match_with_llm(cv_data.get('skills', []), job_data.get('skills', []), 'skills')
-
-            # Imprimir resultados de habilidades en un formato bonito
-            st.subheader("Skills Matching")
-            st.write("**Matched Skills:**")
-            matched_skills = skills_match.get('matches', [])
-            st.write(", ".join(matched_skills) if matched_skills else "Ninguna coincidencia")
-            st.write("**Missing Skills:**")
-            missing_skills = skills_match.get('missing', [])
-            st.write(", ".join(missing_skills) if missing_skills else "Ninguna faltante")
-            st.write(f"**Total Skills Matches:** {len(matched_skills)} de {len(job_data.get('skills', []))}")
-
-            languages_match = match_with_llm(cv_data.get('languages', []), job_data.get('languages', []), 'languages')
-
-            # Imprimir resultados de idiomas en un formato bonito
-            st.subheader("Languages Matching")
-            st.write("**Matching Languages:**")
-            matched_languages = languages_match.get('matches', [])
-            st.write(", ".join(matched_languages) if matched_languages else "Ninguna coincidencia")
-            st.write("**Missing Languages:**")
-            missing_languages = languages_match.get('missing', [])
-            st.write(", ".join(missing_languages) if missing_languages else "Ninguna faltante")
-            st.write(f"**Total Languages Matches:** {len(matched_languages)} de {len(job_data.get('languages', []))}")
-
+          
             st.success("ATS score calculated")
 
-            skills_job = job_data.get('skills', [])
+            
             keywords_job = job_data.get('keywords', [])
-            languages_job = job_data.get('languages', [])
+            
 
-            skills_job_count = len(skills_job) if skills_job else 0
+            
             keywords_job_count = len(keywords_job) if keywords_job else 0
-            languages_job_count = len(languages_job) if languages_job else 0
+            
 
-            score = calculate_ats_score(skills_match, keywords_match, languages_match, skills_job_count, keywords_job_count, languages_job_count)
+            score = calculate_ats_score( keywords_match, keywords_job_count)
 
             st.write(f"**ATS Score (Original CV):** {score}%")
 
-            adapted_cv = adapt_cv_with_llm(parsed_cv, job_data, skills_match, keywords_match)
+            adapted_cv = adapt_cv_with_llm(parsed_cv, job_data,  keywords_match)
 
             # Mostrar CV adaptado
             st.subheader("CV Adaptado")
             st.json(adapted_cv)
+            
+            #Extraer skills del nuevo CV adaptado
+            cv_adapted_data_text = extract_cv_text(adapted_cv)
+            cv_adapted_data = extract_job_description_data(cv_adapted_data_text, is_job=False)
+
 
             # Calcular ATS score para el CV adaptado
             st.subheader("ATS Score del CV Adaptado")
-            # Extraer habilidades, palabras clave e idiomas del CV adaptado
-            adapted_skills = [skill["name"] for skill in adapted_cv.get("skills", [])]
-            # Para palabras clave, usaremos las del summary y highlights
-            adapted_keywords = []
-            if adapted_cv.get("basics", {}).get("summary"):
-                adapted_keywords.extend(adapted_cv["basics"]["summary"].split())
-            for work in adapted_cv.get("work", []):
-                adapted_keywords.extend([word for hl in work.get("highlights", []) for word in hl.split()])
-            adapted_keywords = list(set(adapted_keywords))  # Eliminar duplicados
-            adapted_languages = [lang["language"] for lang in adapted_cv.get("languages", [])]
+            
+            
 
             # Comparar con la oferta laboral
-            adapted_skills_match = match_with_llm(adapted_skills, job_data.get('skills', []), 'skills')
-            adapted_keywords_match = match_with_llm(adapted_keywords, job_data.get('keywords', []), 'keywords')
-            adapted_languages_match = match_with_llm(adapted_languages, job_data.get('languages', []), 'languages')
+            adapted_keywords_match  = match_with_llm(cv_adapted_data.get('keywords', []), job_data.get('keywords', []))
 
             # Calcular el nuevo ATS score
             adapted_score = calculate_ats_score(
-                adapted_skills_match,
+                
                 adapted_keywords_match,
-                adapted_languages_match,
-                skills_job_count,
-                keywords_job_count,
-                languages_job_count
+                
+                
+                keywords_job_count
+                
             )
+
+            st.write("**Matched Keywords (Adapted CV):**", adatapted_keywords_match.get('matches', []))
 
             # Mostrar el nuevo score y detalles
             st.write(f"**ATS Score (Adapted CV):** {adapted_score}%")
             st.metric("Mejora en ATS Score", f"{adapted_score - score:.2f}%", delta_color="normal")
             
-            st.write("**Matched Skills (Adapted CV):**")
-            adapted_matched_skills = adapted_skills_match.get('matches', [])
-            st.write(", ".join(adapted_matched_skills) if adapted_matched_skills else "Ninguna coincidencia")
-            st.write("**Missing Skills (Adapted CV):**")
-            adapted_missing_skills = adapted_skills_match.get('missing', [])
-            st.write(", ".join(adapted_missing_skills) if adapted_missing_skills else "Ninguna faltante")
-            st.write(f"**Total Skills Matches (Adapted CV):** {len(adapted_matched_skills)} de {len(job_data.get('skills', []))}")
+   
 
             st.write("**Matched Keywords (Adapted CV):**")
             adapted_matched_keywords = adapted_keywords_match.get('matches', [])
@@ -189,14 +155,7 @@ if (st.button("Generate ATS-optimized CV")
             st.write(", ".join(adapted_missing_keywords) if adapted_missing_keywords else "Ninguna faltante")
             st.write(f"**Total Keywords Matches (Adapted CV):** {len(adapted_matched_keywords)} de {len(job_data.get('keywords', []))}")
 
-            st.write("**Matched Languages (Adapted CV):**")
-            adapted_matched_languages = adapted_languages_match.get('matches', [])
-            st.write(", ".join(adapted_matched_languages) if adapted_matched_languages else "Ninguna coincidencia")
-            st.write("**Missing Languages (Adapted CV):**")
-            adapted_missing_languages = adapted_languages_match.get('missing', [])
-            st.write(", ".join(adapted_missing_languages) if adapted_missing_languages else "Ninguna faltante")
-            st.write(f"**Total Languages Matches (Adapted CV):** {len(adapted_matched_languages)} de {len(job_data.get('languages', []))}")
-
+            
             # Calcular el puntaje ATS usando el CV parseado y los datos de la oferta
             ats_result = calculate_ats_score_old(cv_data, job_data)
             st.success("ATS score calculated successfully.")
