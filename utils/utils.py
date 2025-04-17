@@ -128,13 +128,23 @@ def run_llm_cv_creation(prompt, temperature=0.9):
 def scrape_job_description(url: str) -> str:
     """
     Extracts all text from a job posting URL and uses an LLM agent to clean and extract the job description.
+
+    Args:
+        url (str): The URL of the job posting.
+
+    Returns:
+        str: The extracted and cleaned job description.
+
+    Raises:
+        requests.RequestException: If the HTTP request fails (e.g., 403, 404, timeout).
+        ValueError: If the LLM fails to return a valid response or if the content is not a job posting.
     """
     try:
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
         }
         response = requests.get(url, headers=headers, timeout=10)
-        response.raise_for_status()
+        response.raise_for_status()  # Lanza una excepción para códigos de estado 4xx/5xx
 
         # Parsear el HTML con BeautifulSoup
         soup = BeautifulSoup(response.text, "html.parser")
@@ -191,13 +201,24 @@ def scrape_job_description(url: str) -> str:
             if not result or not result.strip():
                 print(f"LLM returned empty response. Retry {attempt+1}/{max_retries}...")
                 time.sleep(60)
+            elif result.strip() == "ERROR: Not a job posting":
+                raise ValueError("The provided URL does not contain a valid job posting")
             else:
                 break  # Salir del bucle si hay resultado válido
+        else:
+            raise ValueError("LLM failed to return a valid response after maximum retries")
 
-        return result.strip() if result else "ERROR: LLM failed to return a valid response"
+        return result.strip()
 
     except requests.RequestException as e:
-        return f"Error extracting content: {str(e)}"
+        raise requests.RequestException(f"Failed to fetch job posting from {url}: {str(e)}")
+    except Exception as e:
+        raise ValueError(f"Error processing job description: {str(e)}")
+
+
+
+
+
 
 def extract_cv_text(pdf_path: str) -> str:
     """
