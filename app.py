@@ -4,6 +4,7 @@ import json
 import glob
 import shutil
 import subprocess
+import requests
 from utils.utils import (
     extract_cv_text,
     parse_to_json_resume_sync,
@@ -55,7 +56,8 @@ if "yaml_path" not in st.session_state:
     st.session_state["yaml_path"] = None
 if "pdf_path" not in st.session_state:
     st.session_state["pdf_path"] = None
-
+if "job_url" not in st.session_state:
+    st.session_state["job_url"] = ""
 
 # Subida del CV
 uploaded_file = st.file_uploader("📤 Upload your CV (PDF)", type=["pdf"])
@@ -63,33 +65,24 @@ if uploaded_file and not st.session_state["uploaded_cv_path"]:
     with open("uploaded_cv.pdf", "wb") as f:
         f.write(uploaded_file.getbuffer())
     st.session_state["uploaded_cv_path"] = "uploaded_cv.pdf"
+    st.session_state["scraping_failed"] = False
+    st.session_state["continue_with_manual"] = False
+    st.session_state["manual_job_text"] = ""
+    st.session_state["yaml_path"] = None
+    st.session_state["pdf_path"] = None
     st.success("CV uploaded successfully!")
 
-    # Input de la URL
-job_url = st.text_input("🔗 Paste the job description URL", placeholder="e.g., https://jobs.example.com/123")
+# Input de la URL
+job_url = st.text_input("🔗 Paste the job description URL", value=st.session_state["job_url"], placeholder="e.g., https://jobs.example.com/123")
+st.session_state["job_url"] = job_url
 
-# Área de logs
-log_area = st.empty()
-logs = []
-
-def log(msg):
-    logs.append(msg)
-    log_area.text("\n".join(logs[-20:]))
-
-# Botón para iniciar el proceso
-if (st.button("Generate ATS-optimized CV", use_container_width=True) 
-    and st.session_state["uploaded_cv_path"] 
-    and job_url 
-    and not st.session_state["scraping_failed"] 
-    and not st.session_state["continue_with_manual"]):
+# Función para ejecutar el pipeline
+def run_pipeline(cv_path, job_description):
     with st.spinner("Processing your CV..."):
-        log("Starting pipeline...")
         try:
             os.makedirs("file_outputs", exist_ok=True)
 
-            # Extraer y guardar la descripción del trabajo
-            job_description = scrape_job_description(job_url)
-            st.success("Job description scraped")
+            # Guardar la descripción del trabajo
             with open("file_outputs/job_description.txt", 'w', encoding='utf-8') as f:
                 f.write(job_description)
 
@@ -97,23 +90,22 @@ if (st.button("Generate ATS-optimized CV", use_container_width=True)
             job_data = extract_job_description_data(job_description, is_job=True)
             st.success("Job description data extracted")
             with open("file_outputs/job_description_data.json", 'w', encoding='utf-8') as f:
-                f.write(json.dumps(job_data, ensure_ascii=False))
+                json.dump(job_data, f, ensure_ascii=False)
 
             # Extraer y guardar el texto del CV
-            extracted_text = extract_cv_text(st.session_state["uploaded_cv_path"])
+            extracted_text = extract_cv_text(cv_path)
             with open("file_outputs/extracted_cv_text.txt", 'w', encoding='utf-8') as f:
                 f.write(extracted_text)
             st.success("CV text extracted.")
 
             # Parsear el CV a JSON
-            st.write("Standarizing CV ....")
+            st.write("Standardizing CV...")
             parsed_cv = parse_to_json_resume_sync(extracted_text)
             with open("file_outputs/resume.json", 'w', encoding='utf-8') as f:
-                f.write(json.dumps(parsed_cv, ensure_ascii=False))
+                json.dump(parsed_cv, f, ensure_ascii=False)
 
-            
             cv_data = extract_job_description_data(extracted_text, is_job=False)
-            st.success("Original CV standardized ")
+            st.success("Original CV standardized")
 
             keywords_match = match_with_llm(cv_data.get('keywords', []), job_data.get('keywords', []))
 
@@ -178,16 +170,13 @@ if (st.button("Generate ATS-optimized CV", use_container_width=True)
             st.write(f"**Total Keyword Matches (Adapted CV)**: {len(adapted_matched_keywords)} of {len(job_data.get('keywords', []))}")
 
             # Mostrar puntajes ATS
-            #st.metric("ATS Score (Adapted CV)", f"{adapted_score}%")
             delta_value = adapted_score - score
-
-
             st.metric(
-            label="Improvement in ATS Score",
-            value=f"{adapted_score:.2f} %",
-            delta=f"{delta_value:.2f} p.p",
-            delta_color="normal")
-            
+                label="Improvement in ATS Score",
+                value=f"{adapted_score:.2f} %",
+                delta=f"{delta_value:.2f} p.p",
+                delta_color="normal"
+            )
 
             # Calcular puntaje ATS antiguo
             ats_result = calculate_ats_score_old(cv_data, job_data)
@@ -237,14 +226,10 @@ if (st.button("Generate ATS-optimized CV", use_container_width=True)
             st.write("Creating new CV...")
 
             # Convert to RenderCV YAML
-            
             yaml_path = convert_to_rendercv(adapted_cv, output_dir="rendercv_output", theme="classic")
-            
 
             # Generate PDF
-            
             pdf_path = generate_rendercv_pdf(yaml_path, output_dir="rendercv_output", final_pdf_name="adapted_cv.pdf")
-            
 
             # Guardar los paths en session_state
             st.session_state["yaml_path"] = yaml_path
@@ -253,8 +238,43 @@ if (st.button("Generate ATS-optimized CV", use_container_width=True)
             st.success("CV generated successfully!")
 
         except Exception as e:
-            log(f"Error: {e}")
             st.error(f"An unexpected error occurred: {e}")
+
+# Botón para iniciar el proceso
+if st.button("Generate ATS-optimized CV", use_container_width=True):
+    if st.session_state["uploaded_cv_path"]:
+        if st.session_state["continue_with_manual"] and st.session_state["manual_job_text"]:
+            # Usar la descripción manual ya almacenada
+            run_pipeline(st.session_state["uploaded_cv_path"], st.session_state["manual_job_text"])
+        elif st.session_state["job_url"]:
+            try:
+                # Intentar scrapear la URL
+                job_description = scrape_job_description(st.session_state["job_url"])
+                run_pipeline(st.session_state["uploaded_cv_path"], job_description)
+            except (requests.RequestException, ValueError) as e:
+                st.session_state["scraping_failed"] = True
+                st.error(f"Failed to scrape job description: {e}")
+        else:
+            st.error("Please provide a job URL or manual description.")
+    else:
+        st.error("Please upload a CV first.")
+
+# Mostrar el área de texto si el scrapeo falló
+if st.session_state["scraping_failed"] and not st.session_state["continue_with_manual"]:
+    manual_job_text = st.text_area(
+        "📝 Paste the job description here",
+        placeholder="Paste the full job description (job title, responsibilities, requirements, etc.)",
+        height=300,
+        key="manual_job_text_input"
+    )
+    if st.button("Continue with Manual Description", use_container_width=True):
+        if manual_job_text.strip():
+            st.session_state["manual_job_text"] = manual_job_text
+            st.session_state["continue_with_manual"] = True
+            st.session_state["scraping_failed"] = False
+            run_pipeline(st.session_state["uploaded_cv_path"], manual_job_text)
+        else:
+            st.error("Please provide a valid job description.")
 
 # Mostrar botones de descarga si los archivos existen
 if st.session_state.get("yaml_path") and os.path.exists(st.session_state["yaml_path"]):
