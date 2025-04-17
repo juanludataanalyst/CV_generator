@@ -688,54 +688,18 @@ import subprocess
 import glob
 import shutil
 
-def normalize_social_network(network):
-    """Normalizes social network names to RenderCV-compatible values."""
-    if not network or not isinstance(network, str):
-        return None
-    valid_networks = [
-        'LinkedIn', 'GitHub', 'GitLab', 'Instagram', 'ORCID', 'Mastodon',
-        'StackOverflow', 'ResearchGate', 'YouTube', 'Google Scholar', 'Telegram', 'X'
-    ]
-    network_map = {
-        'linkedin': 'LinkedIn',
-        'linkedin.com': 'LinkedIn',
-        'www.linkedin.com': 'LinkedIn',
-        'github': 'GitHub',
-        'github.com': 'GitHub',
-        'www.github.com': 'GitHub',
-        'gitlab': 'GitLab',
-        'gitlab.com': 'GitLab',
-        'instagram': 'Instagram',
-        'instagram.com': 'Instagram',
-        'orcid': 'ORCID',
-        'orcid.org': 'ORCID',
-        'mastodon': 'Mastodon',
-        'mastodon.social': 'Mastodon',
-        'stackoverflow': 'StackOverflow',
-        'stackoverflow.com': 'StackOverflow',
-        'researchgate': 'ResearchGate',
-        'researchgate.net': 'ResearchGate',
-        'youtube': 'YouTube',
-        'youtube.com': 'YouTube',
-        'googlescholar': 'Google Scholar',
-        'scholar.google.com': 'Google Scholar',
-        'telegram': 'Telegram',
-        't.me': 'Telegram',
-        'twitter': 'X',
-        'twitter.com': 'X',
-        'x.com': 'X'
-    }
-    normalized = network_map.get(network.lower().strip(), network.capitalize())
-    return normalized if normalized in valid_networks else None
-
-
-
 
 def safe_string(value, default=""):
     """Converts a value to a string, handling None and non-string types."""
     if value is None:
         return default
     return str(value).strip()
+
+def safe_get(d, key, default=None):
+    """Safely get a value from a dictionary, handling None."""
+    if not isinstance(d, dict):
+        return default
+    return d.get(key, default)
 
 def normalize_social_network(network):
     """Normalizes social network names to RenderCV-compatible values."""
@@ -778,28 +742,81 @@ def normalize_social_network(network):
     normalized = network_map.get(network.lower(), network.capitalize())
     return normalized if normalized in valid_networks else None
 
+from datetime import datetime
+import re
+
 def convert_date(date_str, is_end_date=False):
     """Converts a date string to RenderCV-compatible format (YYYY-MM-DD)."""
     date_str = safe_string(date_str)
     if not date_str or date_str.lower() == 'present':
         return 'present' if is_end_date else ''
+    
+    # Dictionary for month names (English and Spanish)
+    month_map = {
+        'jan': '01', 'january': '01', 'enero': '01', 'ene': '01',
+        'feb': '02', 'february': '02', 'febrero': '02',
+        'mar': '03', 'march': '03', 'marzo': '03',
+        'apr': '04', 'april': '04', 'abril': '04',
+        'may': '05', 'mayo': '05',
+        'jun': '06', 'june': '06', 'junio': '06',
+        'jul': '07', 'july': '07', 'julio': '07',
+        'aug': '08', 'august': '08', 'agosto': '08', 'ago': '08',
+        'sep': '09', 'september': '09', 'septiembre': '09', 'sept': '09',
+        'oct': '10', 'october': '10', 'octubre': '10',
+        'nov': '11', 'november': '11', 'noviembre': '11',
+        'dec': '12', 'december': '12', 'diciembre': '12', 'dic': '12'
+    }
+
     try:
-        # Handle various date formats (e.g., 'YYYY-MM-DD', 'MM/YYYY', 'YYYY')
-        if len(date_str) == 4 and date_str.isdigit():  # YYYY
+        # Handle various date formats
+        date_str = date_str.strip().lower()
+
+        # Handle YYYY format (e.g., "2016")
+        if len(date_str) == 4 and date_str.isdigit():
             return f"{date_str}-01-01"
-        elif '/' in date_str:  # MM/YYYY
+
+        # Handle MM/YYYY format (e.g., "01/2023")
+        if '/' in date_str:
             month, year = date_str.split('/')
             month = month.zfill(2)
             return f"{year}-{month}-01"
-        elif '-' in date_str:  # YYYY-MM-DD or YYYY-MM
+
+        # Handle YYYY-MM-DD or YYYY-MM format
+        if '-' in date_str:
             parts = date_str.split('-')
             if len(parts) == 2:  # YYYY-MM
                 return f"{parts[0]}-{parts[1]}-01"
             elif len(parts) == 3:  # YYYY-MM-DD
                 return date_str
-        return ''  # Return empty string for invalid formats
-    except Exception:
-        return ''  # Return empty string if parsing fails
+
+        # Handle month-year format (e.g., "Ene 2025", "Sept 2018")
+        match = re.match(r'(\w+)\s+(\d{4})', date_str)
+        if match:
+            month_str, year = match.groups()
+            month = month_map.get(month_str)
+            if month:
+                return f"{year}-{month}-01"
+
+        # If date cannot be parsed, raise an error for debugging
+        raise ValueError(f"Invalid date format: {date_str}")
+
+    except Exception as e:
+        # Log the error for debugging, but return a default value
+        print(f"Date parsing error for '{date_str}': {e}")
+        return ''  # Alternatively, raise the error to fail fast
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", theme: str = "classic") -> str:
     """
@@ -854,13 +871,14 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
     }
 
     # Map JSON Resume 'basics' to RenderCV 'cv'
-    basics = adapted_cv.get("basics", {})
+   # Example usage
+    basics = safe_get(adapted_cv, "basics", {})
     cv = rendercv_data["cv"]
-    cv["name"] = safe_string(basics.get("name"), "Unknown")
-    cv["email"] = safe_string(basics.get("email"))
-    cv["phone"] = safe_string(basics.get("phone"))
-    location = basics.get("location", {})
-    cv["location"] = safe_string(f"{location.get('city', '')}, {location.get('countryCode', '')}", "").strip(', ')
+    cv["name"] = safe_string(safe_get(basics, "name"), "Unknown")
+    cv["email"] = safe_string(safe_get(basics, "email"))
+    cv["phone"] = safe_string(safe_get(basics, "phone"))
+    location = safe_get(basics, "location", {})
+    cv["location"] = safe_string(f"{safe_get(location, 'city', '')}, {safe_get(location, 'countryCode', '')}", "").strip(', ')
     website = safe_string(basics.get("url"))
     if website:
         cv["website"] = website
