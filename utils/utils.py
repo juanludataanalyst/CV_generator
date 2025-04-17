@@ -688,6 +688,119 @@ import subprocess
 import glob
 import shutil
 
+def normalize_social_network(network):
+    """Normalizes social network names to RenderCV-compatible values."""
+    if not network or not isinstance(network, str):
+        return None
+    valid_networks = [
+        'LinkedIn', 'GitHub', 'GitLab', 'Instagram', 'ORCID', 'Mastodon',
+        'StackOverflow', 'ResearchGate', 'YouTube', 'Google Scholar', 'Telegram', 'X'
+    ]
+    network_map = {
+        'linkedin': 'LinkedIn',
+        'linkedin.com': 'LinkedIn',
+        'www.linkedin.com': 'LinkedIn',
+        'github': 'GitHub',
+        'github.com': 'GitHub',
+        'www.github.com': 'GitHub',
+        'gitlab': 'GitLab',
+        'gitlab.com': 'GitLab',
+        'instagram': 'Instagram',
+        'instagram.com': 'Instagram',
+        'orcid': 'ORCID',
+        'orcid.org': 'ORCID',
+        'mastodon': 'Mastodon',
+        'mastodon.social': 'Mastodon',
+        'stackoverflow': 'StackOverflow',
+        'stackoverflow.com': 'StackOverflow',
+        'researchgate': 'ResearchGate',
+        'researchgate.net': 'ResearchGate',
+        'youtube': 'YouTube',
+        'youtube.com': 'YouTube',
+        'googlescholar': 'Google Scholar',
+        'scholar.google.com': 'Google Scholar',
+        'telegram': 'Telegram',
+        't.me': 'Telegram',
+        'twitter': 'X',
+        'twitter.com': 'X',
+        'x.com': 'X'
+    }
+    normalized = network_map.get(network.lower().strip(), network.capitalize())
+    return normalized if normalized in valid_networks else None
+
+
+
+
+def safe_string(value, default=""):
+    """Converts a value to a string, handling None and non-string types."""
+    if value is None:
+        return default
+    return str(value).strip()
+
+def normalize_social_network(network):
+    """Normalizes social network names to RenderCV-compatible values."""
+    network = safe_string(network)
+    if not network:
+        return None
+    valid_networks = [
+        'LinkedIn', 'GitHub', 'GitLab', 'Instagram', 'ORCID', 'Mastodon',
+        'StackOverflow', 'ResearchGate', 'YouTube', 'Google Scholar', 'Telegram', 'X'
+    ]
+    network_map = {
+        'linkedin': 'LinkedIn',
+        'linkedin.com': 'LinkedIn',
+        'www.linkedin.com': 'LinkedIn',
+        'github': 'GitHub',
+        'github.com': 'GitHub',
+        'www.github.com': 'GitHub',
+        'gitlab': 'GitLab',
+        'gitlab.com': 'GitLab',
+        'instagram': 'Instagram',
+        'instagram.com': 'Instagram',
+        'orcid': 'ORCID',
+        'orcid.org': 'ORCID',
+        'mastodon': 'Mastodon',
+        'mastodon.social': 'Mastodon',
+        'stackoverflow': 'StackOverflow',
+        'stackoverflow.com': 'StackOverflow',
+        'researchgate': 'ResearchGate',
+        'researchgate.net': 'ResearchGate',
+        'youtube': 'YouTube',
+        'youtube.com': 'YouTube',
+        'googlescholar': 'Google Scholar',
+        'scholar.google.com': 'Google Scholar',
+        'telegram': 'Telegram',
+        't.me': 'Telegram',
+        'twitter': 'X',
+        'twitter.com': 'X',
+        'x.com': 'X'
+    }
+    normalized = network_map.get(network.lower(), network.capitalize())
+    return normalized if normalized in valid_networks else None
+
+def convert_date(date_str, is_end_date=False):
+    """Converts a date string to RenderCV-compatible format (YYYY-MM-DD)."""
+    date_str = safe_string(date_str)
+    if not date_str or date_str.lower() == 'present':
+        return 'present' if is_end_date else ''
+    try:
+        # Handle various date formats (e.g., 'YYYY-MM-DD', 'MM/YYYY', 'YYYY')
+        if len(date_str) == 4 and date_str.isdigit():  # YYYY
+            return f"{date_str}-01-01"
+        elif '/' in date_str:  # MM/YYYY
+            month, year = date_str.split('/')
+            month = month.zfill(2)
+            return f"{year}-{month}-01"
+        elif '-' in date_str:  # YYYY-MM-DD or YYYY-MM
+            parts = date_str.split('-')
+            if len(parts) == 2:  # YYYY-MM
+                return f"{parts[0]}-{parts[1]}-01"
+            elif len(parts) == 3:  # YYYY-MM-DD
+                return date_str
+        return ''  # Return empty string for invalid formats
+    except Exception:
+        return ''  # Return empty string if parsing fails
+
 def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", theme: str = "classic") -> str:
     """
     Converts a JSON Resume formatted CV to a RenderCV-compatible YAML file.
@@ -743,30 +856,39 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
     # Map JSON Resume 'basics' to RenderCV 'cv'
     basics = adapted_cv.get("basics", {})
     cv = rendercv_data["cv"]
-    cv["name"] = basics.get("name", "Unknown")
-    cv["email"] = basics.get("email", "")
-    cv["phone"] = basics.get("phone", "")
-    location = basics.get("location")
-    cv["location"] = location.get("city", "") if isinstance(location, dict) else ""
-    # Only include website if non-empty and a valid string
-    website = basics.get("url")
-    if isinstance(website, str) and website.strip():
-        cv["website"] = website.strip()
+    cv["name"] = safe_string(basics.get("name"), "Unknown")
+    cv["email"] = safe_string(basics.get("email"))
+    cv["phone"] = safe_string(basics.get("phone"))
+    location = basics.get("location", {})
+    cv["location"] = safe_string(f"{location.get('city', '')}, {location.get('countryCode', '')}", "").strip(', ')
+    website = safe_string(basics.get("url"))
+    if website:
+        cv["website"] = website
+
+    # Handle social networks with normalization (only network and username)
     profiles = basics.get("profiles", [])
     if profiles:
-        cv["social_networks"] = [
-            {
-                "network": "LinkedIn" if p.get("network", "").lower() == "linkedin" else "GitHub" if p.get("network", "").lower() == "github" else p.get("network", "").capitalize(),
-                "username": p.get("username", "")
-            }
-            for p in profiles if p.get("network") and p.get("username")
-        ]
+        social_networks = []
+        for profile in profiles:
+            network = safe_string(profile.get("network"))
+            username = safe_string(profile.get("username"))
+            url = safe_string(profile.get("url"))
+            if network and username:  # Require both network and username
+                normalized_network = normalize_social_network(network)
+                if normalized_network:
+                    social_networks.append({
+                        "network": normalized_network,
+                        "username": username
+                    })
+        if social_networks:
+            cv["social_networks"] = social_networks
 
     # Map JSON Resume sections to RenderCV sections
     sections = cv["sections"]
 
     # Summary (TextEntry)
-    if "basics" in adapted_cv and (summary := adapted_cv["basics"].get("summary")):
+    summary = safe_string(basics.get("summary"))
+    if summary:
         sections["Summary"] = [summary]
 
     # Work Experience (ExperienceEntry)
@@ -774,15 +896,15 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
     if work:
         sections["Experience"] = [
             {
-                "company": job.get("company", ""),
-                "position": job.get("position", "") or "",
-                "location": job.get("location", "") or "",
-                "start_date": convert_date(job.get("startDate", "")),
+                "company": safe_string(job.get("company"), "Unknown"),
+                "position": safe_string(job.get("position")),
+                "location": safe_string(job.get("location")),
+                "start_date": convert_date(job.get("startDate")),
                 "end_date": convert_date(job.get("endDate", "present"), is_end_date=True),
-                "summary": job.get("summary", "") or "",
-                "highlights": job.get("highlights", [])
+                "summary": safe_string(job.get("summary")),
+                "highlights": [safe_string(h) for h in job.get("highlights", []) if safe_string(h)]
             }
-            for job in work if job.get("company")
+            for job in work if safe_string(job.get("company"))
         ]
 
     # Education (EducationEntry)
@@ -790,21 +912,21 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
     if education:
         sections["Education"] = [
             {
-                "institution": edu.get("institution", ""),
-                "area": edu.get("area", "") or "",
-                "degree": edu.get("studyType", "") or "",
-                "start_date": convert_date(edu.get("startDate", "")),
-                "end_date": convert_date(edu.get("endDate", "")),
-                "location": "",
-                "highlights": edu.get("courses", [])
+                "institution": safe_string(edu.get("institution"), "Unknown"),
+                "area": safe_string(edu.get("area")),
+                "degree": safe_string(edu.get("studyType")),
+                "start_date": convert_date(edu.get("startDate")),
+                "end_date": convert_date(edu.get("endDate")),
+                "location": safe_string(edu.get("location")),
+                "highlights": [safe_string(h) for h in edu.get("courses", []) if safe_string(h)]
             }
-            for edu in education if edu.get("institution")
+            for edu in education if safe_string(edu.get("institution"))
         ]
 
     # Skills (OneLineEntry)
     skills = adapted_cv.get("skills", [])
     if skills:
-        skill_list = [skill.get("name", "") for skill in skills if skill.get("name")]
+        skill_list = [safe_string(skill.get("name")) for skill in skills if safe_string(skill.get("name"))]
         if skill_list:
             sections["Skills"] = [
                 {
@@ -817,17 +939,22 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
     projects = adapted_cv.get("projects", [])
     if projects:
         sections["Projects"] = [
-            f"{proj.get('name', '')} ({proj.get('startDate', '')} - {proj.get('endDate', 'present')}): {proj.get('description', '')}\n" +
-            "\n".join(f"- {h}" for h in proj.get("highlights", []) if h)
-            for proj in projects if proj.get("name")
+            (
+                f"{safe_string(proj.get('name'))} "
+                f"({convert_date(proj.get('startDate'))} - {convert_date(proj.get('endDate', 'present'), is_end_date=True)}): "
+                f"{safe_string(proj.get('description'))}\n" +
+                "\n".join(f"- {safe_string(h)}" for h in proj.get("highlights", []) if safe_string(h))
+            ).strip()
+            for proj in projects if safe_string(proj.get("name"))
         ]
 
     # Languages (OneLineEntry)
     languages = adapted_cv.get("languages", [])
     if languages:
         language_list = [
-            f"{lang.get('language', '')} ({lang.get('fluency', '')})" if lang.get("fluency") else lang.get("language", "")
-            for lang in languages if lang.get("language")
+            f"{safe_string(lang.get('language'))} ({safe_string(lang.get('fluency'))})" if safe_string(lang.get("fluency"))
+            else safe_string(lang.get("language"))
+            for lang in languages if safe_string(lang.get("language"))
         ]
         if language_list:
             sections["Languages"] = [
@@ -846,54 +973,6 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
         yaml.safe_dump(rendercv_data, f, allow_unicode=True, sort_keys=False)
 
     return output_file
-
-def convert_date(date_str: str, is_end_date: bool = False) -> str:
-    """
-    Converts a JSON Resume date string to RenderCV-compatible format (YYYY-MM).
-
-    Args:
-        date_str (str): Date string (e.g., 'Ene 2025', '2025', 'present').
-        is_end_date (bool): If True, allows 'present' as a valid output.
-
-    Returns:
-        str: Formatted date (e.g., '2025-01') or 'present' for end dates.
-    """
-    if not date_str or (is_end_date and date_str.lower() == "present"):
-        return "present" if is_end_date else ""
-    
-    # Map Spanish/English month abbreviations to numbers
-    month_map = {
-        "ene": "01", "jan": "01",
-        "feb": "02",
-        "mar": "03",
-        "apr": "04", "abr": "04",
-        "may": "05",
-        "jun": "06",
-        "jul": "07",
-        "aug": "08", "ago": "08",
-        "sep": "09", "sept": "09",
-        "oct": "10",
-        "nov": "11",
-        "dec": "12", "dic": "12"
-    }
-
-    # Handle formats like 'Ene 2025', 'Sep 2018', or '2025'
-    parts = date_str.replace(",", "").split()
-    if len(parts) == 2:
-        month, year = parts
-        month_num = month_map.get(month.lower(), "01")
-        return f"{year}-{month_num}"
-    elif date_str.isdigit():
-        return date_str  # e.g., '2016'
-    return date_str  # Fallback to original if unparseable
-
-
-
-
-
-
-
-
 
 
 
