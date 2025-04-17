@@ -56,21 +56,17 @@ if "yaml_path" not in st.session_state:
 if "pdf_path" not in st.session_state:
     st.session_state["pdf_path"] = None
 
-# Layout en columnas para la subida de archivos y URL
-col1, col2 = st.columns([1, 1])
 
-with col1:
-    # Subida del CV
-    uploaded_file = st.file_uploader("📤 Upload your CV (PDF)", type=["pdf"])
-    if uploaded_file and not st.session_state["uploaded_cv_path"]:
-        with open("uploaded_cv.pdf", "wb") as f:
-            f.write(uploaded_file.getbuffer())
-        st.session_state["uploaded_cv_path"] = "uploaded_cv.pdf"
-        st.success("CV uploaded successfully!")
+# Subida del CV
+uploaded_file = st.file_uploader("📤 Upload your CV (PDF)", type=["pdf"])
+if uploaded_file and not st.session_state["uploaded_cv_path"]:
+    with open("uploaded_cv.pdf", "wb") as f:
+        f.write(uploaded_file.getbuffer())
+    st.session_state["uploaded_cv_path"] = "uploaded_cv.pdf"
+    st.success("CV uploaded successfully!")
 
-with col2:
     # Input de la URL
-    job_url = st.text_input("🔗 Paste the job description URL", placeholder="e.g., https://jobs.example.com/123")
+job_url = st.text_input("🔗 Paste the job description URL", placeholder="e.g., https://jobs.example.com/123")
 
 # Área de logs
 log_area = st.empty()
@@ -81,7 +77,7 @@ def log(msg):
     log_area.text("\n".join(logs[-20:]))
 
 # Botón para iniciar el proceso
-if (st.button("🚀 Generate ATS-optimized CV", use_container_width=True) 
+if (st.button("Generate ATS-optimized CV", use_container_width=True) 
     and st.session_state["uploaded_cv_path"] 
     and job_url 
     and not st.session_state["scraping_failed"] 
@@ -110,11 +106,12 @@ if (st.button("🚀 Generate ATS-optimized CV", use_container_width=True)
             st.success("CV text extracted.")
 
             # Parsear el CV a JSON
+            st.write("Standarizing CV ....")
             parsed_cv = parse_to_json_resume_sync(extracted_text)
             with open("file_outputs/resume.json", 'w', encoding='utf-8') as f:
                 f.write(json.dumps(parsed_cv, ensure_ascii=False))
 
-            st.write("Standarizing CV ....")
+            
             cv_data = extract_job_description_data(extracted_text, is_job=False)
             st.success("Original CV standardized ")
 
@@ -150,7 +147,7 @@ if (st.button("🚀 Generate ATS-optimized CV", use_container_width=True)
 
             # Adaptar CV
             adapted_cv = adapt_cv_with_llm(parsed_cv, job_data, keywords_match)
-            st.subheader("✨ Adapted CV")
+            st.subheader("Adapted CV : ")
             st.json(adapted_cv)
 
             # Extraer datos del CV adaptado
@@ -181,12 +178,20 @@ if (st.button("🚀 Generate ATS-optimized CV", use_container_width=True)
             st.write(f"**Total Keyword Matches (Adapted CV)**: {len(adapted_matched_keywords)} of {len(job_data.get('keywords', []))}")
 
             # Mostrar puntajes ATS
-            st.metric("ATS Score (Adapted CV)", f"{adapted_score}%")
-            st.metric("Improvement in ATS Score", f"{adapted_score - score:.2f}%", delta_color="normal")
+            #st.metric("ATS Score (Adapted CV)", f"{adapted_score}%")
+            delta_value = adapted_score - score
+
+
+            st.metric(
+            label="Improvement in ATS Score",
+            value=f"{adapted_score:.2f} %",
+            delta=f"{delta_value:.2f} p.p",
+            delta_color="normal")
+            
 
             # Calcular puntaje ATS antiguo
             ats_result = calculate_ats_score_old(cv_data, job_data)
-            st.success("ATS analysis completed successfully.")
+            st.success("ATS analysis completed")
 
             # Nueva interfaz con pestañas
             st.subheader("📑 Detailed ATS Analysis")
@@ -232,14 +237,14 @@ if (st.button("🚀 Generate ATS-optimized CV", use_container_width=True)
             st.write("Creating new CV...")
 
             # Convert to RenderCV YAML
-            log("Converting to YAML for RenderCV...")
+            
             yaml_path = convert_to_rendercv(adapted_cv, output_dir="rendercv_output", theme="classic")
-            log(f"RenderCV YAML generated at: {yaml_path}")
+            
 
             # Generate PDF
-            log("Generating PDF...")
+            
             pdf_path = generate_rendercv_pdf(yaml_path, output_dir="rendercv_output", final_pdf_name="adapted_cv.pdf")
-            log(f"PDF generated at: {pdf_path}")
+            
 
             # Guardar los paths en session_state
             st.session_state["yaml_path"] = yaml_path
