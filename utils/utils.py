@@ -761,6 +761,7 @@ def convert_date(date_str):
     try:
         # Normalize input
         date_str = date_str.strip().lower()
+        date_str = date_str.replace('.', '')
 
         # Handle YYYY format (e.g., "2016")
         if re.match(r'^\d{4}$', date_str):
