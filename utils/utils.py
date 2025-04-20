@@ -687,15 +687,16 @@ import subprocess
 import glob
 import shutil
 
+
+
 def safe_string(value, default=""):
-"""Converts a value to a string, handling None and non-string types."""
+    """Converts a value to a string, handling None and non-string types."""
     if value is None:
         return default
     return str(value).strip()
 
-
 def normalize_social_network(network):
-"""Normalizes social network names to RenderCV-compatible values."""
+    """Normalizes social network names to RenderCV-compatible values."""
     network = safe_string(network)
     if not network:
         return None
@@ -743,18 +744,18 @@ def convert_date(date_str):
     
     # Dictionary for month names (English and Spanish)
     month_map = {
-        'jan': '01', 'january': '01', 'enero': '01', 'ene': '01',
-        'feb': '02', 'february': '02', 'febrero': '02',
-        'mar': '03', 'march': '03', 'marzo': '03',
-        'apr': '04', 'april': '04', 'abril': '04',
-        'may': '05', 'mayo': '05',
-        'jun': '06', 'june': '06', 'junio': '06',
-        'jul': '07', 'july': '07', 'julio': '07',
-        'aug': '08', 'august': '08', 'agosto': '08', 'ago': '08',
-        'sep': '09', 'september': '09', 'septiembre': '09', 'sept': '09',
-        'oct': '10', 'october': '10', 'octubre': '10',
-        'nov': '11', 'november': '11', 'noviembre': '11',
-        'dec': '12', 'december': '12', 'diciembre': '12', 'dic': '12'
+        'jan': '01', 'january': '01', 'enero': '01', 'ene.': '01',
+        'feb': '02', 'february': '02', 'febrero': '02','feb.': '02',
+        'mar': '03', 'march': '03', 'marzo': '03', 'mar.': '03',
+        'apr': '04', 'april': '04', 'abril': '04','abr.': '04',
+        'may': '05', 'may' : '05','mayo': '05', 'may.': '05',
+        'jun': '06', 'june': '06', 'junio': '06', 'jun.': '06',
+        'jul': '07', 'july': '07', 'julio': '07', 'jul.': '07',
+        'aug': '08', 'august': '08', 'agosto': '08', 'ago.': '08',
+        'sep': '09', 'september': '09', 'septiembre': '09', 'sept.': '09',
+        'oct': '10', 'october': '10', 'octubre': '10', 'oct.': '10',
+        'nov': '11', 'november': '11', 'noviembre': '11', 'nov.': '11',
+        'dec': '12', 'december': '12', 'diciembre': '12', 'dic.': '12'
     }
 
     try:
@@ -804,6 +805,34 @@ def convert_date(date_str):
     except Exception as e:
         print(f"Date parsing error for '{date_str}': {e}")
         return None
+
+def get_degree_abbreviation(study_type):
+    """Converts a studyType value to a 3-letter abbreviation for degree."""
+    study_type = safe_string(study_type).lower()
+    degree_map = {
+        'bachelor': 'DEG',
+        'bsc': 'DEG',
+        'ba': 'DEG',
+        'bs': 'DEG',
+        'undergraduate': 'DEG',
+        'grado': 'DEG',
+        'licenciatura': 'DEG',
+        'master': 'POS',
+        'msc': 'POS',
+        'ma': 'POS',
+        'postgraduate': 'POS',
+        'postgrado': 'POS',
+        'phd': 'DOC',
+        'doctorate': 'DOC',
+        'doctoral': 'DOC',
+        'doctorado': 'DOC'
+    }
+    abbreviation = degree_map.get(study_type, 'DEG')
+    print(f"Mapping studyType '{study_type}' to degree abbreviation '{abbreviation}'")
+    if len(abbreviation) != 3:
+        print(f"Warning: Degree abbreviation '{abbreviation}' is not 3 letters, using 'DEG'")
+        return 'DEG'
+    return abbreviation
 
 def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", theme: str = "classic") -> str:
     """
@@ -889,10 +918,6 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
     if website:
         cv["website"] = website
 
-
-
-
-
     # Handle social networks
     profiles = basics.get("profiles", [])
     if not isinstance(profiles, list):
@@ -937,10 +962,7 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
         for job in work:
             if not isinstance(job, dict):
                 continue
-            company = safe_string(job.get("company"))
-            if not company:
-                print(f"Skipping work entry due to missing company: {job}")
-                continue
+            company = safe_string(job.get("company"), "Unknown")
             entry = {
                 "company": company,
                 "position": safe_string(job.get("position")),
@@ -964,23 +986,20 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
     education = adapted_cv.get("education", [])
     if education:
         sections["Education"] = []
-        print("Education dates:")
+        print("Education dates and degrees:")
         for edu in education:
             if not isinstance(edu, dict):
                 print(f"Warning: Skipping invalid education entry: {edu}")
                 continue
-            print(f"Institution: {edu.get('institution')}, startDate: {edu.get('startDate')}, endDate: {edu.get('endDate')}")
+            print(f"Institution: {edu.get('institution')}, studyType: {edu.get('studyType')}, startDate: {edu.get('startDate')}, endDate: {edu.get('endDate')}")
         for edu in education:
             if not isinstance(edu, dict):
                 continue
-            institution = safe_string(edu.get("institution"))
-            if not institution:
-                print(f"Skipping education entry due to missing institution: {edu}")
-                continue
+            institution = safe_string(edu.get("institution"), "Unknown")
             entry = {
                 "institution": institution,
-                "area": safe_string(edu.get("area")),
-                "degree": safe_string(edu.get("studyType")),
+                "area": safe_string(edu.get("studyType")),
+                "degree": get_degree_abbreviation(edu.get("studyType")),
                 "location": safe_string(edu.get("location")),
                 "highlights": [safe_string(h) for h in edu.get("courses", []) if safe_string(h)]
             }
@@ -1023,10 +1042,7 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
             if not isinstance(proj, dict):
                 print(f"Warning: Skipping invalid project entry: {proj}")
                 continue
-            name = safe_string(proj.get("name"))
-            if not name:
-                print(f"Skipping project entry due to missing name: {proj}")
-                continue
+            name = safe_string(proj.get("name"), "Unnamed Project")
             start_date = convert_date(proj.get("startDate"))
             end_date = convert_date(proj.get("endDate"))
             date_range = ""
@@ -1082,6 +1098,53 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
     return output_file
 
     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 def generate_rendercv_pdf(yaml_path: str, output_dir: str = "rendercv_output", final_pdf_name: str = "final_cv.pdf") -> str:
     """
