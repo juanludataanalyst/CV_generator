@@ -738,65 +738,78 @@ def normalize_social_network(network):
 
 def convert_date(date_str):
     """Converts a date string to RenderCV-compatible format (YYYY-MM-DD, YYYY-MM, YYYY) or None if invalid."""
+    print(f"Original input: '{date_str}'")
     date_str = safe_string(date_str)
+    print(f"After safe_string: '{date_str}'")
     if not date_str:
+        print("Empty string after safe_string")
         return None
     
     # Dictionary for month names (English and Spanish)
     month_map = {
-        'jan': '01', 'january': '01', 'enero': '01', 'ene.': '01',
-        'feb': '02', 'february': '02', 'febrero': '02','feb.': '02',
-        'mar': '03', 'march': '03', 'marzo': '03', 'mar.': '03',
-        'apr': '04', 'april': '04', 'abril': '04','abr.': '04',
-        'may': '05', 'may' : '05','mayo': '05', 'may.': '05',
-        'jun': '06', 'june': '06', 'junio': '06', 'jun.': '06',
-        'jul': '07', 'july': '07', 'julio': '07', 'jul.': '07',
-        'aug': '08', 'august': '08', 'agosto': '08', 'ago.': '08',
-        'sep': '09', 'september': '09', 'septiembre': '09', 'sept.': '09',
-        'oct': '10', 'october': '10', 'octubre': '10', 'oct.': '10',
-        'nov': '11', 'november': '11', 'noviembre': '11', 'nov.': '11',
-        'dec': '12', 'december': '12', 'diciembre': '12', 'dic.': '12'
+        'jan': '01', 'january': '01', 'enero': '01', 'ene': '01', 'ene.': '01',
+        'feb': '02', 'february': '02', 'febrero': '02', 'feb': '02', 'feb.': '02',
+        'mar': '03', 'march': '03', 'marzo': '03', 'mar': '03', 'mar.': '03',
+        'apr': '04', 'april': '04', 'abril': '04', 'abr': '04', 'abr.': '04',
+        'may': '05', 'mayo': '05', 'may': '05', 'may.': '05',
+        'jun': '06', 'june': '06', 'junio': '06', 'jun': '06', 'jun.': '06',
+        'jul': '07', 'july': '07', 'julio': '07', 'jul': '07', 'jul.': '07',
+        'aug': '08', 'august': '08', 'agosto': '08', 'ago': '08', 'ago.': '08',  # Added 'ago'
+        'sep': '09', 'september': '09', 'septiembre': '09', 'sept': '09', 'sept.': '09',
+        'oct': '10', 'october': '10', 'octubre': '10', 'oct': '10', 'oct.': '10',
+        'nov': '11', 'november': '11', 'noviembre': '11', 'nov': '11', 'nov.': '11',
+        'dec': '12', 'december': '12', 'diciembre': '12', 'dic': '12', 'dic.': '12'
     }
 
     try:
         # Normalize input
         date_str = date_str.strip().lower()
-        date_str = date_str.replace('.', '')
+        print(f"After normalization: '{date_str}'")
 
         # Handle YYYY format (e.g., "2016")
         if re.match(r'^\d{4}$', date_str):
+            print(f"Matched YYYY format: {date_str}")
             return f"{date_str}-01-01"
 
         # Handle MM/YYYY or MM-YYYY format (e.g., "01/2023", "01-2023")
         if re.match(r'^\d{1,2}[/-]\d{4}$', date_str):
             month, year = re.split(r'[/-]', date_str)
             month = month.zfill(2)
+            print(f"Matched MM/YYYY format: {year}-{month}-01")
             return f"{year}-{month}-01"
 
         # Handle YYYY-MM-DD or YYYY-MM format (e.g., "2023-01-15", "2023-01")
         if re.match(r'^\d{4}-\d{1,2}(-\d{1,2})?$', date_str):
             parts = date_str.split('-')
             if len(parts) == 2:  # YYYY-MM
+                print(f"Matched YYYY-MM format: {parts[0]}-{parts[1]}-01")
                 return f"{parts[0]}-{parts[1]}-01"
             elif len(parts) == 3:  # YYYY-MM-DD
+                print(f"Matched YYYY-MM-DD format: {date_str}")
                 return date_str
 
-        # Handle month-year format (e.g., "January 2023", "Ene 2025")
-        match = re.match(r'(\w+)\s+(\d{4})', date_str)
+        # Handle month-year format (e.g., "January 2023", "Ene 2025", "oct. 2018")
+        match = re.match(r'(\w+\.?\w*)\s*(\d{4})', date_str)  # Allow flexible whitespace
         if match:
             month_str, year = match.groups()
+            print(f"Matched month-year format: month_str='{month_str}', year='{year}'")
             month = month_map.get(month_str)
             if month:
+                print(f"Found month in month_map: {month}")
                 return f"{year}-{month}-01"
+            else:
+                print(f"Month '{month_str}' not found in month_map")
 
         # Handle YYYY/MM format (e.g., "2023/01")
         if re.match(r'^\d{4}/\d{1,2}$', date_str):
             year, month = date_str.split('/')
             month = month.zfill(2)
+            print(f"Matched YYYY/MM format: {year}-{month}-01")
             return f"{year}-{month}-01"
 
         # Handle non-date strings (e.g., "N/A", "TBD")
         if date_str in ('n/a', 'tbd', 'unknown', 'present'):
+            print(f"Non-date string: {date_str}")
             return None
 
         # Log invalid format and return None
