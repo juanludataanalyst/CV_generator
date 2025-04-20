@@ -687,22 +687,15 @@ import subprocess
 import glob
 import shutil
 
-
-
-
-import os
-import yaml
-from datetime import datetime
-import re
-
 def safe_string(value, default=""):
-    """Converts a value to a string, handling None and non-string types."""
+"""Converts a value to a string, handling None and non-string types."""
     if value is None:
         return default
     return str(value).strip()
 
+
 def normalize_social_network(network):
-    """Normalizes social network names to RenderCV-compatible values."""
+"""Normalizes social network names to RenderCV-compatible values."""
     network = safe_string(network)
     if not network:
         return None
@@ -881,12 +874,24 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
     cv["phone"] = safe_string(basics.get("phone"))
     location = basics.get("location", {})
     if not isinstance(location, dict):
-        print("Warning: 'location' is not a dictionary, using empty dict")
+        print(f"Warning: 'location' is not a dictionary, got {type(location)}, using empty dict")
         location = {}
-    cv["location"] = safe_string(f"{location.get('city', '')}, {location.get('countryCode', '')}", "").strip(', ')
+    # Build location string as city,region,country, including only non-empty values
+    location_parts = [
+        safe_string(location.get("city")),
+        safe_string(location.get("region")),
+        safe_string(location.get("countryCode"))
+    ]
+    print(f"Location values: city={location_parts[0]!r}, region={location_parts[1]!r}, countryCode={location_parts[2]!r}")
+    non_empty_parts = [part for part in location_parts if part]
+    cv["location"] = ",".join(non_empty_parts)
     website = safe_string(basics.get("url"))
     if website:
         cv["website"] = website
+
+
+
+
 
     # Handle social networks
     profiles = basics.get("profiles", [])
