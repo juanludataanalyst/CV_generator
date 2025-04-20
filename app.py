@@ -259,7 +259,9 @@ if st.button("Generate ATS-optimized CV", use_container_width=True):
                 run_pipeline(st.session_state["uploaded_cv_path"], job_description)
             except (requests.RequestException, ValueError) as e:
                 st.session_state["scraping_failed"] = True
-                st.error(f"Failed to scrape job description: {e}")
+                st.warning(
+                "This website does not allow scraping. Please paste the job description manually in the input field above and try again."
+            )
         else:
             st.error("Please provide a job URL or manual description.")
     else:
