@@ -351,6 +351,8 @@ def parse_to_json_resume_sync(text: str) -> Dict:
 
     Separate clearly the "Profile" (summary) from "Professional Experience" (work history with dates and descriptions) and other sections like Education, Skills, Languages, and Projects.
 
+    Don't return sumamry for experience, just the higjhlights.
+
     Preserve the original content without adding or modifying information beyond structuring.
 
     Here is the JSON Resume schema for reference:
@@ -676,30 +678,28 @@ def adapt_cv_with_llm(original_cv: dict, job_data: dict, keywords_match: dict) -
         # Devolver el CV original como fallback
         return original_cv
 
-
-import yaml
 import os
-from datetime import datetime
-
 import yaml
-import os
 from datetime import datetime
+import re
+
 import subprocess
 import glob
 import shutil
 
+
+
+
+import os
+import yaml
+from datetime import datetime
+import re
 
 def safe_string(value, default=""):
     """Converts a value to a string, handling None and non-string types."""
     if value is None:
         return default
     return str(value).strip()
-
-def safe_get(d, key, default=None):
-    """Safely get a value from a dictionary, handling None."""
-    if not isinstance(d, dict):
-        return default
-    return d.get(key, default)
 
 def normalize_social_network(network):
     """Normalizes social network names to RenderCV-compatible values."""
@@ -742,14 +742,11 @@ def normalize_social_network(network):
     normalized = network_map.get(network.lower(), network.capitalize())
     return normalized if normalized in valid_networks else None
 
-from datetime import datetime
-import re
-
-def convert_date(date_str, is_end_date=False):
-    """Converts a date string to RenderCV-compatible format (YYYY-MM-DD)."""
+def convert_date(date_str):
+    """Converts a date string to RenderCV-compatible format (YYYY-MM-DD, YYYY-MM, YYYY) or None if invalid."""
     date_str = safe_string(date_str)
-    if not date_str or date_str.lower() == 'present':
-        return 'present' if is_end_date else ''
+    if not date_str:
+        return None
     
     # Dictionary for month names (English and Spanish)
     month_map = {
@@ -768,28 +765,28 @@ def convert_date(date_str, is_end_date=False):
     }
 
     try:
-        # Handle various date formats
+        # Normalize input
         date_str = date_str.strip().lower()
 
         # Handle YYYY format (e.g., "2016")
-        if len(date_str) == 4 and date_str.isdigit():
+        if re.match(r'^\d{4}$', date_str):
             return f"{date_str}-01-01"
 
-        # Handle MM/YYYY format (e.g., "01/2023")
-        if '/' in date_str:
-            month, year = date_str.split('/')
+        # Handle MM/YYYY or MM-YYYY format (e.g., "01/2023", "01-2023")
+        if re.match(r'^\d{1,2}[/-]\d{4}$', date_str):
+            month, year = re.split(r'[/-]', date_str)
             month = month.zfill(2)
             return f"{year}-{month}-01"
 
-        # Handle YYYY-MM-DD or YYYY-MM format
-        if '-' in date_str:
+        # Handle YYYY-MM-DD or YYYY-MM format (e.g., "2023-01-15", "2023-01")
+        if re.match(r'^\d{4}-\d{1,2}(-\d{1,2})?$', date_str):
             parts = date_str.split('-')
             if len(parts) == 2:  # YYYY-MM
                 return f"{parts[0]}-{parts[1]}-01"
             elif len(parts) == 3:  # YYYY-MM-DD
                 return date_str
 
-        # Handle month-year format (e.g., "Ene 2025", "Sept 2018")
+        # Handle month-year format (e.g., "January 2023", "Ene 2025")
         match = re.match(r'(\w+)\s+(\d{4})', date_str)
         if match:
             month_str, year = match.groups()
@@ -797,44 +794,50 @@ def convert_date(date_str, is_end_date=False):
             if month:
                 return f"{year}-{month}-01"
 
-        # If date cannot be parsed, raise an error for debugging
-        raise ValueError(f"Invalid date format: {date_str}")
+        # Handle YYYY/MM format (e.g., "2023/01")
+        if re.match(r'^\d{4}/\d{1,2}$', date_str):
+            year, month = date_str.split('/')
+            month = month.zfill(2)
+            return f"{year}-{month}-01"
+
+        # Handle non-date strings (e.g., "N/A", "TBD")
+        if date_str in ('n/a', 'tbd', 'unknown', 'present'):
+            return None
+
+        # Log invalid format and return None
+        print(f"Invalid date format: '{date_str}'")
+        return None
 
     except Exception as e:
-        # Log the error for debugging, but return a default value
         print(f"Date parsing error for '{date_str}': {e}")
-        return ''  # Alternatively, raise the error to fail fast
-
-
-
-
-
-
-
-
-
-
-
-
-
+        return None
 
 def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", theme: str = "classic") -> str:
     """
     Converts a JSON Resume formatted CV to a RenderCV-compatible YAML file.
-
-    Args:
-        adapted_cv (dict): CV in JSON Resume format.
-        output_dir (str): Directory to save the RenderCV YAML file.
-        theme (str): RenderCV theme to use (e.g., 'classic', 'modern', 'engineering').
-
-    Returns:
-        str: Path to the generated YAML file.
-
-    Raises:
-        ValueError: If adapted_cv is not a dictionary.
     """
     if not isinstance(adapted_cv, dict):
         raise ValueError("adapted_cv must be a dictionary in JSON Resume format")
+    
+    # Validate structure
+    if not isinstance(adapted_cv.get("basics", {}), dict):
+        print("Warning: 'basics' is not a dictionary, using empty dict")
+        adapted_cv["basics"] = {}
+    if not isinstance(adapted_cv.get("work", []), list):
+        print("Warning: 'work' is not a list, using empty list")
+        adapted_cv["work"] = []
+    if not isinstance(adapted_cv.get("education", []), list):
+        print("Warning: 'education' is not a list, using empty list")
+        adapted_cv["education"] = []
+    if not isinstance(adapted_cv.get("skills", []), list):
+        print("Warning: 'skills' is not a list, using empty list")
+        adapted_cv["skills"] = []
+    if not isinstance(adapted_cv.get("projects", []), list):
+        print("Warning: 'projects' is not a list, using empty list")
+        adapted_cv["projects"] = []
+    if not isinstance(adapted_cv.get("languages", []), list):
+        print("Warning: 'languages' is not a list, using empty list")
+        adapted_cv["languages"] = []
 
     # Initialize RenderCV YAML structure
     rendercv_data = {
@@ -871,27 +874,34 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
     }
 
     # Map JSON Resume 'basics' to RenderCV 'cv'
-   # Example usage
-    basics = safe_get(adapted_cv, "basics", {})
+    basics = adapted_cv.get("basics", {})
     cv = rendercv_data["cv"]
-    cv["name"] = safe_string(safe_get(basics, "name"), "Unknown")
-    cv["email"] = safe_string(safe_get(basics, "email"))
-    cv["phone"] = safe_string(safe_get(basics, "phone"))
-    location = safe_get(basics, "location", {})
-    cv["location"] = safe_string(f"{safe_get(location, 'city', '')}, {safe_get(location, 'countryCode', '')}", "").strip(', ')
+    cv["name"] = safe_string(basics.get("name"), "Unknown")
+    cv["email"] = safe_string(basics.get("email"))
+    cv["phone"] = safe_string(basics.get("phone"))
+    location = basics.get("location", {})
+    if not isinstance(location, dict):
+        print("Warning: 'location' is not a dictionary, using empty dict")
+        location = {}
+    cv["location"] = safe_string(f"{location.get('city', '')}, {location.get('countryCode', '')}", "").strip(', ')
     website = safe_string(basics.get("url"))
     if website:
         cv["website"] = website
 
-    # Handle social networks with normalization (only network and username)
+    # Handle social networks
     profiles = basics.get("profiles", [])
+    if not isinstance(profiles, list):
+        print("Warning: 'profiles' is not a list, using empty list")
+        profiles = []
     if profiles:
         social_networks = []
         for profile in profiles:
+            if not isinstance(profile, dict):
+                print(f"Warning: Skipping invalid profile entry: {profile}")
+                continue
             network = safe_string(profile.get("network"))
             username = safe_string(profile.get("username"))
-            url = safe_string(profile.get("url"))
-            if network and username:  # Require both network and username
+            if network and username:
                 normalized_network = normalize_social_network(network)
                 if normalized_network:
                     social_networks.append({
@@ -912,39 +922,86 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
     # Work Experience (ExperienceEntry)
     work = adapted_cv.get("work", [])
     if work:
-        sections["Experience"] = [
-            {
-                "company": safe_string(job.get("company"), "Unknown"),
+        sections["Experience"] = []
+        print("Work experience dates:")
+        for job in work:
+            if not isinstance(job, dict):
+                print(f"Warning: Skipping invalid work entry: {job}")
+                continue
+            print(f"Company: {job.get('company')}, startDate: {job.get('startDate')}, endDate: {job.get('endDate')}")
+        for job in work:
+            if not isinstance(job, dict):
+                continue
+            company = safe_string(job.get("company"))
+            if not company:
+                print(f"Skipping work entry due to missing company: {job}")
+                continue
+            entry = {
+                "company": company,
                 "position": safe_string(job.get("position")),
                 "location": safe_string(job.get("location")),
-                "start_date": convert_date(job.get("startDate")),
-                "end_date": convert_date(job.get("endDate", "present"), is_end_date=True),
                 "summary": safe_string(job.get("summary")),
                 "highlights": [safe_string(h) for h in job.get("highlights", []) if safe_string(h)]
             }
-            for job in work if safe_string(job.get("company"))
-        ]
+            start_date = convert_date(job.get("startDate"))
+            if start_date is not None:
+                entry["start_date"] = start_date
+            else:
+                print(f"Omitting start_date for work entry for {company}: {job.get('startDate')}")
+            end_date = convert_date(job.get("endDate"))
+            if end_date is not None:
+                entry["end_date"] = end_date
+            else:
+                print(f"Omitting end_date for work entry for {company}: {job.get('endDate')}")
+            sections["Experience"].append(entry)
 
     # Education (EducationEntry)
     education = adapted_cv.get("education", [])
     if education:
-        sections["Education"] = [
-            {
-                "institution": safe_string(edu.get("institution"), "Unknown"),
+        sections["Education"] = []
+        print("Education dates:")
+        for edu in education:
+            if not isinstance(edu, dict):
+                print(f"Warning: Skipping invalid education entry: {edu}")
+                continue
+            print(f"Institution: {edu.get('institution')}, startDate: {edu.get('startDate')}, endDate: {edu.get('endDate')}")
+        for edu in education:
+            if not isinstance(edu, dict):
+                continue
+            institution = safe_string(edu.get("institution"))
+            if not institution:
+                print(f"Skipping education entry due to missing institution: {edu}")
+                continue
+            entry = {
+                "institution": institution,
                 "area": safe_string(edu.get("area")),
                 "degree": safe_string(edu.get("studyType")),
-                "start_date": convert_date(edu.get("startDate")),
-                "end_date": convert_date(edu.get("endDate")),
                 "location": safe_string(edu.get("location")),
                 "highlights": [safe_string(h) for h in edu.get("courses", []) if safe_string(h)]
             }
-            for edu in education if safe_string(edu.get("institution"))
-        ]
+            start_date = convert_date(edu.get("startDate"))
+            if start_date is not None:
+                entry["start_date"] = start_date
+            else:
+                print(f"Omitting start_date for education entry for {institution}: {edu.get('startDate')}")
+            end_date = convert_date(edu.get("endDate"))
+            if end_date is not None:
+                entry["end_date"] = end_date
+            else:
+                print(f"Omitting end_date for education entry for {institution}: {edu.get('endDate')}")
+            sections["Education"].append(entry)
 
     # Skills (OneLineEntry)
     skills = adapted_cv.get("skills", [])
     if skills:
-        skill_list = [safe_string(skill.get("name")) for skill in skills if safe_string(skill.get("name"))]
+        skill_list = []
+        for skill in skills:
+            if not isinstance(skill, dict):
+                print(f"Warning: Skipping invalid skill entry: {skill}")
+                continue
+            name = safe_string(skill.get("name"))
+            if name:
+                skill_list.append(name)
         if skill_list:
             sections["Skills"] = [
                 {
@@ -956,24 +1013,51 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
     # Projects (TextEntry)
     projects = adapted_cv.get("projects", [])
     if projects:
-        sections["Projects"] = [
-            (
-                f"{safe_string(proj.get('name'))} "
-                f"({convert_date(proj.get('startDate'))} - {convert_date(proj.get('endDate', 'present'), is_end_date=True)}): "
-                f"{safe_string(proj.get('description'))}\n" +
-                "\n".join(f"- {safe_string(h)}" for h in proj.get("highlights", []) if safe_string(h))
-            ).strip()
-            for proj in projects if safe_string(proj.get("name"))
-        ]
+        sections["Projects"] = []
+        for proj in projects:
+            if not isinstance(proj, dict):
+                print(f"Warning: Skipping invalid project entry: {proj}")
+                continue
+            name = safe_string(proj.get("name"))
+            if not name:
+                print(f"Skipping project entry due to missing name: {proj}")
+                continue
+            start_date = convert_date(proj.get("startDate"))
+            end_date = convert_date(proj.get("endDate"))
+            date_range = ""
+            if start_date and end_date:
+                date_range = f"{start_date} - {end_date}"
+            elif start_date:
+                date_range = f"{start_date}"
+            elif end_date:
+                date_range = f"{end_date}"
+            if not start_date:
+                print(f"Omitting start_date for project entry for {name}: {proj.get('startDate')}")
+            if not end_date:
+                print(f"Omitting end_date for project entry for {name}: {proj.get('endDate')}")
+            sections["Projects"].append(
+                (
+                    f"{name}" +
+                    (f" ({date_range})" if date_range else "") +
+                    f": {safe_string(proj.get('description'))}\n" +
+                    "\n".join(f"- {safe_string(h)}" for h in proj.get("highlights", []) if safe_string(h))
+                ).strip()
+            )
 
     # Languages (OneLineEntry)
     languages = adapted_cv.get("languages", [])
     if languages:
-        language_list = [
-            f"{safe_string(lang.get('language'))} ({safe_string(lang.get('fluency'))})" if safe_string(lang.get("fluency"))
-            else safe_string(lang.get("language"))
-            for lang in languages if safe_string(lang.get("language"))
-        ]
+        language_list = []
+        for lang in languages:
+            if not isinstance(lang, dict):
+                print(f"Warning: Skipping invalid language entry: {lang}")
+                continue
+            language = safe_string(lang.get("language"))
+            if not language:
+                continue
+            fluency = safe_string(lang.get("fluency"))
+            language_entry = f"{language} ({fluency})" if fluency else language
+            language_list.append(language_entry)
         if language_list:
             sections["Languages"] = [
                 {
@@ -992,11 +1076,7 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
 
     return output_file
 
-
-
-
-
-
+    
 
 def generate_rendercv_pdf(yaml_path: str, output_dir: str = "rendercv_output", final_pdf_name: str = "final_cv.pdf") -> str:
     """

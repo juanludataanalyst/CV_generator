@@ -107,6 +107,9 @@ def run_pipeline(cv_path, job_description):
             cv_data = extract_job_description_data(extracted_text, is_job=False)
             st.success("Original CV standardized")
 
+            with open("file_outputs/cv_data.json", 'w', encoding='utf-8') as f:
+                json.dump(cv_data, f, ensure_ascii=False)
+
             keywords_match = match_with_llm(cv_data.get('keywords', []), job_data.get('keywords', []))
 
             # Análisis de palabras clave
@@ -141,6 +144,9 @@ def run_pipeline(cv_path, job_description):
             adapted_cv = adapt_cv_with_llm(parsed_cv, job_data, keywords_match)
             st.subheader("Adapted CV : ")
             st.json(adapted_cv)
+
+            with open("file_outputs/adapted_cv.json", 'w', encoding='utf-8') as f:
+                json.dump(adapted_cv, f, ensure_ascii=False)
 
             # Extraer datos del CV adaptado
             cv_adapted_data_text = json.dumps(adapted_cv, indent=2)
