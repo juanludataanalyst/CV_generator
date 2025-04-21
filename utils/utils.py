@@ -938,7 +938,10 @@ def convert_date(date_str):
     }
 
     try:
-        date_str = date_str.strip().lower()
+        # Normalizar espacios: reemplazar múltiples espacios/tabs por un solo espacio
+        date_str = re.sub(r'\s+', ' ', date_str.strip().lower())
+        print(f"Debug: Procesando fecha normalizada: '{date_str}'")
+        
         if re.match(r'^\d{4}$', date_str):
             return f"{date_str}-01-01"
         if re.match(r'^\d{1,2}[/-]\d{4}$', date_str):
@@ -951,13 +954,16 @@ def convert_date(date_str):
                 return f"{parts[0]}-{parts[1]}-01"
             elif len(parts) == 3:
                 return date_str
-        match = re.match(r'(\w+)\s+(\d{4})', date_str)
+        match = re.match(r'([a-z]+)\.?\s+(\d{4})', date_str)
         if match:
             month_str, year = match.groups()
-            month_str = re.sub(r'[^a-z]', '', month_str)  # Elimina puntos, etc.
             month = month_map.get(month_str)
             if month:
+                print(f"Debug: Fecha '{date_str}' mapeada a '{year}-{month}-01'")
                 return f"{year}-{month}-01"
+            else:
+                print(f"Debug: Fecha '{date_str}' descartada: mes '{month_str}' no reconocido")
+                return None
         if re.match(r'^\d{4}/\d{1,2}$', date_str):
             year, month = date_str.split('/')
             month = month.zfill(2)
