@@ -691,10 +691,35 @@ import shutil
 
 
 
-import os
-import yaml
-from datetime import datetime
-import re
+# Lista para mensajes de depuración (solo consola)
+debug_messages = []
+# Lista para mensajes de descarte (mostrados en UI)
+discard_messages = []
+
+def add_debug_message(message):
+    """Adds a debug message to the debug list and prints it to the console."""
+    debug_messages.append(message)
+    print(message)
+
+def add_discard_message(message):
+    """Adds a discard message to the discard list, prints it, and adds it as a debug message, unless it's a suppressed URL message."""
+    # Suppress specific URL discard messages
+    suppressed_messages = [
+        "Debug: URL '' discarded: empty or None",
+        "Debug: URL '' not included in YAML: invalid or None"
+    ]
+    if message not in suppressed_messages:
+        discard_messages.append(message)
+    add_debug_message(message)
+
+def get_discard_messages():
+    """Returns the list of discard messages."""
+    return discard_messages
+
+def clear_messages():
+    """Clears both debug and discard message lists."""
+    debug_messages.clear()
+    discard_messages.clear()
 
 def safe_string(value, default=""):
     """Converts a value to a string, handling None and non-string types."""
@@ -706,82 +731,81 @@ def is_valid_label(label):
     """Validates a label (min 3 chars, allows most characters)."""
     label = safe_string(label)
     if not label:
-        print(f"Debug: Label '{label}' descartado: vacío o None")
+        add_discard_message(f"Debug: Label '{label}' discarded: empty or None")
         return False
     pattern = r'^[\w\s\-\&\#]{3,}$'
     if re.match(pattern, label):
-        print(f"Debug: Label '{label}' es válido")
+        add_debug_message(f"Debug: Label '{label}' is valid")
         return True
-    print(f"Debug: Label '{label}' descartado: no cumple con el formato (mínimo 3 caracteres, letras, números, espacios, -, &, #)")
+    add_discard_message(f"Debug: Label '{label}' discarded: does not meet format requirements (minimum 3 characters, letters, numbers, spaces, -, &, #)")
     return False
 
 def is_valid_email(email):
     """Validates an email address."""
     email = safe_string(email)
     if not email:
-        print(f"Debug: Email '{email}' descartado: vacío o None")
+        add_discard_message(f"Debug: Email '{email}' discarded: empty or None")
         return False
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     if re.match(pattern, email):
-        print(f"Debug: Email '{email}' es válido")
+        add_debug_message(f"Debug: Email '{email}' is valid")
         return True
-    print(f"Debug: Email '{email}' descartado: formato inválido")
+    add_discard_message(f"Debug: Email '{email}' discarded: invalid format")
     return False
 
 def is_valid_phone_number(phone):
     """Validates a phone number, requiring country code or clear separators."""
     phone = safe_string(phone)
     if not phone:
-        print(f"Debug: Teléfono '{phone}' descartado: vacío o None")
+        add_discard_message(f"Debug: Phone '{phone}' discarded: empty or None")
         return False
-    # Patrón estricto: permite números continuos con código de país, o formatos con separadores
+    # Strict pattern: allows continuous numbers with country code, or formats with separators
     pattern = r'^(\+\d{1,3}[-.\s])\d{9,12}$|^(\+\d{1,3}[-.\s])(\d{3,4}[-.\s]\d{3,4}[-.\s]\d{3,4})$|^(\(\d{3,4}\)\s\d{3,4}[-.\s]\d{3,4})$|^(\d{3,4}[-.\s]\d{3,4}[-.\s]\d{3,4})$'
     if re.match(pattern, phone):
-        print(f"Debug: Teléfono '{phone}' es válido")
+        add_debug_message(f"Debug: Phone '{phone}' is valid")
         return True
-    print(f"Debug: Teléfono '{phone}' descartado: formato inválido (requiere código de país con separador, paréntesis con espacio, o separadores claros)")
+    add_discard_message(f"Debug: Phone '{phone}' discarded: invalid format (requires country code with separator, parentheses with space, or clear separators)")
     return False
 
 def is_valid_url(url):
     """Validates a URL (must start with http:// or https://)."""
     url = safe_string(url)
     if not url:
-        print(f"Debug: URL '{url}' descartado: vacío o None")
-        return False
+        return False  # Silently skip empty URLs
     pattern = r'^https?://[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(/.*)?$'
     if re.match(pattern, url):
-        print(f"Debug: URL '{url}' es válido")
+        add_debug_message(f"Debug: URL '{url}' is valid")
         return True
-    print(f"Debug: URL '{url}' descartado: formato inválido (debe comenzar con http:// o https://)")
+    add_discard_message(f"Debug: URL '{url}' discarded: invalid format (must start with http:// or https://)")
     return False
 
 def is_valid_summary(summary):
     """Validates a summary (min 10 chars)."""
     summary = safe_string(summary)
     if not summary or len(summary) < 10:
-        print(f"Debug: Resumen '{summary}' descartado: demasiado corto o vacío (mínimo 10 caracteres)")
+        add_discard_message(f"Debug: Summary '{summary}' discarded: too short or empty (minimum 10 characters)")
         return False
-    print(f"Debug: Resumen es válido (longitud: {len(summary)})")
+    add_debug_message(f"Debug: Summary is valid (length: {len(summary)})")
     return True
 
 def is_valid_location(location):
     """Validates a location (at least one non-null field)."""
     if not isinstance(location, dict):
-        print(f"Debug: Ubicación '{location}' descartada: no es un diccionario")
+        add_discard_message(f"Debug: Location '{location}' discarded: not a dictionary")
         return False
     fields = ["address", "postalCode", "city", "countryCode", "region"]
     has_valid_field = any(safe_string(location.get(field)) for field in fields)
     if has_valid_field:
-        print(f"Debug: Ubicación '{location}' es válida")
+        add_debug_message(f"Debug: Location '{location}' is valid")
         return True
-    print(f"Debug: Ubicación '{location}' descartada: no tiene campos válidos")
+    add_discard_message(f"Debug: Location '{location}' discarded: no valid fields")
     return False
 
 def normalize_social_network(network):
     """Normalizes social network names to RenderCV-compatible values."""
     network = safe_string(network)
     if not network:
-        print(f"Debug: Red social '{network}' descartada: vacía o None")
+        add_discard_message(f"Debug: Social network '{network}' discarded: empty or None")
         return None
     valid_networks = [
         'LinkedIn', 'GitHub', 'GitLab', 'Instagram', 'ORCID', 'Mastodon',
@@ -818,9 +842,9 @@ def normalize_social_network(network):
     }
     normalized = network_map.get(network.lower(), network.capitalize())
     if normalized in valid_networks:
-        print(f"Debug: Red social '{network}' normalizada a '{normalized}'")
+        add_debug_message(f"Debug: Social network '{network}' normalized to '{normalized}'")
         return normalized
-    print(f"Debug: Red social '{network}' descartada: no es una red válida")
+    add_discard_message(f"Debug: Social network '{network}' discarded: not a valid network")
     return None
 
 def preprocess_json(data):
@@ -833,10 +857,10 @@ def preprocess_json(data):
             if isinstance(v, str):
                 if k == "name":
                     if safe_string(v):
-                        print(f"Debug: Nombre '{v}' incluido (sin validación)")
+                        add_debug_message(f"Debug: Name '{v}' included (no validation)")
                         new_data[k] = v
                     else:
-                        print(f"Debug: Nombre '{v}' descartado: vacío o None")
+                        add_discard_message(f"Debug: Name '{v}' discarded: empty or None")
                         new_data[k] = None
                 elif k == "label":
                     new_data[k] = v if is_valid_label(v) else None
@@ -846,16 +870,18 @@ def preprocess_json(data):
                     if is_valid_phone_number(v):
                         new_data[k] = v
                     else:
-                        print(f"Debug: Teléfono '{v}' descartado en preprocess_json: inválido")
+                        add_discard_message(f"Debug: Phone '{v}' discarded in preprocess_json: invalid")
                         new_data[k] = None
                 elif k in ("url", "website"):
-                    if v.strip() == "" or v.strip() is None:
-                        print(f"Debug: URL '{v}' descartado: vacío o None")
+                    if not safe_string(v):
+                        add_discard_message(f"Debug: URL '{v}' discarded: empty or None")  # Will be suppressed
                         new_data[k] = None
                     elif is_valid_url(v):
                         new_data[k] = v
                     else:
-                        new_data[k] = "https://" + v.lstrip("/") if not v.startswith("http") else None
+                        # Try to fix URLs missing protocol
+                        fixed_url = "https://" + v.lstrip("/") if not v.startswith("http") else v
+                        new_data[k] = fixed_url if is_valid_url(fixed_url) else None
                 elif k == "summary":
                     new_data[k] = v if is_valid_summary(v) else None
                 else:
@@ -866,7 +892,7 @@ def preprocess_json(data):
                 valid_profiles = []
                 for profile in v:
                     if not isinstance(profile, dict):
-                        print(f"Debug: Perfil '{profile}' descartado: no es un diccionario")
+                        add_discard_message(f"Debug: Profile '{profile}' discarded: not a dictionary")
                         continue
                     network = safe_string(profile.get("network"))
                     username = safe_string(profile.get("username"))
@@ -880,9 +906,9 @@ def preprocess_json(data):
                                 "url": profile_url if is_valid_url(profile_url) else None
                             })
                         else:
-                            print(f"Debug: Perfil '{network}/{username}' descartado: red o URL inválidos")
+                            add_discard_message(f"Debug: Profile '{network}/{username}' discarded: invalid network or URL")
                     else:
-                        print(f"Debug: Perfil '{network}/{username}' descartado: falta red o usuario")
+                        add_discard_message(f"Debug: Profile '{network}/{username}' discarded: missing network or username")
                 new_data[k] = valid_profiles
             elif isinstance(v, (dict, list)):
                 new_data[k] = preprocess_json(v)
@@ -919,7 +945,7 @@ def convert_date(date_str):
     """Converts a date string to RenderCV-compatible format (YYYY-MM-DD, YYYY-MM, YYYY) or None if invalid."""
     date_str = safe_string(date_str)
     if not date_str:
-        print(f"Debug: Fecha '{date_str}' descartada: vacía o None")
+        add_discard_message(f"Debug: Date '{date_str}' discarded: empty or None")
         return None
     
     month_map = {
@@ -938,9 +964,9 @@ def convert_date(date_str):
     }
 
     try:
-        # Normalizar espacios: reemplazar múltiples espacios/tabs por un solo espacio
+        # Normalize spaces: replace multiple spaces/tabs with a single space
         date_str = re.sub(r'\s+', ' ', date_str.strip().lower())
-        print(f"Debug: Procesando fecha normalizada: '{date_str}'")
+        add_debug_message(f"Debug: Processing normalized date: '{date_str}'")
         
         if re.match(r'^\d{4}$', date_str):
             return f"{date_str}-01-01"
@@ -959,22 +985,22 @@ def convert_date(date_str):
             month_str, year = match.groups()
             month = month_map.get(month_str)
             if month:
-                print(f"Debug: Fecha '{date_str}' mapeada a '{year}-{month}-01'")
+                add_debug_message(f"Debug: Date '{date_str}' mapped to '{year}-{month}-01'")
                 return f"{year}-{month}-01"
             else:
-                print(f"Debug: Fecha '{date_str}' descartada: mes '{month_str}' no reconocido")
+                add_discard_message(f"Debug: Date '{date_str}' discarded: month '{month_str}' not recognized")
                 return None
         if re.match(r'^\d{4}/\d{1,2}$', date_str):
             year, month = date_str.split('/')
             month = month.zfill(2)
             return f"{year}-{month}-01"
         if date_str in ('present', 'actualidad'):
-            print(f"Debug: Fecha '{date_str}' mapeada a 'present'")
+            add_debug_message(f"Debug: Date '{date_str}' mapped to 'present'")
             return "present"
-        print(f"Debug: Fecha '{date_str}' descartada: formato inválido")
+        add_discard_message(f"Debug: Date '{date_str}' discarded: invalid format")
         return None
     except Exception as e:
-        print(f"Debug: Error al parsear fecha '{date_str}': {e}, descartada")
+        add_discard_message(f"Debug: Error parsing date '{date_str}': {e}, discarded")
         return None
 
 def get_degree_abbreviation(study_type):
@@ -999,9 +1025,9 @@ def get_degree_abbreviation(study_type):
         'doctorado': 'DOC'
     }
     abbreviation = degree_map.get(study_type, 'DEG')
-    print(f"Debug: Mapeando studyType '{study_type}' a abreviatura de grado '{abbreviation}'")
+    add_debug_message(f"Debug: Mapping studyType '{study_type}' to degree abbreviation '{abbreviation}'")
     if len(abbreviation) != 3:
-        print(f"Debug: Abreviatura de grado '{abbreviation}' no tiene 3 letras, usando 'DEG'")
+        add_discard_message(f"Debug: Degree abbreviation '{abbreviation}' does not have 3 letters, using 'DEG'")
         return 'DEG'
     return abbreviation
 
@@ -1009,26 +1035,29 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
     """
     Converts a JSON Resume formatted CV to a RenderCV-compatible YAML file.
     """
+    # Clear previous messages
+    clear_messages()
+    
     if not isinstance(adapted_cv, dict):
         raise ValueError("adapted_cv must be a dictionary in JSON Resume format")
     
     if not isinstance(adapted_cv.get("basics", {}), dict):
-        print("Debug: 'basics' no es un diccionario, usando diccionario vacío")
+        add_discard_message("Debug: 'basics' is not a dictionary, using empty dictionary")
         adapted_cv["basics"] = {}
     if not isinstance(adapted_cv.get("work", []), list):
-        print("Debug: 'work' no es una lista, usando lista vacía")
+        add_discard_message("Debug: 'work' is not a list, using empty list")
         adapted_cv["work"] = []
     if not isinstance(adapted_cv.get("education", []), list):
-        print("Debug: 'education' no es una lista, usando lista vacía")
+        add_discard_message("Debug: 'education' is not a list, using empty list")
         adapted_cv["education"] = []
     if not isinstance(adapted_cv.get("skills", []), list):
-        print("Debug: 'skills' no es una lista, usando lista vacía")
+        add_discard_message("Debug: 'skills' is not a list, using empty list")
         adapted_cv["skills"] = []
     if not isinstance(adapted_cv.get("projects", []), list):
-        print("Debug: 'projects' no es una lista, usando lista vacía")
+        add_discard_message("Debug: 'projects' is not a list, using empty list")
         adapted_cv["projects"] = []
     if not isinstance(adapted_cv.get("languages", []), list):
-        print("Debug: 'languages' no es una lista, usando lista vacía")
+        add_discard_message("Debug: 'languages' is not a list, using empty list")
         adapted_cv["languages"] = []
 
     rendercv_data = {
@@ -1068,58 +1097,57 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
     cv = rendercv_data["cv"]
     
     name = safe_string(basics.get("name"))
-    print(f"Debug: Procesando nombre en convert_to_rendercv: '{name}'")
+    add_debug_message(f"Debug: Processing name in convert_to_rendercv: '{name}'")
     if name:
         cv["name"] = name
     else:
         cv["name"] = "Unknown"
-        print("Debug: Nombre descartado: vacío o None, usando 'Unknown'")
+        add_discard_message("Debug: Name discarded: empty or None, using 'Unknown'")
 
     email = safe_string(basics.get("email"))
-    print(f"Debug: Procesando email en convert_to_rendercv: '{email}'")
+    add_debug_message(f"Debug: Processing email in convert_to_rendercv: '{email}'")
     if is_valid_email(email):
         cv["email"] = email
     else:
-        print(f"Debug: Email '{email}' no incluido en YAML: inválido o None")
+        add_discard_message(f"Debug: Email '{email}' not included in YAML: invalid or None")
 
     phone = safe_string(basics.get("phone"))
-    print(f"Debug: Procesando teléfono en convert_to_rendercv: '{phone}'")
+    add_debug_message(f"Debug: Processing phone in convert_to_rendercv: '{phone}'")
     if phone and is_valid_phone_number(phone):
         cv["phone"] = phone
     else:
-        print(f"Debug: Teléfono '{phone}' no incluido en YAML: inválido o None")
+        add_discard_message(f"Debug: Phone '{phone}' not included in YAML: invalid or None")
 
     website = safe_string(basics.get("url"))
-    print(f"Debug: Procesando URL en convert_to_rendercv: '{website}'")
+    add_debug_message(f"Debug: Processing URL in convert_to_rendercv: '{website}'")
     if is_valid_url(website):
         cv["website"] = website
-    else:
-        print(f"Debug: URL '{website}' no incluido en YAML: inválido o None")
+    # No discard message to avoid redundancy
 
     location = basics.get("location", {})
-    print(f"Debug: Procesando ubicación en convert_to_rendercv: '{location}'")
+    add_debug_message(f"Debug: Processing location in convert_to_rendercv: '{location}'")
     if is_valid_location(location):
         location_parts = [
             safe_string(location.get("city")),
             safe_string(location.get("region")),
             safe_string(location.get("countryCode"))
         ]
-        print(f"Debug: Valores de ubicación: city={location_parts[0]!r}, region={location_parts[1]!r}, countryCode={location_parts[2]!r}")
+        add_debug_message(f"Debug: Location values: city={location_parts[0]!r}, region={location_parts[1]!r}, countryCode={location_parts[2]!r}")
         non_empty_parts = [part for part in location_parts if part]
         cv["location"] = ",".join(non_empty_parts)
     else:
-        print(f"Debug: Ubicación '{location}' no incluida en YAML: inválida o None")
+        add_discard_message(f"Debug: Location '{location}' not included in YAML: invalid or None")
 
     profiles = basics.get("profiles", [])
-    print(f"Debug: Procesando perfiles en convert_to_rendercv: '{profiles}'")
+    add_debug_message(f"Debug: Processing profiles in convert_to_rendercv: '{profiles}'")
     if not isinstance(profiles, list):
-        print("Debug: 'profiles' no es una lista, usando lista vacía")
+        add_discard_message("Debug: 'profiles' is not a list, using empty list")
         profiles = []
     if profiles:
         social_networks = []
         for profile in profiles:
             if not isinstance(profile, dict):
-                print(f"Debug: Perfil '{profile}' descartado: no es un diccionario")
+                add_discard_message(f"Debug: Profile '{profile}' discarded: not a dictionary")
                 continue
             network = safe_string(profile.get("network"))
             username = safe_string(profile.get("username"))
@@ -1131,31 +1159,31 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
                         "username": username
                     })
                 else:
-                    print(f"Debug: Perfil '{network}/{username}' descartado: red inválida")
+                    add_discard_message(f"Debug: Profile '{network}/{username}' discarded: invalid network")
             else:
-                print(f"Debug: Perfil '{network}/{username}' descartado: falta red o usuario")
+                add_discard_message(f"Debug: Profile '{network}/{username}' discarded: missing network or username")
         if social_networks:
             cv["social_networks"] = social_networks
         else:
-            print(f"Debug: No se incluyeron perfiles válidos en YAML")
+            add_discard_message(f"Debug: No valid profiles included in YAML")
 
     sections = cv["sections"]
     summary = safe_string(basics.get("summary"))
-    print(f"Debug: Procesando resumen en convert_to_rendercv: '{summary[:50]}...'")
+    add_debug_message(f"Debug: Processing summary in convert_to_rendercv: '{summary[:50]}...'")
     if is_valid_summary(summary):
         sections["Summary"] = [summary]
     else:
-        print(f"Debug: Resumen '{summary[:50]}...' no incluido en YAML: inválido o None")
+        add_discard_message(f"Debug: Summary '{summary[:50]}...' not included in YAML: invalid or None")
 
     work = adapted_cv.get("work", [])
     if work:
         sections["Experience"] = []
-        print("Debug: Fechas de experiencia laboral:")
+        add_debug_message("Debug: Work experience dates:")
         for job in work:
             if not isinstance(job, dict):
-                print(f"Debug: Entrada de trabajo '{job}' descartada: no es un diccionario")
+                add_discard_message(f"Debug: Work entry '{job}' discarded: not a dictionary")
                 continue
-            print(f"Debug: Empresa: {job.get('company')}, startDate: {job.get('startDate')}, endDate: {job.get('endDate')}")
+            add_debug_message(f"Debug: Company: {job.get('company')}, startDate: {job.get('startDate')}, endDate: {job.get('endDate')}")
         for job in work:
             if not isinstance(job, dict):
                 continue
@@ -1171,23 +1199,23 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
             if start_date is not None:
                 entry["start_date"] = start_date
             else:
-                print(f"Debug: start_date omitido para entrada de trabajo de {company}: '{job.get('startDate')}'")
+                add_discard_message(f"Debug: start_date omitted for work entry of {company}: '{job.get('startDate')}'")
             end_date = convert_date(job.get("endDate"))
             if end_date is not None:
                 entry["end_date"] = end_date
             else:
-                print(f"Debug: end_date omitido para entrada de trabajo de {company}: '{job.get('endDate')}'")
+                add_discard_message(f"Debug: end_date omitted for work entry of {company}: '{job.get('endDate')}'")
             sections["Experience"].append(entry)
 
     education = adapted_cv.get("education", [])
     if education:
         sections["Education"] = []
-        print("Debug: Fechas y grados de educación:")
+        add_debug_message("Debug: Education dates and degrees:")
         for edu in education:
             if not isinstance(edu, dict):
-                print(f"Debug: Entrada de educación '{edu}' descartada: no es un diccionario")
+                add_discard_message(f"Debug: Education entry '{edu}' discarded: not a dictionary")
                 continue
-            print(f"Debug: Institución: {edu.get('institution')}, studyType: {edu.get('studyType')}, startDate: {edu.get('startDate')}, endDate: {edu.get('endDate')}")
+            add_debug_message(f"Debug: Institution: {edu.get('institution')}, studyType: {edu.get('studyType')}, startDate: {edu.get('startDate')}, endDate: {edu.get('endDate')}")
         for edu in education:
             if not isinstance(edu, dict):
                 continue
@@ -1203,12 +1231,12 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
             if start_date is not None:
                 entry["start_date"] = start_date
             else:
-                print(f"Debug: start_date omitido para entrada de educación de {institution}: '{edu.get('startDate')}'")
+                add_discard_message(f"Debug: start_date omitted for education entry of {institution}: '{edu.get('startDate')}'")
             end_date = convert_date(edu.get("endDate"))
             if end_date is not None:
                 entry["end_date"] = end_date
             else:
-                print(f"Debug: end_date omitido para entrada de educación de {institution}: '{edu.get('endDate')}'")
+                add_discard_message(f"Debug: end_date omitted for education entry of {institution}: '{edu.get('endDate')}'")
             sections["Education"].append(entry)
 
     skills = adapted_cv.get("skills", [])
@@ -1216,13 +1244,13 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
         skill_list = []
         for skill in skills:
             if not isinstance(skill, dict):
-                print(f"Debug: Habilidad '{skill}' descartada: no es un diccionario")
+                add_discard_message(f"Debug: Skill '{skill}' discarded: not a dictionary")
                 continue
             name = safe_string(skill.get("name"))
             if name:
                 skill_list.append(name)
             else:
-                print(f"Debug: Habilidad '{name}' descartada: nombre vacío")
+                add_discard_message(f"Debug: Skill '{name}' discarded: empty name")
         if skill_list:
             sections["Skills"] = [
                 {
@@ -1231,14 +1259,14 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
                 }
             ]
         else:
-            print(f"Debug: No se incluyeron habilidades válidas en YAML")
+            add_discard_message(f"Debug: No valid skills included in YAML")
 
     projects = adapted_cv.get("projects", [])
     if projects:
         sections["Projects"] = []
         for proj in projects:
             if not isinstance(proj, dict):
-                print(f"Debug: Proyecto '{proj}' descartado: no es un diccionario")
+                add_discard_message(f"Debug: Project '{proj}' discarded: not a dictionary")
                 continue
             name = safe_string(proj.get("name"), "Unnamed Project")
             start_date = convert_date(proj.get("startDate"))
@@ -1251,9 +1279,9 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
             elif end_date:
                 date_range = f"{end_date}"
             if not start_date:
-                print(f"Debug: start_date omitido para proyecto {name}: '{proj.get('startDate')}'")
+                add_discard_message(f"Debug: start_date omitted for project {name}: '{proj.get('startDate')}'")
             if not end_date:
-                print(f"Debug: end_date omitido para proyecto {name}: '{proj.get('endDate')}'")
+                add_discard_message(f"Debug: end_date omitted for project {name}: '{proj.get('endDate')}'")
             sections["Projects"].append(
                 (
                     f"{name}" +
@@ -1268,11 +1296,10 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
         language_list = []
         for lang in languages:
             if not isinstance(lang, dict):
-                print(f"Debug: Idioma '{lang}' descartado: no es un diccionario")
-                continue
+                add_discard_message(f"Debug: Language '{lang}' discarded: not a dictionary")
             language = safe_string(lang.get("language"))
             if not language:
-                print(f"Debug: Idioma '{language}' descartado: nombre vacío")
+                add_discard_message(f"Debug: Language '{language}' discarded: empty name")
                 continue
             fluency = safe_string(lang.get("fluency"))
             language_entry = f"{language} ({fluency})" if fluency else language
@@ -1285,7 +1312,7 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
                 }
             ]
         else:
-            print(f"Debug: No se incluyeron idiomas válidos en YAML")
+            add_discard_message(f"Debug: No valid languages included in YAML")
 
     os.makedirs(output_dir, exist_ok=True)
     output_file = os.path.join(output_dir, "cv_rendercv.yaml")
@@ -1293,11 +1320,6 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
         yaml.safe_dump(rendercv_data, f, allow_unicode=True, sort_keys=False)
 
     return output_file
-
-
-
-
-
 
 
 

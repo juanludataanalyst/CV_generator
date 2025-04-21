@@ -16,7 +16,8 @@ from utils.utils import (
     calculate_ats_score,
     adapt_cv_with_llm,
     convert_to_rendercv,
-    generate_rendercv_pdf
+    generate_rendercv_pdf,
+    get_discard_messages,
 )
 
 # Configuración de la página
@@ -36,6 +37,7 @@ st.markdown("""
     .keyword-badge { display: inline-block; padding: 5px 10px; margin: 3px; border-radius: 12px; font-size: 14px; }
     .matched { background-color: #4CAF50; color: white; }
     .missing { background-color: #FF4D4F; color: white; }
+    .warning-message { background-color: #FFF3CD; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -58,6 +60,8 @@ if "pdf_path" not in st.session_state:
     st.session_state["pdf_path"] = None
 if "job_url" not in st.session_state:
     st.session_state["job_url"] = ""
+if "discard_messages" not in st.session_state:
+    st.session_state["discard_messages"] = []
 
 # Subida del CV
 uploaded_file = st.file_uploader("📤 Upload your CV (PDF)", type=["pdf"])
@@ -70,11 +74,52 @@ if uploaded_file and not st.session_state["uploaded_cv_path"]:
     st.session_state["manual_job_text"] = ""
     st.session_state["yaml_path"] = None
     st.session_state["pdf_path"] = None
+    st.session_state["discard_messages"] = []
     st.success("CV uploaded successfully!")
 
 # Input de la URL
 job_url = st.text_input("🔗 Paste the job description URL", value=st.session_state["job_url"], placeholder="e.g., https://jobs.example.com/123")
 st.session_state["job_url"] = job_url
+
+# Función para organizar mensajes de descarte por categoría
+def organize_discard_messages(messages):
+    categories = {
+        "Dates": [],
+        "Phone": [],
+        "Email": [],
+        "URL": [],
+        "Location": [],
+        "Social Networks": [],
+        "Summary": [],
+        "Skills": [],
+        "Projects": [],
+        "Languages": [],
+        "Other": []
+    }
+    for msg in messages:
+        if "Date" in msg or "start_date" in msg or "end_date" in msg:
+            categories["Dates"].append(msg)
+        elif "Phone" in msg:
+            categories["Phone"].append(msg)
+        elif "Email" in msg:
+            categories["Email"].append(msg)
+        elif "URL" in msg or "website" in msg:
+            categories["URL"].append(msg)
+        elif "Location" in msg or "location" in msg:
+            categories["Location"].append(msg)
+        elif "Social network" in msg or "Profile" in msg:
+            categories["Social Networks"].append(msg)
+        elif "Summary" in msg or "summary" in msg:
+            categories["Summary"].append(msg)
+        elif "Skill" in msg:
+            categories["Skills"].append(msg)
+        elif "Project" in msg:
+            categories["Projects"].append(msg)
+        elif "Language" in msg:
+            categories["Languages"].append(msg)
+        else:
+            categories["Other"].append(msg)
+    return categories
 
 # Función para ejecutar el pipeline
 def run_pipeline(cv_path, job_description):
@@ -142,7 +187,7 @@ def run_pipeline(cv_path, job_description):
 
             # Adaptar CV
             adapted_cv = adapt_cv_with_llm(parsed_cv, job_data, keywords_match)
-            st.subheader("Adapted CV : ")
+            st.subheader("Adapted CV:")
             st.json(adapted_cv)
 
             with open("file_outputs/adapted_cv.json", 'w', encoding='utf-8') as f:
@@ -234,6 +279,10 @@ def run_pipeline(cv_path, job_description):
             # Convert to RenderCV YAML
             yaml_path = convert_to_rendercv(adapted_cv, output_dir="rendercv_output", theme="classic")
 
+            # Capturar mensajes de descarte
+            discard_messages = get_discard_messages()
+            st.session_state["discard_messages"] = discard_messages
+
             # Generate PDF
             pdf_path = generate_rendercv_pdf(yaml_path, output_dir="rendercv_output", final_pdf_name="adapted_cv.pdf")
 
@@ -242,6 +291,18 @@ def run_pipeline(cv_path, job_description):
             st.session_state["pdf_path"] = pdf_path
 
             st.success("CV generated successfully!")
+
+            # Mostrar mensajes de descarte en un expander
+            if discard_messages:
+                with st.expander("Discarded Fields", expanded=False):
+                    st.markdown("### Discarded Fields")
+                    st.write("The following fields were not included in the final CV due to invalid formats or missing data.")
+                    organized_messages = organize_discard_messages(discard_messages)
+                    for category, messages in organized_messages.items():
+                        if messages:
+                            st.markdown(f"**{category}**")
+                            for msg in messages:
+                                st.markdown(f"<div class='warning-message'>⚠️ {msg}</div>", unsafe_allow_html=True)
 
         except Exception as e:
             st.error(f"An unexpected error occurred: {e}")
@@ -260,8 +321,8 @@ if st.button("Generate ATS-optimized CV", use_container_width=True):
             except (requests.RequestException, ValueError) as e:
                 st.session_state["scraping_failed"] = True
                 st.warning(
-                "This website does not allow scraping. Please paste the job description manually in the input field above and try again."
-            )
+                    "This website does not allow scraping. Please paste the job description manually in the input field above and try again."
+                )
         else:
             st.error("Please provide a job URL or manual description.")
     else:
