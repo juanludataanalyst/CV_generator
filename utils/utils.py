@@ -688,9 +688,6 @@ import glob
 import shutil
 
 
-
-
-
 # Lista para mensajes de depuración (solo consola)
 debug_messages = []
 # Lista para mensajes de descarte (mostrados en UI)
@@ -702,8 +699,7 @@ def add_debug_message(message):
     print(message)
 
 def add_discard_message(message):
-    """Adds a discard message to the discard list, prints it, and adds it as a debug message, unless it's a suppressed URL message."""
-    # Suppress specific URL discard messages
+    """Adds a discard message to the discard list, prints it, and adds it as a debug message, unless it's a suppressed message."""
     suppressed_messages = [
         "Debug: URL '' discarded: empty or None",
         "Debug: URL '' not included in YAML: invalid or None"
@@ -754,17 +750,17 @@ def is_valid_email(email):
     return False
 
 def is_valid_phone_number(phone):
-    """Validates a phone number, requiring country code or clear separators."""
+    """Validates a phone number, requiring it to start with a country code (+)."""
     phone = safe_string(phone)
     if not phone:
         add_discard_message(f"Debug: Phone '{phone}' discarded: empty or None")
         return False
-    # Strict pattern: allows continuous numbers with country code, or formats with separators
-    pattern = r'^(\+\d{1,3}[-.\s])\d{9,12}$|^(\+\d{1,3}[-.\s])(\d{3,4}[-.\s]\d{3,4}[-.\s]\d{3,4})$|^(\(\d{3,4}\)\s\d{3,4}[-.\s]\d{3,4})$|^(\d{3,4}[-.\s]\d{3,4}[-.\s]\d{3,4})$'
+    # Pattern: Must start with + followed by 1-3 digits (country code) and 9-12 digits (with optional separators)
+    pattern = r'^\+\d{1,3}[-.\s]?\d{2,4}[-.\s]?\d{3,4}[-.\s]?\d{3,4}$|^\+\d{1,3}\d{9,12}$'
     if re.match(pattern, phone):
         add_debug_message(f"Debug: Phone '{phone}' is valid")
         return True
-    add_discard_message(f"Debug: Phone '{phone}' discarded: invalid format (requires country code with separator, parentheses with space, or clear separators)")
+    add_discard_message(f"Debug: Phone '{phone}' discarded: must start with + (e.g., +34608027426, +34 617233088, +34 608 027 426)")
     return False
 
 def is_valid_url(url):
@@ -870,7 +866,7 @@ def preprocess_json(data):
                     if is_valid_phone_number(v):
                         new_data[k] = v
                     else:
-                        add_discard_message(f"Debug: Phone '{v}' discarded in preprocess_json: invalid")
+                        add_discard_message(f"Debug: Phone '{v}' discarded: invalid format (e.g., +34608027426, +34 608 027 426, (123) 456-7890, 123-456-7890)")
                         new_data[k] = None
                 elif k in ("url", "website"):
                     if not safe_string(v):
@@ -879,7 +875,6 @@ def preprocess_json(data):
                     elif is_valid_url(v):
                         new_data[k] = v
                     else:
-                        # Try to fix URLs missing protocol
                         fixed_url = "https://" + v.lstrip("/") if not v.startswith("http") else v
                         new_data[k] = fixed_url if is_valid_url(fixed_url) else None
                 elif k == "summary":
@@ -964,7 +959,6 @@ def convert_date(date_str):
     }
 
     try:
-        # Normalize spaces: replace multiple spaces/tabs with a single space
         date_str = re.sub(r'\s+', ' ', date_str.strip().lower())
         add_debug_message(f"Debug: Processing normalized date: '{date_str}'")
         
@@ -1035,7 +1029,6 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
     """
     Converts a JSON Resume formatted CV to a RenderCV-compatible YAML file.
     """
-    # Clear previous messages
     clear_messages()
     
     if not isinstance(adapted_cv, dict):
@@ -1113,7 +1106,7 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
 
     phone = safe_string(basics.get("phone"))
     add_debug_message(f"Debug: Processing phone in convert_to_rendercv: '{phone}'")
-    if phone and is_valid_phone_number(phone):
+    if phone and is_valid_phone_number(phone):  # Double-check validation here
         cv["phone"] = phone
     else:
         add_discard_message(f"Debug: Phone '{phone}' not included in YAML: invalid or None")
@@ -1122,7 +1115,6 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
     add_debug_message(f"Debug: Processing URL in convert_to_rendercv: '{website}'")
     if is_valid_url(website):
         cv["website"] = website
-    # No discard message to avoid redundancy
 
     location = basics.get("location", {})
     add_debug_message(f"Debug: Processing location in convert_to_rendercv: '{location}'")
@@ -1132,7 +1124,6 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
             safe_string(location.get("region")),
             safe_string(location.get("countryCode"))
         ]
-        add_debug_message(f"Debug: Location values: city={location_parts[0]!r}, region={location_parts[1]!r}, countryCode={location_parts[2]!r}")
         non_empty_parts = [part for part in location_parts if part]
         cv["location"] = ",".join(non_empty_parts)
     else:
@@ -1178,14 +1169,9 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
     work = adapted_cv.get("work", [])
     if work:
         sections["Experience"] = []
-        add_debug_message("Debug: Work experience dates:")
         for job in work:
             if not isinstance(job, dict):
                 add_discard_message(f"Debug: Work entry '{job}' discarded: not a dictionary")
-                continue
-            add_debug_message(f"Debug: Company: {job.get('company')}, startDate: {job.get('startDate')}, endDate: {job.get('endDate')}")
-        for job in work:
-            if not isinstance(job, dict):
                 continue
             company = safe_string(job.get("company"), "Unknown")
             entry = {
@@ -1210,14 +1196,9 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
     education = adapted_cv.get("education", [])
     if education:
         sections["Education"] = []
-        add_debug_message("Debug: Education dates and degrees:")
         for edu in education:
             if not isinstance(edu, dict):
                 add_discard_message(f"Debug: Education entry '{edu}' discarded: not a dictionary")
-                continue
-            add_debug_message(f"Debug: Institution: {edu.get('institution')}, studyType: {edu.get('studyType')}, startDate: {edu.get('startDate')}, endDate: {edu.get('endDate')}")
-        for edu in education:
-            if not isinstance(edu, dict):
                 continue
             institution = safe_string(edu.get("institution"), "Unknown")
             entry = {
@@ -1320,14 +1301,6 @@ def convert_to_rendercv(adapted_cv: dict, output_dir: str = "rendercv_output", t
         yaml.safe_dump(rendercv_data, f, allow_unicode=True, sort_keys=False)
 
     return output_file
-
-
-
-
-
-
-
-
 
 
 
