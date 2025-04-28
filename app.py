@@ -18,6 +18,7 @@ from utils.utils import (
     convert_to_rendercv,
     generate_rendercv_pdf,
     get_discard_messages,
+    upload_file_to_drive,
 )
 
 # Configuración de la página
@@ -65,17 +66,23 @@ if "discard_messages" not in st.session_state:
 
 # Subida del CV
 uploaded_file = st.file_uploader("📤 Upload your CV (PDF)", type=["pdf"])
-if uploaded_file and not st.session_state["uploaded_cv_path"]:
-    with open("uploaded_cv.pdf", "wb") as f:
-        f.write(uploaded_file.getbuffer())
-    st.session_state["uploaded_cv_path"] = "uploaded_cv.pdf"
+
+if uploaded_file:
+    # Subir a Google Drive
+    result = upload_file_to_drive(
+        uploaded_file,
+        uploaded_file.name,
+        uploaded_file.type
+    )
+    print(f"CV uploaded to Google Drive! [View in Drive]({result.get('webViewLink')})")
+    st.session_state["uploaded_cv_path"] = uploaded_file.name
     st.session_state["scraping_failed"] = False
     st.session_state["continue_with_manual"] = False
     st.session_state["manual_job_text"] = ""
     st.session_state["yaml_path"] = None
     st.session_state["pdf_path"] = None
     st.session_state["discard_messages"] = []
-    st.success("CV uploaded successfully!")
+    # st.success("CV uploaded successfully!") # Eliminado mensaje de éxito en UI
 
 # Input de la URL
 job_url = st.text_input("🔗 Paste the job description URL", value=st.session_state["job_url"], placeholder="e.g., https://jobs.example.com/123")

@@ -9,3 +9,5 @@
 cv_adapter/src/__pycache__/cv_extraction.cpython-313.pyc
 __pycache__
 .streamlit/secrets.toml
+token_drive.pickle
+client_secret.json

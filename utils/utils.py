@@ -17,11 +17,73 @@ from datetime import datetime
 
 import copy
 
+import pickle
+import base64
+import json
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseUpload
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+import streamlit as st
+import io
+
 
 client = openai.OpenAI(
     base_url="https://openrouter.ai/api/v1",
     api_key=st.secrets["OPENROUTER_API_KEY"]
 )
+
+def get_drive_service():
+    # Reconstruye token_drive.pickle y client_secret.json desde secrets si no existen
+    if not os.path.exists('token_drive.pickle'):
+        with open('token_drive.pickle', 'wb') as f:
+            f.write(base64.b64decode(st.secrets["token_pickle_b64"]))
+    if not os.path.exists('client_secret.json'):
+        with open('client_secret.json', 'w') as f:
+            f.write(st.secrets["client_secret_json"])
+
+    creds = None
+    if os.path.exists('token_drive.pickle'):
+        with open('token_drive.pickle', 'rb') as token:
+            creds = pickle.load(token)
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            raise Exception("No valid Google Drive credentials found.")
+    service = build('drive', 'v3', credentials=creds)
+    return service
+
+
+def get_or_create_folder(folder_name="ResumesCVGenerator"):
+    service = get_drive_service()
+    # Buscar carpeta existente
+    query = f"mimeType='application/vnd.google-apps.folder' and name='{folder_name}' and trashed=false"
+    results = service.files().list(q=query, spaces='drive', fields='files(id, name)').execute()
+    items = results.get('files', [])
+    if items:
+        return items[0]['id']
+    # Crear carpeta si no existe
+    file_metadata = {
+        'name': folder_name,
+        'mimeType': 'application/vnd.google-apps.folder'
+    }
+    folder = service.files().create(body=file_metadata, fields='id').execute()
+    return folder.get('id')
+
+
+def upload_file_to_drive(file, filename, mimetype):
+    service = get_drive_service()
+    folder_id = get_or_create_folder()
+    file_metadata = {'name': filename, 'parents': [folder_id]}
+    media = MediaIoBaseUpload(file, mimetype=mimetype)
+    uploaded = service.files().create(
+        body=file_metadata,
+        media_body=media,
+        fields='id,webViewLink'
+    ).execute()
+    return uploaded
+
 
 def run_llm(prompt, temperature=0.0):
     try:
