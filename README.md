@@ -65,16 +65,16 @@ This project converts a PDF CV into an ATS-optimized PDF tailored to a specific 
 
 ```mermaid
 flowchart TD
-    A[PDF CV] --> B[Extract Text (pdfminer.six)]
-    B --> C[Parse to JSON Resume (LLM)]
-    C --> D[Save parsed_resume.json]
-    D --> E[Scrape Job Description (requests + BeautifulSoup + LLM)]
-    E --> F[Adapt CV to Job (LLM + ATS Score)]
-    F --> G[Save adapted_resume.json]
-    G --> H[Convert to YAML (json_to_rendercv_yaml.py)]
-    H --> I[cv_rendercv.yaml]
-    I --> J[RenderCV CLI]
-    J --> K[Final ATS-friendly PDF]
+    A["PDF CV"] --> B["Extract Text"]
+    B --> C["Parse to JSON Resume"]
+    C --> D["Save parsed_resume.json"]
+    D --> E["Scrape Job Description"]
+    E --> F["Adapt CV to Job"]
+    F --> G["Save adapted_resume.json"]
+    G --> H["Convert to YAML"]
+    H --> I["cv_rendercv.yaml"]
+    I --> J["RenderCV CLI"]
+    J --> K["Final ATS-friendly PDF"]
 ```
 
 ---
