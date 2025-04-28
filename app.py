@@ -88,6 +88,20 @@ if uploaded_file:
 job_url = st.text_input("🔗 Paste the job description URL", value=st.session_state["job_url"], placeholder="e.g., https://jobs.example.com/123")
 st.session_state["job_url"] = job_url
 
+# Área de texto siempre visible para la descripción del trabajo
+manual_job_text = st.text_area(
+    "📝 Paste the job description here (or it will be scraped from the URL if empty)",
+    value=st.session_state.get("manual_job_text", ""),
+    placeholder="Paste the full job description (job title, responsibilities, requirements, etc.)",
+    height=300,
+    key="manual_job_text_input"
+)
+st.session_state["manual_job_text"] = manual_job_text
+
+# Mostrar aviso solo si el scraping ha fallado
+if st.session_state.get("scraping_failed", False):
+    st.warning("This website does not allow scraping. Please paste the job description manually in the input field above and try again.")
+
 # Función para organizar mensajes de descarte por categoría
 def organize_discard_messages(messages):
     categories = {
@@ -315,42 +329,38 @@ def run_pipeline(cv_path, job_description):
             st.error(f"An unexpected error occurred: {e}")
 
 # Botón para iniciar el proceso
-if st.button("Generate ATS-optimized CV", use_container_width=True):
-    if st.session_state["uploaded_cv_path"]:
-        if st.session_state["continue_with_manual"] and st.session_state["manual_job_text"]:
-            # Usar la descripción manual ya almacenada
-            run_pipeline(st.session_state["uploaded_cv_path"], st.session_state["manual_job_text"])
-        elif st.session_state["job_url"]:
-            try:
-                # Intentar scrapear la URL
-                job_description = scrape_job_description(st.session_state["job_url"])
-                run_pipeline(st.session_state["uploaded_cv_path"], job_description)
-            except (requests.RequestException, ValueError) as e:
-                st.session_state["scraping_failed"] = True
-                st.warning(
-                    "This website does not allow scraping. Please paste the job description manually in the input field above and try again."
-                )
-        else:
-            st.error("Please provide a job URL or manual description.")
+def process_job():
+    cv_file = st.session_state.get("uploaded_file_object")
+    cv_path = None
+    if cv_file is not None:
+        cv_path = f"file_outputs/{cv_file.name}"
+        with open(cv_path, "wb") as f:
+            f.write(cv_file.getbuffer())
     else:
-        st.error("Please upload a CV first.")
+        cv_path = st.session_state.get("uploaded_cv_path")
 
-# Mostrar el área de texto si el scrapeo falló
-if st.session_state["scraping_failed"] and not st.session_state["continue_with_manual"]:
-    manual_job_text = st.text_area(
-        "📝 Paste the job description here",
-        placeholder="Paste the full job description (job title, responsibilities, requirements, etc.)",
-        height=300,
-        key="manual_job_text_input"
-    )
-    if st.button("Continue with Manual Description", use_container_width=True):
-        if manual_job_text.strip():
-            st.session_state["manual_job_text"] = manual_job_text
-            st.session_state["continue_with_manual"] = True
-            st.session_state["scraping_failed"] = False
-            run_pipeline(st.session_state["uploaded_cv_path"], manual_job_text)
-        else:
-            st.error("Please provide a valid job description.")
+    if not cv_path:
+        st.error("Please upload a CV first.")
+        return
+
+    manual_job_text = st.session_state.get("manual_job_text", "")
+    job_url = st.session_state.get("job_url", "")
+    st.session_state["scraping_failed"] = False
+
+    if manual_job_text.strip():
+        run_pipeline(cv_path, manual_job_text)
+    elif job_url:
+        try:
+            job_description = scrape_job_description(job_url)
+            run_pipeline(cv_path, job_description)
+        except (requests.RequestException, ValueError):
+            st.session_state["scraping_failed"] = True
+            st.warning("This website does not allow scraping. Please paste the job description manually in the input field above and try again.")
+    else:
+        st.error("Please provide a job URL or manual description.")
+
+if st.button("Generate ATS-optimized CV", use_container_width=True):
+    process_job()
 
 # Mostrar botones de descarga si los archivos existen
 if st.session_state.get("yaml_path") and os.path.exists(st.session_state["yaml_path"]):
