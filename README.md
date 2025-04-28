@@ -1,137 +1,127 @@
-# CV Adapter (V1)
+# CV Adapter - ATS Optimizer
 
-Converts a PDF CV to an ATS-friendly PDF using JSON Resume standard with LLM parsing.
-
----
-
-## Setup (Windows)
-
-1. Clone the repository or create the folder:
-
-```
-mkdir cv_adapter
-cd cv_adapter
-```
-
-2. Install dependencies:
-
-```
-pip install -r requirements.txt
-```
-
-If `pip` fails, use:
-
-```
-py -m pip install -r requirements.txt
-```
-
-3. Place your CV as `input_cv.pdf` in the root folder.
-
-4. Run the pipeline:
-
-```
-py src/main.py
-```
+![Python](https://img.shields.io/badge/python-3.8%2B-blue)
+![Streamlit](https://img.shields.io/badge/streamlit-%23FF4B4B.svg?style=flat&logo=streamlit&logoColor=white)
+![OpenAI](https://img.shields.io/badge/OpenAI-LLM-green)
 
 ---
 
-## Project Structure
+## Descripción
+
+**CV Adapter - ATS Optimizer** es una aplicación que adapta y optimiza tu currículum (CV) para que coincida con una oferta de trabajo específica, maximizando el puntaje ATS (Applicant Tracking System). Utiliza inteligencia artificial para analizar y reescribir tu CV, resaltando las habilidades y palabras clave más relevantes para cada puesto.
+
+---
+
+## Características principales
+
+- **Carga de CV en PDF**: Extrae y convierte tu CV a formato estructurado (JSON Resume).
+- **Obtención de oferta laboral**: Ingresa una URL o el texto de la oferta y la app extrae los requisitos clave automáticamente.
+- **Análisis y adaptación inteligente**: Compara skills, keywords y experiencia entre tu CV y la oferta. Adapta el CV para maximizar la coincidencia.
+- **Cálculo de puntaje ATS**: Muestra el porcentaje de compatibilidad antes y después de la optimización.
+- **Generación de archivos**: Descarga tu CV adaptado en PDF, HTML o YAML listo para RenderCV.
+- **Integración con Google Drive**: Sube tu CV adaptado directamente a tu cuenta de Google Drive.
+
+---
+
+## Instalación
+
+1. **Clona el repositorio:**
+   ```bash
+   git clone https://github.com/tuusuario/CV_generator.git
+   cd CV_generator
+   ```
+2. **Crea y activa un entorno virtual (opcional):**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # En Windows: venv\Scripts\activate
+   ```
+3. **Instala las dependencias:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+---
+
+## Uso rápido
+
+1. **Lanza la aplicación:**
+   ```bash
+   streamlit run app.py
+   ```
+2. **Sigue los pasos en la interfaz web:**
+   - Sube tu CV en PDF.
+   - Ingresa la URL o el texto de la oferta laboral.
+   - Haz clic en "Generate ATS-optimized CV".
+   - Descarga tu CV optimizado o súbelo a Google Drive.
+
+---
+
+## Ejemplo de flujo
+
+<details>
+<summary>Ver ejemplo paso a paso</summary>
+
+1. Sube tu archivo `Resume.pdf`.
+2. Ingresa la URL de una oferta de trabajo de LinkedIn o pega el texto.
+3. El sistema extrae y analiza los requisitos.
+4. Se adapta tu CV y se calcula el puntaje ATS.
+5. Descarga el PDF optimizado.
+
+</details>
+
+---
+
+## Estructura del proyecto
 
 ```
-cv_adapter/
-├── src/
+CV_generator/
+├── app.py                   # Interfaz principal Streamlit
+├── pipeline.py              # Lógica del pipeline principal
+├── src/                     # Módulos de procesamiento
 │   ├── cv_extraction.py
 │   ├── cv_parser.py
-│   ├── ats_generator.py
-│   └── main.py
-├── tests/
-│   ├── test_extraction.py
-│   ├── test_parser.py
-│   └── test_generator.py
-├── input_cv.pdf
-├── PLANNING.md
-├── TASK.md
-├── README.md
-└── requirements.txt
+│   ├── job_scraper.py
+│   ├── job_to_cv_parser.py
+│   ├── json_to_rendercv_yaml.py
+│   ├── models.py
+│   └── generate_cv.py
+├── utils/                   # Utilidades y helpers
+│   └── utils.py
+├── tests/                   # Pruebas unitarias
+├── requirements.txt         # Dependencias
+├── README.md                # Este archivo
+└── ...                      # Otros archivos y salidas
 ```
 
 ---
 
-## Description
+## Variables de entorno y configuración
 
-- **Input:** PDF CV (`input_cv.pdf`)
-- **Extraction:** Extracts text using `pdfminer.six`
-- **Parsing:** Converts text to JSON Resume format via LLM
-- **Output:** Generates ATS-friendly PDF using `reportlab`
-
----
-
-## Future Versions
-
-- V2: Job description adaptation, Streamlit UI
-- V3: Interactive agent-based editing
+- Para usar la integración con modelos LLM y Google Drive, configura tus claves en el archivo `secrets.toml` de Streamlit.
+- Ejemplo:
+  ```toml
+  OPENROUTER_API_KEY = "tu_clave_openrouter"
+  token_pickle_b64 = "..."
+  client_secret_json = "..."
+  ```
 
 ---
 
-### Workflow
+## Contribuir
 
-This project converts a PDF CV into an ATS-optimized PDF tailored to a specific job description, following these steps:
-
-1. **Extract CV Text**
-   - Extracts plain text from the uploaded PDF using `pdfminer.six`.
-   - Saves the raw text for debugging.
-
-2. **Parse to JSON Resume**
-   - Uses an LLM to convert the extracted text into a structured [JSON Resume](https://jsonresume.org/) format.
-   - Validates the output with Pydantic models.
-
-3. **Scrape Job Description**
-   - Downloads and filters the job posting from a provided URL.
-   - Uses an LLM to extract only the relevant job description content.
-
-4. **Adapt CV to Job**
-   - Compares the CV and job description to calculate an initial ATS compatibility score.
-   - If the score is below 75%, uses an LLM to ethically optimize the CV by emphasizing relevant skills and keywords.
-   - Recalculates the final ATS score.
-
-5. **Convert to YAML**
-   - Transforms the adapted JSON Resume into a YAML file compatible with RenderCV.
-
-6. **Generate Final PDF**
-   - Uses RenderCV CLI to generate a clean, ATS-friendly PDF ready for job applications.
+¡Las contribuciones son bienvenidas! Abre un issue o un pull request para sugerir mejoras, nuevas funciones o reportar bugs.
 
 ---
 
-### Workflow Diagram
+## Licencia
 
-```mermaid
-flowchart TD
-    A[PDF CV] --> B[Extract Text<br>pdfminer.six]
-    B --> C[Parse to JSON Resume<br>LLM + Pydantic]
-    C --> D[Save parsed_resume.json]
-    D --> E[Scrape Job Description<br>requests + BeautifulSoup + LLM]
-    E --> F[Adapt CV to Job<br>LLM + ATS Score]
-    F --> G[Save adapted_resume.json]
-    G --> H[Convert to YAML<br>json_to_rendercv_yaml.py]
-    H --> I[cv_rendercv.yaml]
-    I --> J[RenderCV CLI]
-    J --> K[Final ATS-friendly PDF]
-```
+Este proyecto está bajo la licencia MIT. Consulta el archivo `LICENSE` para más detalles.
 
 ---
 
-### Streamlit UI
+## Créditos y agradecimientos
 
-This project includes a web interface built with Streamlit that allows you to:
+- Inspirado por las mejores prácticas de optimización de CV y ATS.
+- Utiliza [Streamlit](https://streamlit.io/), [OpenAI](https://openai.com/), [RenderCV](https://github.com/mauriciogtec/rendercv) y otras librerías open-source.
 
-- **Upload your CV in PDF format**
-- **Paste the job description URL**
-- **Click a button to generate an ATS-optimized CV**
-- **See a loading animation during processing**
-- **Download the final adapted PDF**
-
-Run the app with:
-
-```
-streamlit run app.py
-```
+---
