@@ -6,78 +6,86 @@
 
 ---
 
-## Descripción
+## Description
 
-**CV Adapter - ATS Optimizer** es una aplicación que adapta y optimiza tu currículum (CV) para que coincida con una oferta de trabajo específica, maximizando el puntaje ATS (Applicant Tracking System). Utiliza inteligencia artificial para analizar y reescribir tu CV, resaltando las habilidades y palabras clave más relevantes para cada puesto.
-
----
-
-## Características principales
-
-- **Carga de CV en PDF**: Extrae y convierte tu CV a formato estructurado (JSON Resume).
-- **Obtención de oferta laboral**: Ingresa una URL o el texto de la oferta y la app extrae los requisitos clave automáticamente.
-- **Análisis y adaptación inteligente**: Compara skills, keywords y experiencia entre tu CV y la oferta. Adapta el CV para maximizar la coincidencia.
-- **Cálculo de puntaje ATS**: Muestra el porcentaje de compatibilidad antes y después de la optimización.
-- **Generación de archivos**: Descarga tu CV adaptado en PDF, HTML o YAML listo para RenderCV.
-- **Integración con Google Drive**: Sube tu CV adaptado directamente a tu cuenta de Google Drive.
+**CV Adapter - ATS Optimizer** is an application that adapts and optimizes your resume (CV) to match a specific job description, maximizing your ATS (Applicant Tracking System) score. It uses artificial intelligence to analyze and rewrite your CV, highlighting the most relevant skills and keywords for each position.
 
 ---
 
-## Instalación
+## Key Features
 
-1. **Clona el repositorio:**
+- **PDF CV Upload**: Extracts and converts your CV to the JSON Resume standard.
+- **Job Description Extraction**: Enter a URL or paste job text—the app automatically extracts key requirements.
+- **Smart Analysis & Adaptation**: Compares skills, keywords, and experience between your CV and the job offer. Adapts your CV to maximize the match.
+- **ATS Score Calculation**: Shows the compatibility percentage before and after optimization.
+- **Output Generation**: Download your adapted CV as PDF, HTML, or YAML (RenderCV-ready).
+- **Google Drive Integration**: Upload your adapted CV directly to your Google Drive.
+
+---
+
+## Installation
+
+1. **Clone the repository:**
    ```bash
-   git clone https://github.com/tuusuario/CV_generator.git
+   git clone https://github.com/yourusername/CV_generator.git
    cd CV_generator
    ```
-2. **Crea y activa un entorno virtual (opcional):**
+2. **Create and activate a virtual environment (optional):**
    ```bash
    python -m venv venv
-   source venv/bin/activate  # En Windows: venv\Scripts\activate
+   # On Unix/Mac
+   source venv/bin/activate
+   # On Windows
+   venv\Scripts\activate
    ```
-3. **Instala las dependencias:**
+3. **Install dependencies:**
    ```bash
    pip install -r requirements.txt
    ```
 
 ---
 
-## Uso rápido
+## Quick Start
 
-1. **Lanza la aplicación:**
+1. **Launch the app:**
    ```bash
    streamlit run app.py
    ```
-2. **Sigue los pasos en la interfaz web:**
-   - Sube tu CV en PDF.
-   - Ingresa la URL o el texto de la oferta laboral.
-   - Haz clic en "Generate ATS-optimized CV".
-   - Descarga tu CV optimizado o súbelo a Google Drive.
+2. **Follow the web interface steps:**
+   - Upload your PDF CV.
+   - Enter the job description URL or paste the text.
+   - Click "Generate ATS-optimized CV".
+   - Download your optimized CV or upload it to Google Drive.
 
 ---
 
-## Ejemplo de flujo
+## Workflow Diagram
 
-<details>
-<summary>Ver ejemplo paso a paso</summary>
+This project converts a PDF CV into an ATS-optimized PDF tailored to a specific job description, following these steps:
 
-1. Sube tu archivo `Resume.pdf`.
-2. Ingresa la URL de una oferta de trabajo de LinkedIn o pega el texto.
-3. El sistema extrae y analiza los requisitos.
-4. Se adapta tu CV y se calcula el puntaje ATS.
-5. Descarga el PDF optimizado.
-
-</details>
+```mermaid
+flowchart TD
+    A[PDF CV] --> B[Extract Text (pdfminer.six)]
+    B --> C[Parse to JSON Resume (LLM)]
+    C --> D[Save parsed_resume.json]
+    D --> E[Scrape Job Description (requests + BeautifulSoup + LLM)]
+    E --> F[Adapt CV to Job (LLM + ATS Score)]
+    F --> G[Save adapted_resume.json]
+    G --> H[Convert to YAML (json_to_rendercv_yaml.py)]
+    H --> I[cv_rendercv.yaml]
+    I --> J[RenderCV CLI]
+    J --> K[Final ATS-friendly PDF]
+```
 
 ---
 
-## Estructura del proyecto
+## Project Structure
 
 ```
 CV_generator/
-├── app.py                   # Interfaz principal Streamlit
-├── pipeline.py              # Lógica del pipeline principal
-├── src/                     # Módulos de procesamiento
+├── app.py                   # Streamlit web interface
+├── pipeline.py              # Main pipeline logic
+├── src/                     # Processing modules
 │   ├── cv_extraction.py
 │   ├── cv_parser.py
 │   ├── job_scraper.py
@@ -85,43 +93,43 @@ CV_generator/
 │   ├── json_to_rendercv_yaml.py
 │   ├── models.py
 │   └── generate_cv.py
-├── utils/                   # Utilidades y helpers
+├── utils/                   # Utilities and helpers
 │   └── utils.py
-├── tests/                   # Pruebas unitarias
-├── requirements.txt         # Dependencias
-├── README.md                # Este archivo
-└── ...                      # Otros archivos y salidas
+├── tests/                   # Unit tests
+├── requirements.txt         # Dependencies
+├── README.md                # This file
+└── ...                      # Other files and outputs
 ```
 
 ---
 
-## Variables de entorno y configuración
+## Environment Variables & Configuration
 
-- Para usar la integración con modelos LLM y Google Drive, configura tus claves en el archivo `secrets.toml` de Streamlit.
-- Ejemplo:
+- To use LLM and Google Drive integration, set your secrets in Streamlit's `secrets.toml` file.
+- Example:
   ```toml
-  OPENROUTER_API_KEY = "tu_clave_openrouter"
+  OPENROUTER_API_KEY = "your_openrouter_key"
   token_pickle_b64 = "..."
   client_secret_json = "..."
   ```
 
 ---
 
-## Contribuir
+## Contributing
 
-¡Las contribuciones son bienvenidas! Abre un issue o un pull request para sugerir mejoras, nuevas funciones o reportar bugs.
-
----
-
-## Licencia
-
-Este proyecto está bajo la licencia MIT. Consulta el archivo `LICENSE` para más detalles.
+Contributions are welcome! Open an issue or pull request to suggest improvements, new features, or report bugs.
 
 ---
 
-## Créditos y agradecimientos
+## License
 
-- Inspirado por las mejores prácticas de optimización de CV y ATS.
-- Utiliza [Streamlit](https://streamlit.io/), [OpenAI](https://openai.com/), [RenderCV](https://github.com/mauriciogtec/rendercv) y otras librerías open-source.
+This project is licensed under the MIT License. See the `LICENSE` file for details.
+
+---
+
+## Credits & Acknowledgements
+
+- Inspired by best practices in CV and ATS optimization.
+- Built with [Streamlit](https://streamlit.io/), [OpenAI](https://openai.com/), [RenderCV](https://github.com/mauriciogtec/rendercv), and other open-source libraries.
 
 ---
